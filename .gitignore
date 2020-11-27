@@ -1,12 +1,7 @@
 .idea
-composer.lock
 *.log
 .user.ini
 .svn
-extend/.gitignore
-public/static/.gitignore
-runtime/.gitignore
-thinkphp/.gitignore
-vendor/.gitignore
+*.gitignore
 
 
