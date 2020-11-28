@@ -30,8 +30,12 @@ defined('CONF_PATH') or define('CONF_PATH', APP_PATH); // 配置文件目录
 defined('CONF_EXT') or define('CONF_EXT', EXT); // 配置文件后缀
 defined('ENV_PREFIX') or define('ENV_PREFIX', 'PHP_'); // 环境变量的配置前缀
 
+//自定义常量
 defined('COMMON_PATH') or define('COMMON_PATH', APP_PATH . 'common'. DS); // 配置文件目录
-define('SYS_KEY', 'Sign02j1l)SFJ#sdHwifjpWF@#TUIsfzl'); //加盐
+defined('SYS_KEY') or define('SYS_KEY', 'Signsduihfnsk&5sdHwifjpWF@#TUIsfzl'); //加盐
+defined('APP_URL') or define('APP_URL', trim($_SERVER['SCRIPT_NAME'],'/'));
+defined('NOW_TIME') or define('NOW_TIME', time());
+defined('NOW_DATE') or define('NOW_DATE', date('Y-m-d H:i:s',NOW_TIME));
 
 // 环境常量
 define('IS_CLI', PHP_SAPI == 'cli' ? true : false);

@@ -11,7 +11,12 @@
 
 use think\Route;
 
-Route::rule('admin', 'admin/Login/index');
-Route::rule('home', 'home/Login/index');
+Route::rule('admin/index', 'admin/Index/index');
+Route::rule('admin/login', 'admin/Login/index');
+Route::rule('admin/login/captcha', 'admin/Login/captcha');
+Route::rule('admin/login/loginact', 'admin/Login/loginAct');
+
+Route::rule('home/index', 'home/Index/index');
+Route::rule('home/login', 'home/Login/index');
 
 

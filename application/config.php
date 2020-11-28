@@ -129,7 +129,7 @@ return [
         // 模板路径
         'view_path'    => '',
         // 模板后缀
-        'view_suffix'  => '',
+        'view_suffix'  => 'html',
         // 模板文件名分隔符
         'view_depr'    => DS,
         // 模板引擎普通标签开始标记
@@ -229,9 +229,11 @@ return [
         //  cookie 启用安全传输
         'secure'    => false,
         // httponly设置
-        'httponly'  => '',
+        'httponly'  => '1',
         // 是否使用 setcookie
         'setcookie' => true,
+        // 自定义cookie name
+        'key' => 'thinkcookie',
     ],
 
     //分页配置
