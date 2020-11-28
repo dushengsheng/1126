@@ -11,8 +11,7 @@
 
 use think\Route;
 
-Route::rule('demo', 'demo/index/index');
-Route::rule('admin', 'admin/index/index');
-Route::rule('home', 'home/index/index');
+Route::rule('admin', 'admin/Login/index');
+Route::rule('home', 'home/Login/index');
 
 
