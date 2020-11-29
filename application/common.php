@@ -19,58 +19,10 @@ use think\Response;
 use think\Log;
 use app\common\Mysql;
 use app\common\MyMemcache;
+use app\admin\model\User;
 
 class Common
 {
-    //检查登录
-    public static function checkLogin()
-    {
-        $user = Common::isLogin();
-        if ($user) {
-            return $user;
-        }
-        if (Request::instance()->controller() == 'Login') {
-            return false;
-        }
-
-        if (Request::instance()->isAjax()) {
-            Common::jReturn('-98', '请先登录');
-        } else {
-            //$callback = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            $f = isset($_GET['f']) ? intval($_GET['f']) : 0;
-            $url = "{$_SERVER['REQUEST_SCHEME']}://{$_SERVER['HTTP_HOST']}/" . Request::instance()->module() . "/login/index?f={$f}";;//&callback= . urlencode($callback);
-            header("Location:{$url}");
-            exit;
-        }
-    }
-
-    public static function isLogin()
-    {
-        $token = Common::getParam('token');
-        $user = null;
-        if ($token) {
-            $user = Common::getUserByToken($token);
-        }
-        if (!$user || !is_array($user)) {
-            $cookie_config = Config::get('cookie');
-            $cookie_json = Cookie::get($cookie_config['key']);
-            $cookie_arr = json_decode($cookie_json,true);
-            $sign = Common::sysSign($cookie_arr);
-            if ($sign == $cookie_arr['sign']) {
-                $token = $cookie_arr['token'];
-                $user = Common::getUserByToken($token);
-                if (!$user || !is_array($user)) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-
-        //Log::write("isLogin: getUserByToken = ". var_export($user));
-        return $user;
-    }
-
     //将$data数组中的key/val对，按key升序排列(sign除外)
     //并返回md5编码
     public static function sysSign($data)
@@ -156,11 +108,11 @@ class Common
     //打印操作日志
     public static function actionLog($data = array(), $mysql = '')
     {
-        if ($data['logUid']) {
+        if (isset($data['logUid'])) {
             $uid = $data['logUid'];
             unset($data['logUid']);
         } else {
-            $user = Common::isLogin();
+            $user = User::isLogin();
             if (!$user) {
                 return false;
             }
@@ -180,47 +132,6 @@ class Common
             unset($mysql);
         }
         return $result;
-    }
-
-    //根据token获取用户信息
-    public static function getUserByToken($token, $mysql = null)
-    {
-        if (!$token) {
-            return -1;
-        }
-        $memcache = new MyMemcache(0);
-        $mem_key = 'token_' . $token;
-        $user = $memcache->get($mem_key);
-        if ($user) {
-            $memcache->close();
-            unset($memcache);
-            return $user;
-        }
-
-        if (!$mysql) {
-            $mysql = new Mysql(0);
-        }
-        $sys_user_token = $mysql->fetchRow("select * from sys_user_token where token='{$token}' and status=0");
-        if (!$sys_user_token) {
-            return -2;
-        } else {
-            //token有效期检测
-            //...
-        }
-        $user = $mysql->fetchRow("select * from sys_user where id={$sys_user_token['uid']}");
-        if (!$user) {
-            return -4;
-        }
-        if ($user['phone']) {
-            $user['phone_flag'] = substr($user['phone'], 0, 3) . '***' . substr($user['phone'], 8);
-        } else {
-            $user['phone_flag'] = '';
-        }
-
-        $memcache->set($mem_key, $user, 3600);
-        $memcache->close();
-        unset($memcache);
-        return $user;
     }
 
     //获取用户ip
@@ -304,17 +215,48 @@ class Common
         return $mem_arr;
     }
 
-    //获取用户信息
-    public static function getUserinfo($uid, $mysql = null)
+    //设置cookie, 参数为json格式
+    public static function setCookie($cookie_json)
     {
-        $uid = intval($uid);
-        if (!$uid) {
-            return false;
+        //admin or home
+        $who = Request::instance()->module();
+
+        $cookie_config = Config::get('cookie');
+        $cookie_key = 'default_cookie_key';
+        if (isset($cookie_config['key']))
+        {
+            $cookie_key = $cookie_config['key'] . '_' . $who;
         }
-        if (!$mysql) {
-            $mysql = new Mysql(0);
+        Cookie::set($cookie_key, $cookie_json);
+    }
+
+    //获取json, 返回值为json格式
+    public static function getCookie()
+    {
+        //admin or home
+        $who = Request::instance()->module();
+
+        $cookie_config = Config::get('cookie');
+        $cookie_key = 'default_cookie_key';
+        if (isset($cookie_config['key']))
+        {
+            $cookie_key = $cookie_config['key'] . '_' . $who;
         }
-        $user = $mysql->fetchRow("select * from sys_user where id={$uid}");
-        return $user;
+        return Cookie::get($cookie_key);
+    }
+
+    //清除cookie
+    public static function deleteCookie()
+    {
+        //admin or home
+        $who = Request::instance()->module();
+
+        $cookie_config = Config::get('cookie');
+        $cookie_key = 'default_cookie_key';
+        if (isset($cookie_config['key']))
+        {
+            $cookie_key = $cookie_config['key'] . '_' . $who;
+        }
+        Cookie::delete($cookie_key);
     }
 }

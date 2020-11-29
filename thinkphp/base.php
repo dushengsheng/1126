@@ -33,14 +33,24 @@ defined('ENV_PREFIX') or define('ENV_PREFIX', 'PHP_'); // 环境变量的配置�
 //自定义常量
 defined('COMMON_PATH') or define('COMMON_PATH', APP_PATH . 'common'. DS); // 配置文件目录
 defined('SYS_KEY') or define('SYS_KEY', 'Signsduihfnsk&5sdHwifjpWF@#TUIsfzl'); //加盐
-defined('APP_URL') or define('APP_URL', trim($_SERVER['SCRIPT_NAME'],'/'));
 defined('NOW_TIME') or define('NOW_TIME', time());
 defined('NOW_DATE') or define('NOW_DATE', date('Y-m-d H:i:s',NOW_TIME));
+
+define('ADMIN_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}/admin");
+define('HOME_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}/home");
+//defined('APP_URL') or define('APP_URL', trim($_SERVER['SCRIPT_NAME'],'/'));
+
+//socket相关配置
+$_ENV['SOCKET']=['PORT'=>9502, 'HTTP_PORT'=>9582];
+$_ENV['SOCKET']['URL']="ws://{$_SERVER['HTTP_HOST']}:{$_ENV['SOCKET']['PORT']}";
+$_ENV['SOCKET']['HTTP_URL']="http://127.0.0.1:{$_ENV['SOCKET']['HTTP_PORT']}";
+
+$_ENV['CONFIG']['MEMCACHE']=['PREFIX'=>'mmcache_'];
+
 
 // 环境常量
 define('IS_CLI', PHP_SAPI == 'cli' ? true : false);
 define('IS_WIN', strpos(PHP_OS, 'WIN') !== false);
-$_ENV['CONFIG']['MEMCACHE']=['PREFIX'=>'mmcache_'];
 
 // 载入Loader类
 require CORE_PATH . 'Loader.php';

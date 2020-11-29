@@ -5,8 +5,8 @@ var global = {
     tableName: '',
     tokenName: 'token',
     pageTabs: false, //是否开启页面选项卡功能，不推荐开启
-    entry: ['Index', 'default'], //默认视图
-    appurl: '/admin',
+    entry: ['Index', 'index'], //默认视图
+    appurl: 'admin',
     screenType: typeof (getScreen) == 'function' ? getScreen() : '',
     theme: {//主题配置
         color: [
