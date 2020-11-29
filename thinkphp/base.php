@@ -40,6 +40,7 @@ defined('NOW_DATE') or define('NOW_DATE', date('Y-m-d H:i:s',NOW_TIME));
 // 环境常量
 define('IS_CLI', PHP_SAPI == 'cli' ? true : false);
 define('IS_WIN', strpos(PHP_OS, 'WIN') !== false);
+$_ENV['CONFIG']['MEMCACHE']=['PREFIX'=>'mmcache_'];
 
 // 载入Loader类
 require CORE_PATH . 'Loader.php';
