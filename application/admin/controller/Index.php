@@ -32,16 +32,6 @@ class Index extends Base
         return $this->fetch('Index/index', $data);
     }
 
-    //默认内容界面
-    /*public function default()
-    {
-        $pageuser = checkLogin();
-        $data = [
-            'user' => $pageuser
-        ];
-        display('Default/default.html', $data);
-    }*/
-
     public function tj()
     {
         checkPower();

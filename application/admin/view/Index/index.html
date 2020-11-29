@@ -8,7 +8,7 @@
     <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0"
           name="viewport">
     <link href="/layui/css/layui.css" media="all" rel="stylesheet">
-    <link href="/staic/admin/css/admin.css" media="all" rel="stylesheet">
+    <link href="/static/admin/css/admin.css" media="all" rel="stylesheet">
 </head>
 <body>
 <div id="LAY_app">
@@ -27,7 +27,7 @@
                     </a>
                 </li>
                 <li class="layui-nav-item" lay-unselect>
-                    <a href="./[[$smarty.const.APP_URL]]" title="刷新">
+                    <a href="[[$Think.ADMIN_URL]]" title="刷新">
                         <i class="layui-icon layui-icon-refresh-3"></i>
                     </a>
                 </li>
@@ -97,7 +97,7 @@
         <div class="layui-side layui-side-menu">
             <div class="layui-side-scroll">
                 <div class="layui-logo">
-                    <a href="./[[$smarty.const.APP_URL]]">
+                    <a href="[[$Think.ADMIN_URL]]">
                         <i class="layui-icon layui-icon-fire"></i>
                         <span id="sysName">[['sys_name'|getConfig]]</span>
                     </a>
@@ -439,10 +439,10 @@
     function routerAct() {
         var router = layui.router();
         var rpath_arr = rpathArr(router.path);
-        //var url='[[$smarty.const.APP_NAME]]/view/'+rpath_arr.join('/')+'.html';
-        var url = '[[$smarty.const.APP_URL]]?c=' + rpath_arr[0] + '&a=' + rpath_arr[1];
+        var url = '[[$Think.ADMIN_URL]]/' + (rpath_arr[0]).toLowerCase() + '/' + rpath_arr[1];
         global.params = router.search;
-        //console.log(url);
+        //console.log('arr[0] = ' + rpath_arr[0] + ', arr[1] = ' + rpath_arr[1]);
+        console.log('url = ' + url);
         loadView({url: url});
     }
 
@@ -500,17 +500,17 @@
         var txt = elem.text();
         if (txt == '退出') {
             ajax({
-                url: global.appurl + 'c=Login&a=logoutAct',
+                url: '[[$Think.ADMIN_URL]]/login/logoutact',
                 success: function (json) {
                     if (json.code != 1) {
                         _alert(json.msg);
                         return;
                     }
                     _alert(json.msg, {time: 1500}, function () {
-                        [[if $user.gid gt 41]]
-                        location.href = '[[$smarty.const.APP_URL]]?c=Login';
+                        [[if($user.gid > 41)]]
+                        location.href = '[[$Think.ADMIN_URL]]';
                         [[else]]
-                        location.href = '[[$smarty.const.APP_URL]]?c=Login&f=1';
+                        location.href = '[[$Think.ADMIN_URL]]?f=1';
                         [[/if]]
                     });
                 }
@@ -524,6 +524,7 @@
     function init() {
         var menu = JSON.parse('[[$menu_json]]');
         var router = layui.router();
+        console.log('init(): router = ' + router.path);
         var rpath_arr = rpathArr(router.path);
         var rpath_str = rpath_arr.join('_');
         $('#LAY-system-side-menu').html(layui.laytpl($('#SysMenuTpl').html()).render({
@@ -561,7 +562,7 @@
         var ioapp = {
             debug: false,
             ws: null,
-            wsUrl: '[[$smarty.env.SOCKET.URL]]',
+            wsUrl: '[[$Think.ENV.SOCKET.URL]]',
             func: null,//公共函数库
             user: iouser,
             params: {},//参数
@@ -694,7 +695,7 @@
 
             //发起登录
             this.loginAct = function () {
-                this.send('Login/loginAct', {uid: this.user.id, token: this.user.token});
+                this.send('login/loginAct', {uid: this.user.id, token: this.user.token});
             }
 
             //登录成功

@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\Common;
 use app\common\Mysql;
+use app\admin\model\User;
 use think\Config;
 use think\Cookie;
 use think\Exception;
@@ -37,7 +38,7 @@ class Login extends Base
     //检查是否已登录
     private function checkLogin()
     {
-        $user = Common::isLogin();
+        $user = User::isLogin();
         if ($user && $user['gid'] < 91) {
             header('Location:/' . Request::instance()->server('SCRIPT_NAME'));
             exit();
@@ -72,14 +73,13 @@ class Login extends Base
         }
 
         $user = $this->mysql->fetchRow("select * from sys_user where (account='{$account_name}' or phone='{$account_name}') and status=2");
-        Log::write("loginAct: mysql query result: " . var_export($user, true));
+        //Log::write("loginAct: mysql query result: " . var_export($user, true));
 
         $login_status = 0;
         if (!$user || !$user['status']) {
             $login_status = 1;
         } else {
             $password = Common::getPassword($password);
-            Log::write("loginAct: user's passwd is $password");
             if ($user['is_google']) {
                 if (!$this->params['gcode']) {
                     Common::jReturn('-1', '请填写谷歌验证码');
@@ -147,8 +147,7 @@ class Login extends Base
             ];
             $cookie_arr['sign'] = Common::sysSign($cookie_arr);
             $cookie_json = json_encode($cookie_arr, 256);
-            $cookie_config = Config::get('cookie');
-            Cookie::set($cookie_config['key'], $cookie_json);
+            Common::setCookie($cookie_json);
 
             $return_data = [
                 'account' => $user['account'],
@@ -157,6 +156,19 @@ class Login extends Base
 
             Common::actionLog(['opt_name' => '登录', 'sql_str' => '', 'logUid' => $user['id']], $this->mysql);
             Common::jReturn('1', '登录成功', $return_data);
+        }
+    }
+
+    //登出
+    public function logoutAct()
+    {
+        Common::actionLog(['opt_name' => '退出', 'sql_str' => ''], $this->mysql);
+        User::doLogout();
+
+        if (Request::instance()->isAjax()) {
+            Common::jReturn('1', '退出成功');
+        } else {
+            header('Location:' . ADMIN_URL);
         }
     }
 

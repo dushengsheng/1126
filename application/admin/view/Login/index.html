@@ -79,7 +79,7 @@
                         <div class="layui-col-xs5">
                             <div style="margin-left: 10px;">
                                 <img class="layadmin-user-login-codeimg" id="LAY-user-get-vercode"
-                                     src="[[$server]]/login/captcha">
+                                     src="[[$Think.ADMIN_URL]]/login/captcha">
                             </div>
                         </div>
                     </div>
@@ -167,7 +167,7 @@
 
     //更换验证码
     $('#LAY-user-get-vercode').on('click', function () {
-        var captcha = '[[$server]]' + '/login/captcha';
+        var captcha = '[[$Think.ADMIN_URL]]' + '/login/captcha';
         $(this).attr('src', captcha + '&rt=' + Math.random());
     });
 
@@ -201,7 +201,7 @@
             obj.attr('has-click', '1');
         }
         ajax({
-            url: '[[$server]]' + '/login/loginact',
+            url: '[[$Think.ADMIN_URL]]' + '/login/loginact',
             data: {
                 acname: acname,
                 pwd: pwd,
@@ -226,7 +226,7 @@
                 });
 
                 _alert(json.msg, {icon: 1}, function () {
-                    location.href = '[[$server]]';
+                    location.href = '[[$Think.ADMIN_URL]]';
                 });
             }
         });
