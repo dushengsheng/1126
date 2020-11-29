@@ -28,8 +28,8 @@ class Login extends Base
         $data = [
             //'callback' => urldecode($this->params['callback']),
             //'module' => Request::instance()->module(),
-            'server' => "{$_SERVER['REQUEST_SCHEME']}://{$_SERVER['HTTP_HOST']}/" . Request::instance()->module(),
-            's' => $params
+            'server' => ADMIN_URL,
+            'data' => $params
         ];
 
         return $this->fetch('Login/index', $data);
@@ -176,7 +176,7 @@ class Login extends Base
     public function captcha()
     {
         $captcha = new Captcha();
-        $captcha->fontSize = 100;
+        $captcha->fontSize = 40;
         $captcha->length = 4;
         return $captcha->entry();
     }
