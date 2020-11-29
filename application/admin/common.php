@@ -1,8 +1,9 @@
 <?php
 
 use think\Request;
-use think\Db;
 use app\Common;
+use app\common\Mysql;
+use app\common\MyMemcache;
 
 
 define('NKEY', Request::instance()->module() . '_' . Request::instance()->controller());
@@ -19,7 +20,7 @@ function checkPower($nkey = '')
     }
     if (!$check_res) {
         if (Request::instance()->isAjax()) {
-            jReturn('-99', '抱歉没有权限');
+            Common::jReturn('-99', '抱歉没有权限');
         } else {
             exit('抱歉没有权限');
         }
@@ -36,7 +37,7 @@ function hasPower($user, $nkey)
         $nkey = NKEY;
     }
     $mysql = new Mysql(0);
-    $node = Db::query("select id,public from sys_node where nkey='{$nkey}'");
+    $node = $mysql->fetchRow("select id,public from sys_node where nkey='{$nkey}'");
     if (!$node) {
         return false;
     }
@@ -62,7 +63,7 @@ function getUserMenu($uid, $mysql)
     if (!$mysql) {
         $mysql = new Mysql(0);
     }
-    $user = getUserinfo($uid, $mysql);
+    $user = Common::getUserinfo($uid, $mysql);
     if (!$user) {
         return false;
     }
@@ -91,7 +92,7 @@ function getUserMenu($uid, $mysql)
                     'pid' => $nv['pid'],
                     'name' => $nv['name'],
                     'c' => $ca_arr[0],
-                    'a' => $ca_arr[1],
+                    'a' => count($ca_arr) > 1 ? $ca_arr[1] : '',
                     'nkey' => $nv['nkey'],
                     'ico' => $nv['ico'],
                     'public' => $nv['public'],
@@ -113,9 +114,48 @@ function getUserMenu($uid, $mysql)
             }
         }
         $memcache->set($mem_key, $menu_arr, 3600);
-    } else {
-        //p($menu_arr);exit;
     }
+
     unset($mysql, $memcache);
     return $menu_arr;
 }
+
+//获取某个用户拥有的权限节点
+function getAccessNode($uid = 0, $mysql = null)
+{
+    if (!$uid) {
+        return false;
+    }
+    $user = Common::getUserinfo($uid, $mysql);
+    if (!$user) {
+        return false;
+    }
+    $memcache = new MyMemcache(0);
+    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . 'access_ids_' . $uid;
+    $access_ids_arr = $memcache->get($mem_key);
+    if (!$access_ids_arr) {
+        if (!$mysql) {
+            $mysql = new Mysql(0);
+        }
+        $access = $mysql->fetchRows("select node_ids from sys_access where uid={$user['id']} or gid={$user['gid']}");
+        foreach ($access as $acv) {
+            if (!$acv['node_ids']) {
+                continue;
+            }
+            $tmp_node_ids = explode(',', $acv['node_ids']);
+            foreach ($tmp_node_ids as $tv) {
+                $i_tv = intval($tv);
+                if ($i_tv) {
+                    $access_ids_arr[] = $i_tv;
+                }
+            }
+        }
+        if ($access_ids_arr) {
+            $access_ids_arr = array_unique($access_ids_arr);
+        }
+        $memcache->set($mem_key, $access_ids_arr, 3600);
+    }
+    unset($memcache);
+    return $access_ids_arr;
+}
+

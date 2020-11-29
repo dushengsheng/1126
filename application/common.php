@@ -67,7 +67,7 @@ class Common
             }
         }
 
-        Log::write("isLogin: getUserByToken = ". var_export($user));
+        //Log::write("isLogin: getUserByToken = ". var_export($user));
         return $user;
     }
 
@@ -259,16 +259,62 @@ class Common
         exit();
     }
 
-    //获取用户信息
-    function getUserinfo($uid,$mysql=null){
-        $uid=intval($uid);
-        if(!$uid){
+    //获取配置信息
+    public static function getConfig($key, $mysql = '')
+    {
+        if (!$key) {
             return false;
         }
-        if(!$mysql){
-            $mysql=new Mysql(0);
+        $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . 'sys_config_' . $key;
+        $memcache = new MyMemcache(0);
+        $mem_arr = $memcache->get($mem_key);
+        if (!$mem_arr) {
+            $will_create_db = false;
+            if (!is_object($mysql)) {
+                $mysql = new Mysql(0);
+                $will_create_db = true;
+            }
+            $result_nodes = $mysql->fetchRow("select * from sys_config where skey='{$key}'");
+            if ($will_create_db) {
+                $mysql->close();
+                unset($mysql);
+            }
+            if (!$result_nodes) {
+                return false;
+            }
+            if ($result_nodes['single']) {
+                $mem_arr = $result_nodes['config'];
+            } else {
+                $config_slice = explode(',', $result_nodes['config']);
+                $result_arr = [];
+                foreach ($config_slice as $config_item) {
+                    $_var_58 = explode('=', $config_item);
+                    $_var_59 = trim($_var_58[0]);
+                    if ($_var_59 === '') {
+                        continue;
+                    }
+                    $result_arr[$_var_59] = trim($_var_58[1]);
+                }
+                $mem_arr = $result_arr;
+            }
+            $memcache->set($mem_key, $mem_arr, 7200);
         }
-        $user=$mysql->fetchRow("select * from sys_user where id={$uid}");
+        $memcache->close();
+        unset($memcache);
+        return $mem_arr;
+    }
+
+    //获取用户信息
+    public static function getUserinfo($uid, $mysql = null)
+    {
+        $uid = intval($uid);
+        if (!$uid) {
+            return false;
+        }
+        if (!$mysql) {
+            $mysql = new Mysql(0);
+        }
+        $user = $mysql->fetchRow("select * from sys_user where id={$uid}");
         return $user;
     }
 }

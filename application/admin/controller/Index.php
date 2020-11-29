@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use think\Db;
 use think\Request;
+use app\Common;
 
 class Index extends Base
 {
@@ -19,17 +20,16 @@ class Index extends Base
         if ($pageuser['gid'] >= 91) {
             exit('抱歉，没有权限访问');
         }
-        $mysql_version = DB::query('select version()');
-        dump($mysql_version);
+        $mysql_version=$this->mysql->fetchResult("select version()");
 
         $menu = getUserMenu($pageuser['id'], $this->mysql);
         $data = array(
             'user' => $pageuser,
             'menu_json' => json_encode(array_values($menu)),
-            'sys_group' => getConfig('sys_group'),
+            'sys_group' => Common::getConfig('sys_group'),
             'mysql_version' => $mysql_version
         );
-        display('Default/index.html', $data);
+        return $this->fetch('Index/index', $data);
     }
 
     //默认内容界面
