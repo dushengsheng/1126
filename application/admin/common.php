@@ -1,6 +1,7 @@
 <?php
 
 use think\Request;
+use app\admin\model\User;
 use app\Common;
 use app\common\Mysql;
 use app\common\MyMemcache;
@@ -11,7 +12,7 @@ define('NKEY', Request::instance()->module() . '_' . Request::instance()->contro
 //检查权限
 function checkPower($nkey = '')
 {
-    $user = Common::checkLogin();
+    $user = User::checkLogin();
     //超管不用检测权限
     if ($user['id'] == 1 || $user['gid'] == 1) {
         return $user;
@@ -63,7 +64,7 @@ function getUserMenu($uid, $mysql)
     if (!$mysql) {
         $mysql = new Mysql(0);
     }
-    $user = Common::getUserinfo($uid, $mysql);
+    $user = User::getUserinfo($uid, $mysql);
     if (!$user) {
         return false;
     }
@@ -126,7 +127,7 @@ function getAccessNode($uid = 0, $mysql = null)
     if (!$uid) {
         return false;
     }
-    $user = Common::getUserinfo($uid, $mysql);
+    $user = User::getUserinfo($uid, $mysql);
     if (!$user) {
         return false;
     }
