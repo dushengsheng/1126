@@ -59,7 +59,6 @@ function fileUpload(new_opt) {
 function dataPage(opt) {
     var def = {
         elem: '#dataTable',
-        //url: './json/table/user.js',
         method: 'post',
         where: {token: getToken()},
         page: {
@@ -74,7 +73,7 @@ function dataPage(opt) {
             if (res.code != 1) {
                 if (res.code == '-98') {
                     _alert(res.msg, {}, function () {
-                        location.href = '/ht.php';
+                        location.href = 'admin';
                     });
                     return;
                 } else {
