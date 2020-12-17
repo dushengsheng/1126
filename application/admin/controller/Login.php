@@ -2,9 +2,7 @@
 
 namespace app\admin\controller;
 
-use app\Common;
 use app\common\Mysql;
-use app\admin\model\User;
 use think\Config;
 use think\Cookie;
 use think\Exception;
@@ -24,21 +22,20 @@ class Login extends Base
     public function index()
     {
         $this->checkLogin();
-        $params = $this->params;
         $data = [
             //'callback' => urldecode($this->params['callback']),
             //'module' => Request::instance()->module(),
             'server' => ADMIN_URL,
-            'data' => $params
+            'data' => $this->params
         ];
 
-        return $this->fetch('Login/index', $data);
+        return $this->fetch('user/login', $data);
     }
 
     //检查是否已登录
     private function checkLogin()
     {
-        $user = User::isLogin();
+        $user = isLogin();
         if ($user && $user['gid'] < 91) {
             header('Location:/' . Request::instance()->server('SCRIPT_NAME'));
             exit();
@@ -50,11 +47,12 @@ class Login extends Base
     public function loginAct()
     {
         $params = $this->params;
+        Log::write(var_export($params, true));
 
         $f = intval($params['f']);
-        $password = $params['pwd'];
-        $account_name = $params['acname'];
-        $varify_code = strtolower($params['code']);
+        $password = $params['passwd'];
+        $account_name = $params['username'];
+        $varify_code = strtolower($params['vercode']);
         /*
         if(strlen($account_name)<4||strlen($account_name)>15){
             jReturn('-1','请输入4-15个字符的帐号');
@@ -64,12 +62,12 @@ class Login extends Base
         }
         */
         if (!$password) {
-            Common::jReturn('-1', '请输入密码');
+            jReturn('-1', '请输入密码');
         }
         //校验验证码
         $captcha = new Captcha();
         if (!$captcha->check($varify_code)) {
-            Common::jReturn('-1', '图形验证码不正确');
+            jReturn('-1', '图形验证码不正确');
         }
 
         $user = $this->mysql->fetchRow("select * from sys_user where (account='{$account_name}' or phone='{$account_name}') and status=2");
@@ -79,38 +77,38 @@ class Login extends Base
         if (!$user || !$user['status']) {
             $login_status = 1;
         } else {
-            $password = Common::getPassword($password);
+            $password = getPassword($password);
             if ($user['is_google']) {
                 if (!$this->params['gcode']) {
-                    Common::jReturn('-1', '请填写谷歌验证码');
+                    jReturn('-1', '请填写谷歌验证码');
                 }
                 $ga = new PHPGangsta_GoogleAuthenticator();
                 //$gcode=$ga->getCode($user['google_secret']);
                 $checkResult = $ga->verifyCode($user['google_secret'], $this->params['gcode'], 2);
                 if (!$checkResult) {
-                    Common::jReturn('-1', '谷歌验证失败');
+                    jReturn('-1', '谷歌验证失败');
                 }
             }
             if ($password != $user['password']) {
                 $login_status = 2;
             } else {
                 if ($user['status'] != 2) {
-                    Common::jReturn('-1', '该账号被禁止登录');
+                    jReturn('-1', '该账号被禁止登录');
                 }
             }
         }
         if ($login_status) {
             //$_SESSION['varify_time_1']++;//登录次数
-            Common::jReturn('-1', '账号或密码错误');
+            jReturn('-1', '账号或密码错误');
         } else {
             /*
             if(!$f){
                 if($user['gid']<=41){
-                    Common::jReturn('-1','超管登录地址不正确');
+                    jReturn('-1','超管登录地址不正确');
                 }
             }else{
                 if($user['gid']>41){
-                    Common::jReturn('-1','商户或代理登录地址不正确');
+                    jReturn('-1','商户或代理登录地址不正确');
                 }
             }
 
@@ -123,20 +121,20 @@ class Login extends Base
             }*/
 
             $login_data = array(
-                'login_ip' => Common::getClientIp(),
+                'login_ip' => getClientIp(),
                 'login_time' => NOW_TIME
             );
             $this->mysql->update($login_data, "id={$user['id']}", 'sys_user');
             $sys_user_token = [
                 'uid' => $user['id'],
                 'account' => $user['account'],
-                'token' => md5(Common::getRsn()),
+                'token' => md5(getRsn()),
                 'create_time' => NOW_TIME,
                 'update_time' => NOW_TIME
             ];
             $res = $this->mysql->insert($sys_user_token, 'sys_user_token');
             if (!$res) {
-                Common::jReturn('-1', '登录失败');
+                jReturn('-1', '登录失败');
             }
 
             //写入cookie
@@ -145,28 +143,28 @@ class Login extends Base
                 'token' => $sys_user_token['token'],
                 'time' => NOW_TIME
             ];
-            $cookie_arr['sign'] = Common::sysSign($cookie_arr);
+            $cookie_arr['sign'] = sysSign($cookie_arr);
             $cookie_json = json_encode($cookie_arr, 256);
-            Common::setCookie($cookie_json);
+            setUserCookie($cookie_json);
 
             $return_data = [
                 'account' => $user['account'],
                 'token' => $sys_user_token['token']
             ];
 
-            Common::actionLog(['opt_name' => '登录', 'sql_str' => '', 'logUid' => $user['id']], $this->mysql);
-            Common::jReturn('1', '登录成功', $return_data);
+            actionLog(['opt_name' => '登录', 'sql_str' => '', 'logUid' => $user['id']], $this->mysql);
+            jReturn('1', '登录成功', $return_data);
         }
     }
 
     //登出
     public function logoutAct()
     {
-        Common::actionLog(['opt_name' => '退出', 'sql_str' => ''], $this->mysql);
+        actionLog(['opt_name' => '退出', 'sql_str' => ''], $this->mysql);
         User::doLogout();
 
         if (Request::instance()->isAjax()) {
-            Common::jReturn('1', '退出成功');
+            jReturn('1', '退出成功');
         } else {
             header('Location:' . ADMIN_URL);
         }

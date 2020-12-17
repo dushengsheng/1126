@@ -11,12 +11,12 @@ use think\Exception;
 use think\Request;
 use app\common\MyMemcache;
 use app\common\Mysql;
-use app\Common;
 
 
 class Base extends Controller
 {
     protected $mysql;
+    protected $params;
     protected $memcache;
     protected $pageSize = 20;
 
@@ -34,6 +34,6 @@ class Base extends Controller
 
     protected function param($key = '')
     {
-        return Common::getParam($key);
+        return getParam($key);
     }
 }
