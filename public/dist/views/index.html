@@ -39,14 +39,11 @@
               <i class="layui-icon layui-icon-refresh-3"></i>
             </a>
           </li>
-          <li class="layui-nav-item layui-hide-xs" lay-unselect>
-            <input type="text" placeholder="搜索..." autocomplete="off" class="layui-input layui-input-search" layadmin-event="serach" lay-action="template/search.html?keywords="> 
-          </li>
         </ul>
         <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
           
           <li class="layui-nav-item" lay-unselect>
-            <a lay-href="dist/views/app/message/index.html" layadmin-event="message" lay-text="消息中心">
+            <a lay-href="/dist/views/app/message/index.html" layadmin-event="message" lay-text="消息中心">
               <i class="layui-icon layui-icon-notice"></i>  
               
               <!-- 如果有新消息，则显示小圆点 -->
@@ -73,10 +70,10 @@
               <cite>贤心</cite>
             </a>
             <dl class="layui-nav-child">
-              <dd><a lay-href="dist/views/set/user/info.html">基本资料</a></dd>
-              <dd><a lay-href="dist/views/set/user/password.html">修改密码</a></dd>
+              <dd><a lay-href="/dist/views/set/user/info.html">基本资料</a></dd>
+              <dd><a lay-href="/dist/views/set/user/password.html">修改密码</a></dd>
               <hr>
-              <dd layadmin-event="logout" style="text-align: center;"><a>退出</a></dd>
+              <dd id="Lay_user_logout" style="text-align: center;"><a>退出</a></dd>
             </dl>
           </li>
           
@@ -92,7 +89,7 @@
       <!-- 侧边菜单 -->
       <div class="layui-side layui-side-menu">
         <div class="layui-side-scroll">
-          <div class="layui-logo" lay-href="dist/views/home/console.html">
+          <div class="layui-logo" lay-href="/dist/views/home/console.html">
             <span>layuiAdmin</span>
           </div>
           
@@ -104,13 +101,13 @@
               </a>
               <dl class="layui-nav-child">
                 <dd data-name="console" class="layui-this">
-                  <a lay-href="dist/views/home/console.html">控制台</a>
+                  <a lay-href="/dist/views/home/console.html">控制台</a>
                 </dd>
                 <dd data-name="console">
-                  <a lay-href="dist/views/home/homepage1.html">主页一</a>
+                  <a lay-href="/dist/views/home/homepage1.html">主页一</a>
                 </dd>
                 <dd data-name="console">
-                  <a lay-href="dist/views/home/homepage2.html">主页二</a>
+                  <a lay-href="/dist/views/home/homepage2.html">主页二</a>
                 </dd>
               </dl>
             </li>
@@ -123,59 +120,59 @@
                 <dd data-name="grid">
                   <a href="javascript:;">栅格</a>
                   <dl class="layui-nav-child">
-                    <dd data-name="list"><a lay-href="dist/views/component/grid/list.html">等比例列表排列</a></dd>
-                    <dd data-name="mobile"><a lay-href="dist/views/component/grid/mobile.html">按移动端排列</a></dd>
-                    <dd data-name="mobile-pc"><a lay-href="dist/views/component/grid/mobile-pc.html">移动桌面端组合</a></dd>
-                    <dd data-name="all"><a lay-href="dist/views/component/grid/all.html">全端复杂组合</a></dd>
-                    <dd data-name="stack"><a lay-href="dist/views/component/grid/stack.html">低于桌面堆叠排列</a></dd>
-                    <dd data-name="speed-dial"><a lay-href="dist/views/component/grid/speed-dial.html">九宫格</a></dd>
+                    <dd data-name="list"><a lay-href="/dist/views/component/grid/list.html">等比例列表排列</a></dd>
+                    <dd data-name="mobile"><a lay-href="/dist/views/component/grid/mobile.html">按移动端排列</a></dd>
+                    <dd data-name="mobile-pc"><a lay-href="/dist/views/component/grid/mobile-pc.html">移动桌面端组合</a></dd>
+                    <dd data-name="all"><a lay-href="/dist/views/component/grid/all.html">全端复杂组合</a></dd>
+                    <dd data-name="stack"><a lay-href="/dist/views/component/grid/stack.html">低于桌面堆叠排列</a></dd>
+                    <dd data-name="speed-dial"><a lay-href="/dist/views/component/grid/speed-dial.html">九宫格</a></dd>
                   </dl>
                 </dd>
                 <dd data-name="button">
-                  <a lay-href="dist/views/component/button/index.html">按钮</a>
+                  <a lay-href="/dist/views/component/button/index.html">按钮</a>
                 </dd>
                 <dd data-name="form">
                   <a href="javascript:;">表单</a>
                   <dl class="layui-nav-child">
-                    <dd><a lay-href="dist/views/component/form/element.html">表单元素</a></dd>
-                    <dd><a lay-href="dist/views/component/form/group.html">表单组合</a></dd>
+                    <dd><a lay-href="/dist/views/component/form/element.html">表单元素</a></dd>
+                    <dd><a lay-href="/dist/views/component/form/group.html">表单组合</a></dd>
                   </dl>
                 </dd>
                 <dd data-name="nav">
-                  <a lay-href="dist/views/component/nav/index.html">导航</a>
+                  <a lay-href="/dist/views/component/nav/index.html">导航</a>
                 </dd>
                 <dd data-name="tabs">
-                  <a lay-href="dist/views/component/tabs/index.html">选项卡</a>
+                  <a lay-href="/dist/views/component/tabs/index.html">选项卡</a>
                 </dd>
                 <dd data-name="progress">
-                  <a lay-href="dist/views/component/progress/index.html">进度条</a>
+                  <a lay-href="/dist/views/component/progress/index.html">进度条</a>
                 </dd>
                 <dd data-name="panel"> 
-                  <a lay-href="dist/views/component/panel/index.html">面板</a>  
+                  <a lay-href="/dist/views/component/panel/index.html">面板</a>  
                 </dd>
                 <dd data-name="badge"> 
-                  <a lay-href="dist/views/component/badge/index.html">徽章</a>  
+                  <a lay-href="/dist/views/component/badge/index.html">徽章</a>  
                 </dd>
                 <dd data-name="timeline"> 
-                  <a lay-href="dist/views/component/timeline/index.html">时间线</a>  
+                  <a lay-href="/dist/views/component/timeline/index.html">时间线</a>  
                 </dd>
                 <dd data-name="anim"> 
-                  <a lay-href="dist/views/component/anim/index.html">动画</a>  
+                  <a lay-href="/dist/views/component/anim/index.html">动画</a>  
                 </dd>
                 <dd data-name="auxiliar"> 
-                  <a lay-href="dist/views/component/auxiliar/index.html">辅助</a>  
+                  <a lay-href="/dist/views/component/auxiliar/index.html">辅助</a>  
                 </dd>
                 <dd data-name="layer"> 
                   <a href="javascript:;">通用弹层<span class="layui-nav-more"></span></a>  
                   <dl class="layui-nav-child">  
                     <dd data-name="list"> 
-                      <a lay-href="dist/views/component/layer/list.html" lay-text="layer 功能演示">功能演示</a> 
+                      <a lay-href="/dist/views/component/layer/list.html" lay-text="layer 功能演示">功能演示</a> 
                     </dd>  
                     <dd data-name="special-demo"> 
-                      <a lay-href="dist/views/component/layer/special-demo.html" lay-text="layer 特殊示例">特殊示例</a> 
+                      <a lay-href="/dist/views/component/layer/special-demo.html" lay-text="layer 特殊示例">特殊示例</a> 
                     </dd>  
                     <dd data-name="theme"> 
-                      <a lay-href="dist/views/component/layer/theme.html" lay-text="layer 风格定制">风格定制</a> 
+                      <a lay-href="/dist/views/component/layer/theme.html" lay-text="layer 风格定制">风格定制</a> 
                     </dd>  
                   </dl>  
                 </dd>
@@ -183,90 +180,90 @@
                   <a href="javascript:;">日期时间</a>
                   <dl class="layui-nav-child">  
                     <dd data-name="demo1"> 
-                      <a lay-href="dist/views/component/laydate/demo1.html" lay-text="layDate 功能演示一">功能演示一</a> 
+                      <a lay-href="/dist/views/component/laydate/demo1.html" lay-text="layDate 功能演示一">功能演示一</a> 
                     </dd>
                     <dd data-name="demo2"> 
-                      <a lay-href="dist/views/component/laydate/demo2.html" lay-text="layDate 功能演示二">功能演示二</a> 
+                      <a lay-href="/dist/views/component/laydate/demo2.html" lay-text="layDate 功能演示二">功能演示二</a> 
                     </dd>
                     <dd data-name="theme"> 
-                      <a lay-href="dist/views/component/laydate/theme.html" lay-text="layDate 设定主题">设定主题</a> 
+                      <a lay-href="/dist/views/component/laydate/theme.html" lay-text="layDate 设定主题">设定主题</a> 
                     </dd>
                     <dd data-name="special-demo"> 
-                      <a lay-href="dist/views/component/laydate/special-demo.html" lay-text="layDate 特殊示例">特殊示例</a> 
+                      <a lay-href="/dist/views/component/laydate/special-demo.html" lay-text="layDate 特殊示例">特殊示例</a> 
                     </dd>  
                   </dl>  
                 </dd>
                 <dd data-name="table-static"> 
-                  <a lay-href="dist/views/component/table/static.html">静态表格</a>
+                  <a lay-href="/dist/views/component/table/static.html">静态表格</a>
                 </dd>
                 <dd data-name="table"> 
                   <a href="javascript:;">数据表格</a>
                   <dl class="layui-nav-child">  
                     <dd data-name="simple"> 
-                      <a lay-href="dist/views/component/table/simple.html" lay-text="">简单数据表格</a> 
+                      <a lay-href="/dist/views/component/table/simple.html" lay-text="">简单数据表格</a> 
                     </dd>
                     <dd data-name="auto"> 
-                      <a lay-href="dist/views/component/table/auto.html" lay-text="">列宽自动分配</a> 
+                      <a lay-href="/dist/views/component/table/auto.html" lay-text="">列宽自动分配</a> 
                     </dd>
                     <dd data-name="data"> 
-                      <a lay-href="dist/views/component/table/data.html" lay-text="">赋值已知数据</a> 
+                      <a lay-href="/dist/views/component/table/data.html" lay-text="">赋值已知数据</a> 
                     </dd>
                     <dd data-name="tostatic"> 
-                      <a lay-href="dist/views/component/table/tostatic.html" lay-text="">转化静态表格</a> 
+                      <a lay-href="/dist/views/component/table/tostatic.html" lay-text="">转化静态表格</a> 
                     </dd>
                     <dd data-name="page"> 
-                      <a lay-href="dist/views/component/table/page.html" lay-text="">开启分页</a> 
+                      <a lay-href="/dist/views/component/table/page.html" lay-text="">开启分页</a> 
                     </dd>
                     <dd data-name="resetPage"> 
-                      <a lay-href="dist/views/component/table/resetPage.html" lay-text="">自定义分页</a> 
+                      <a lay-href="/dist/views/component/table/resetPage.html" lay-text="">自定义分页</a> 
                     </dd>
                     <dd data-name="toolbar"> 
-                      <a lay-href="dist/views/component/table/toolbar.html" lay-text="">开启头部工具栏</a> 
+                      <a lay-href="/dist/views/component/table/toolbar.html" lay-text="">开启头部工具栏</a> 
                     </dd>
                     <dd data-name="totalRow"> 
-                      <a lay-href="dist/views/component/table/totalRow.html" lay-text="">开启合计行</a> 
+                      <a lay-href="/dist/views/component/table/totalRow.html" lay-text="">开启合计行</a> 
                     </dd>
                     <dd data-name="height"> 
-                      <a lay-href="dist/views/component/table/height.html" lay-text="">高度最大适应</a> 
+                      <a lay-href="/dist/views/component/table/height.html" lay-text="">高度最大适应</a> 
                     </dd>
                     <dd data-name="checkbox"> 
-                      <a lay-href="dist/views/component/table/checkbox.html" lay-text="">开启复选框</a> 
+                      <a lay-href="/dist/views/component/table/checkbox.html" lay-text="">开启复选框</a> 
                     </dd>
                     <dd data-name="radio"> 
-                      <a lay-href="dist/views/component/table/radio.html" lay-text="">开启单选框</a> 
+                      <a lay-href="/dist/views/component/table/radio.html" lay-text="">开启单选框</a> 
                     </dd>
                     <dd data-name="cellEdit"> 
-                      <a lay-href="dist/views/component/table/cellEdit.html" lay-text="">开启单元格编辑</a> 
+                      <a lay-href="/dist/views/component/table/cellEdit.html" lay-text="">开启单元格编辑</a> 
                     </dd>
                     <dd data-name="form"> 
-                      <a lay-href="dist/views/component/table/form.html" lay-text="">加入表单元素</a> 
+                      <a lay-href="/dist/views/component/table/form.html" lay-text="">加入表单元素</a> 
                     </dd>
                     <dd data-name="style"> 
-                      <a lay-href="dist/views/component/table/style.html" lay-text="">设置单元格样式</a> 
+                      <a lay-href="/dist/views/component/table/style.html" lay-text="">设置单元格样式</a> 
                     </dd>
                     <dd data-name="fixed"> 
-                      <a lay-href="dist/views/component/table/fixed.html" lay-text="">固定列</a> 
+                      <a lay-href="/dist/views/component/table/fixed.html" lay-text="">固定列</a> 
                     </dd>
                     <dd data-name="operate"> 
-                      <a lay-href="dist/views/component/table/operate.html" lay-text="">数据操作</a> 
+                      <a lay-href="/dist/views/component/table/operate.html" lay-text="">数据操作</a> 
                     </dd>
                     <dd data-name="parseData"> 
-                      <a lay-href="dist/views/component/table/parseData.html" lay-text="">解析任意数据格式</a> 
+                      <a lay-href="/dist/views/component/table/parseData.html" lay-text="">解析任意数据格式</a> 
                     </dd>
                     <dd data-name="onrow"> 
-                      <a lay-href="dist/views/component/table/onrow.html" lay-text="">监听行事件</a> 
+                      <a lay-href="/dist/views/component/table/onrow.html" lay-text="">监听行事件</a> 
                     </dd>
                     <dd data-name="reload">
-                      <a lay-href="dist/views/component/table/reload.html" lay-text="">数据表格的重载</a> 
+                      <a lay-href="/dist/views/component/table/reload.html" lay-text="">数据表格的重载</a> 
                     </dd>
                     <dd data-name="initSort"> 
-                      <a lay-href="dist/views/component/table/initSort.html" lay-text="">设置初始排序</a> 
+                      <a lay-href="/dist/views/component/table/initSort.html" lay-text="">设置初始排序</a> 
                     </dd>
                     <dd data-name="cellEvent"> 
-                      <a lay-href="dist/views/component/table/cellEvent.html" lay-text="">监听单元格事件</a> 
+                      <a lay-href="/dist/views/component/table/cellEvent.html" lay-text="">监听单元格事件</a> 
                     </dd>
                     <dd data-name="thead"> 
-                      <a lay-href="dist/views/component/table/thead.html" lay-text="">复杂表头</a> 
+                      <a lay-href="/dist/views/component/table/thead.html" lay-text="">复杂表头</a> 
                     </dd>
                   </dl>
                 </dd>
@@ -274,10 +271,10 @@
                   <a href="javascript:;">分页</a>  
                   <dl class="layui-nav-child">  
                     <dd data-name="demo1"> 
-                      <a lay-href="dist/views/component/laypage/demo1.html" lay-text="layPage 功能演示一">功能演示一</a> 
+                      <a lay-href="/dist/views/component/laypage/demo1.html" lay-text="layPage 功能演示一">功能演示一</a> 
                     </dd>
                     <dd data-name="demo2"> 
-                      <a lay-href="dist/views/component/laypage/demo2.html" lay-text="layPage 功能演示二">功能演示二</a> 
+                      <a lay-href="/dist/views/component/laypage/demo2.html" lay-text="layPage 功能演示二">功能演示二</a> 
                     </dd> 
                   </dl>  
                 </dd>
@@ -285,33 +282,33 @@
                   <a href="javascript:;">上传</a>  
                   <dl class="layui-nav-child">  
                     <dd data-name="demo1"> 
-                      <a lay-href="dist/views/component/upload/demo1.html" lay-text="上传功能演示一">功能演示一</a> 
+                      <a lay-href="/dist/views/component/upload/demo1.html" lay-text="上传功能演示一">功能演示一</a> 
                     </dd>
                     <dd data-name="demo2"> 
-                      <a lay-href="dist/views/component/upload/demo2.html" lay-text="上传功能演示二">功能演示二</a> 
+                      <a lay-href="/dist/views/component/upload/demo2.html" lay-text="上传功能演示二">功能演示二</a> 
                     </dd> 
                   </dl>  
                 </dd>
                 <dd data-name="colorpicker">
-                  <a lay-href="dist/views/component/colorpicker/index.html">颜色选择器</a>
+                  <a lay-href="/dist/views/component/colorpicker/index.html">颜色选择器</a>
                 </dd>
                 <dd data-name="slider">
-                  <a lay-href="dist/views/component/slider/index.html">滑块组件</a>
+                  <a lay-href="/dist/views/component/slider/index.html">滑块组件</a>
                 </dd>
                 <dd data-name="rate">
-                  <a lay-href="dist/views/component/rate/index.html">评分</a>
+                  <a lay-href="/dist/views/component/rate/index.html">评分</a>
                 </dd>
                 <dd data-name="carousel"> 
-                  <a lay-href="dist/views/component/carousel/index.html">轮播</a>  
+                  <a lay-href="/dist/views/component/carousel/index.html">轮播</a>  
                 </dd>
                 <dd data-name="flow"> 
-                  <a lay-href="dist/views/component/flow/index.html">流加载</a>  
+                  <a lay-href="/dist/views/component/flow/index.html">流加载</a>  
                 </dd>
                 <dd data-name="util"> 
-                  <a lay-href="dist/views/component/util/index.html">工具</a>  
+                  <a lay-href="/dist/views/component/util/index.html">工具</a>  
                 </dd>
                 <dd data-name="code"> 
-                  <a lay-href="dist/views/component/code/index.html">代码修饰</a> 
+                  <a lay-href="/dist/views/component/code/index.html">代码修饰</a> 
                 </dd>
               </dl>
             </li>
@@ -321,20 +318,20 @@
                 <cite>页面</cite>
               </a>
               <dl class="layui-nav-child">
-                <dd><a lay-href="dist/views/template/personalpage.html">个人主页</a></dd>
-                <dd><a lay-href="dist/views/template/addresslist.html">通讯录</a></dd>
-                <dd><a lay-href="dist/views/template/caller.html">客户列表</a></dd>
-                <dd><a lay-href="dist/views/template/goodslist.html">商品列表</a></dd>
-                <dd><a lay-href="dist/views/template/msgboard.html">留言板</a></dd>
-                <dd><a lay-href="dist/views/template/search.html">搜索结果</a></dd>
+                <dd><a lay-href="/dist/views/template/personalpage.html">个人主页</a></dd>
+                <dd><a lay-href="/dist/views/template/addresslist.html">通讯录</a></dd>
+                <dd><a lay-href="/dist/views/template/caller.html">客户列表</a></dd>
+                <dd><a lay-href="/dist/views/template/goodslist.html">商品列表</a></dd>
+                <dd><a lay-href="/dist/views/template/msgboard.html">留言板</a></dd>
+                <dd><a lay-href="/dist/views/template/search.html">搜索结果</a></dd>
                 <dd><a href="user/reg.html" target="_blank">注册</a></dd>
                 <dd><a href="user/login.html" target="_blank">登入</a></dd>
                 <dd><a href="user/forget.html" target="_blank">忘记密码</a></dd>
-                <dd><a lay-href="dist/views/template/tips/404.html">404页面不存在</a></dd>
-                <dd><a lay-href="dist/views/template/tips/error.html">错误提示</a></dd>
-                <dd><a lay-href="dist/views///www.baidu.com/">百度一下</a></dd>
-                <dd><a lay-href="dist/views///www.layui.com/">layui官网</a></dd>
-                <dd><a lay-href="dist/views///www.layui.com/admin/">layuiAdmin官网</a></dd>
+                <dd><a lay-href="/dist/views/template/tips/404.html">404页面不存在</a></dd>
+                <dd><a lay-href="/dist/views/template/tips/error.html">错误提示</a></dd>
+                <dd><a lay-href="/dist/views///www.baidu.com/">百度一下</a></dd>
+                <dd><a lay-href="/dist/views///www.layui.com/">layui官网</a></dd>
+                <dd><a lay-href="/dist/views///www.layui.com/admin/">layuiAdmin官网</a></dd>
               </dl>
             </li>
             <li data-name="app" class="layui-nav-item">
@@ -347,23 +344,23 @@
                 <dd data-name="content">
                   <a href="javascript:;">内容系统</a>
                   <dl class="layui-nav-child">
-                    <dd data-name="list"><a lay-href="dist/views/app/content/list.html">文章列表</a></dd>
-                    <dd data-name="tags"><a lay-href="dist/views/app/content/tags.html">分类管理</a></dd>
-                    <dd data-name="comment"><a lay-href="dist/views/app/content/comment.html">评论管理</a></dd>
+                    <dd data-name="list"><a lay-href="/dist/views/app/content/list.html">文章列表</a></dd>
+                    <dd data-name="tags"><a lay-href="/dist/views/app/content/tags.html">分类管理</a></dd>
+                    <dd data-name="comment"><a lay-href="/dist/views/app/content/comment.html">评论管理</a></dd>
                   </dl>
                 </dd>
                 <dd data-name="forum">
                   <a href="javascript:;">社区系统</a>
                   <dl class="layui-nav-child">
-                    <dd data-name="list"><a lay-href="dist/views/app/forum/list.html">帖子列表</a></dd>
-                    <dd data-name="replys"><a lay-href="dist/views/app/forum/replys.html">回帖列表</a></dd>
+                    <dd data-name="list"><a lay-href="/dist/views/app/forum/list.html">帖子列表</a></dd>
+                    <dd data-name="replys"><a lay-href="/dist/views/app/forum/replys.html">回帖列表</a></dd>
                   </dl>
                 </dd>
                 <dd>
-                  <a lay-href="dist/views/app/message/index.html">消息中心</a>
+                  <a lay-href="/dist/views/app/message/index.html">消息中心</a>
                 </dd>
                 <dd data-name="workorder">
-                  <a lay-href="dist/views/app/workorder/list.html">工单系统</a>
+                  <a lay-href="/dist/views/app/workorder/list.html">工单系统</a>
                 </dd>
               </dl>
             </li>
@@ -379,9 +376,9 @@
                 <dd data-name="echarts">
                   <a href="javascript:;">Echarts集成</a>
                   <dl class="layui-nav-child">
-                    <dd><a lay-href="dist/views/senior/echarts/line.html">折线图</a></dd>
-                    <dd><a lay-href="dist/views/senior/echarts/bar.html">柱状图</a></dd>
-                    <dd><a lay-href="dist/views/senior/echarts/map.html">地图</a></dd>
+                    <dd><a lay-href="/dist/views/senior/echarts/line.html">折线图</a></dd>
+                    <dd><a lay-href="/dist/views/senior/echarts/bar.html">柱状图</a></dd>
+                    <dd><a lay-href="/dist/views/senior/echarts/map.html">地图</a></dd>
                   </dl>
                 </dd>
               </dl>
@@ -393,13 +390,13 @@
               </a>
               <dl class="layui-nav-child">
                 <dd>
-                  <a lay-href="dist/views/user/user/list.html">网站用户</a>
+                  <a lay-href="/dist/views/user/user/list.html">网站用户</a>
                 </dd>
                 <dd>
-                  <a lay-href="dist/views/user/administrators/list.html">后台管理员</a>
+                  <a lay-href="/dist/views/user/administrators/list.html">后台管理员</a>
                 </dd>
                 <dd>
-                  <a lay-href="dist/views/user/administrators/role.html">角色管理</a>
+                  <a lay-href="/dist/views/user/administrators/role.html">角色管理</a>
                 </dd>
               </dl>
             </li>
@@ -412,21 +409,21 @@
                 <dd class="layui-nav-itemed">
                   <a href="javascript:;">系统设置</a>
                   <dl class="layui-nav-child">
-                    <dd><a lay-href="dist/views/set/system/website.html">网站设置</a></dd>
-                    <dd><a lay-href="dist/views/set/system/email.html">邮件服务</a></dd>
+                    <dd><a lay-href="/dist/views/set/system/website.html">网站设置</a></dd>
+                    <dd><a lay-href="/dist/views/set/system/email.html">邮件服务</a></dd>
                   </dl>
                 </dd>
                 <dd class="layui-nav-itemed">
                   <a href="javascript:;">我的设置</a>
                   <dl class="layui-nav-child">
-                    <dd><a lay-href="dist/views/set/user/info.html">基本资料</a></dd>
-                    <dd><a lay-href="dist/views/set/user/password.html">修改密码</a></dd>
+                    <dd><a lay-href="/dist/views/set/user/info.html">基本资料</a></dd>
+                    <dd><a lay-href="/dist/views/set/user/password.html">修改密码</a></dd>
                   </dl>
                 </dd>
               </dl>
             </li>
             <li data-name="get" class="layui-nav-item">
-              <a href="javascript:;" lay-href="dist/views///www.layui.com/admin/#get" lay-tips="授权" lay-direction="2">
+              <a href="javascript:;" lay-href="/dist/views///www.layui.com/admin/#get" lay-tips="授权" lay-direction="2">
                 <i class="layui-icon layui-icon-auz"></i>
                 <cite>授权</cite>
               </a>
@@ -453,7 +450,7 @@
         </div>
         <div class="layui-tab" lay-unauto lay-allowClose="true" lay-filter="layadmin-layout-tabs">
           <ul class="layui-tab-title" id="LAY_app_tabsheader">
-            <li lay-id="dist/views/home/console.html" lay-attr="dist/views/home/console.html" class="layui-this"><i class="layui-icon layui-icon-home"></i></li>
+            <li lay-id="/dist/views/home/console.html" lay-attr="/dist/views/home/console.html" class="layui-this"><i class="layui-icon layui-icon-home"></i></li>
           </ul>
         </div>
       </div>
@@ -462,7 +459,7 @@
       <!-- 主体内容 -->
       <div class="layui-body" id="LAY_app_body">
         <div class="layadmin-tabsbody-item layui-show">
-          <iframe src="dist/views/home/console.html" frameborder="0" class="layadmin-iframe"></iframe>
+          <iframe src="/dist/views/home/console.html" frameborder="0" class="layadmin-iframe"></iframe>
         </div>
       </div>
       
@@ -477,10 +474,29 @@
     base: '/dist/layuiadmin/' //静态资源所在路径
   }).extend({
     index: 'lib/index' //主入口模块
-  }).use('index');
+  }).use(['index', 'admin', 'jquery', 'layer'], function(){
+    var $ = layui.jquery,
+    setter = layui.setter,
+    form = layui.form,
+    admin = layui.admin,
+    layer = layui.layer
+
+
+    // 用户登出
+    $('#Lay_user_logout').on('click', function(obj) {
+      var url = layui.setter.admin_url + "login/logoutact";
+
+      $.ajax({
+        type:'POST',
+        url:url
+      });
+
+    });
+  });
   </script>
   
   <!-- 百度统计 -->
+  <!--
   <script>
   var _hmt = _hmt || [];
   (function() {
@@ -490,6 +506,7 @@
     s.parentNode.insertBefore(hm, s);
   })();
   </script>
+  -->
 </body>
 </html>
 
