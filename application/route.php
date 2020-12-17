@@ -17,7 +17,7 @@ Route::rule('admin/login/captcha', 'admin/Login/captcha');
 Route::rule('admin/login/loginact', 'admin/Login/loginAct');
 Route::rule('admin/login/logoutact', 'admin/Login/logoutAct');
 
-Route::rule('home/index', 'home/Index/index');
-Route::rule('home/login', 'home/Login/index');
+//Route::rule('home/index', 'home/Index/index');
+//Route::rule('home/login', 'home/Login/index');
 
 
