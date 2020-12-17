@@ -4,7 +4,6 @@ namespace app\admin\controller;
 
 use think\Db;
 use think\Request;
-use app\Common;
 
 class Index extends Base
 {
@@ -26,10 +25,10 @@ class Index extends Base
         $data = array(
             'user' => $pageuser,
             'menu_json' => json_encode(array_values($menu)),
-            'sys_group' => Common::getConfig('sys_group'),
+            'sys_group' => getConfig('sys_group'),
             'mysql_version' => $mysql_version
         );
-        return $this->fetch('Index/index', $data);
+        return $this->fetch('/index', $data);
     }
 
     public function tj()
