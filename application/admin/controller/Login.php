@@ -161,7 +161,7 @@ class Login extends Base
     public function logoutAct()
     {
         actionLog(['opt_name' => '退出', 'sql_str' => ''], $this->mysql);
-        User::doLogout();
+        doLogout();
 
         if (Request::instance()->isAjax()) {
             jReturn('1', '退出成功');

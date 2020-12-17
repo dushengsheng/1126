@@ -488,7 +488,21 @@
 
       $.ajax({
         type:'POST',
-        url:url
+        url:url,
+        xhrFields:{withCredentials:true},
+        dataType:'json',
+        data:{},
+
+        success: function(res){
+          if (res.code != '1') {
+            layer.msg(res.msg, {icon: 0, time:1500});
+            return;
+          }
+
+          layer.msg(res.msg, {icon: 1, time:1500 }, function(){
+            location.href = layui.setter.admin_url;
+          });
+        }
       });
 
     });
