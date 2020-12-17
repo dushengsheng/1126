@@ -31,6 +31,7 @@ defined('CONF_EXT') or define('CONF_EXT', EXT); // 配置文件后缀
 defined('ENV_PREFIX') or define('ENV_PREFIX', 'PHP_'); // 环境变量的配置前缀
 
 //自定义常量
+defined('PUBLIC_PATH') or define('PUBLIC_PATH', ROOT_PATH . 'public' . DS);
 defined('COMMON_PATH') or define('COMMON_PATH', APP_PATH . 'common'. DS); // 配置文件目录
 defined('SYS_KEY') or define('SYS_KEY', 'Signsduihfnsk&5sdHwifjpWF@#TUIsfzl'); //加盐
 defined('NOW_TIME') or define('NOW_TIME', time());
@@ -41,7 +42,7 @@ define('HOME_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}/home"
 //defined('APP_URL') or define('APP_URL', trim($_SERVER['SCRIPT_NAME'],'/'));
 
 //socket相关配置
-$_ENV['SOCKET']=['PORT'=>9502, 'HTTP_PORT'=>9582];
+$_ENV['SOCKET']=['PORT'=>19502, 'HTTP_PORT'=>29582];
 $_ENV['SOCKET']['URL']="ws://{$_SERVER['HTTP_HOST']}:{$_ENV['SOCKET']['PORT']}";
 $_ENV['SOCKET']['HTTP_URL']="http://127.0.0.1:{$_ENV['SOCKET']['HTTP_PORT']}";
 
