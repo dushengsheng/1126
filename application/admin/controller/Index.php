@@ -19,7 +19,7 @@ class Index extends Base
         if ($pageuser['gid'] >= 91) {
             exit('抱歉，没有权限访问');
         }
-        $mysql_version=$this->mysql->fetchResult("select version()");
+        $mysql_version = $this->mysql->fetchResult("select version()");
 
         $menu = getUserMenu($pageuser['id'], $this->mysql);
         $data = array(
