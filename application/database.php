@@ -15,9 +15,9 @@ return [
     // 服务器地址
     'hostname'        => '127.0.0.1',
     // 数据库名
-    'database'        => 'wepay_959',
+    'database'        => 'xianyu',
     // 用户名
-    'username'        => 'wepay_959',
+    'username'        => 'xianyu',
     // 密码
     'password'        => 'woaini520DSS@wepay',
     // 端口
