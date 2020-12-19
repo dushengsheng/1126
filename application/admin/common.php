@@ -71,7 +71,6 @@ function getUserMenu($uid, $mysql)
     $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . 'menu_arr_' . $uid;
     $menu_arr = $memcache->get($mem_key);
     if (!$menu_arr) {
-        $mysql = new Mysql(0);
         if ($user['id'] == 1 || $user['gid'] == 1) {
             $node = $mysql->fetchRows("select * from sys_node where type=1 order by pid,sort,id");
         } else {
@@ -115,7 +114,7 @@ function getUserMenu($uid, $mysql)
         $memcache->set($mem_key, $menu_arr, 3600);
     }
 
-    unset($mysql, $memcache);
+    unset($memcache);
     return $menu_arr;
 }
 
