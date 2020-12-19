@@ -41,6 +41,7 @@ function ajax(opt_p) {
         complete: function () {
         }
     };
+    var $ = layui.jquery;
     var opt = $.extend(true, opt_default, opt_p);
     $.ajax(opt);
 }
