@@ -94,6 +94,7 @@
 
   <script src="/dist/layuiadmin/layui/layui.js"></script>
   <script src="/static/admin/js/func.js"></script>
+  <script src="/js/global.js"></script>
   <script src="/js/md5.js"></script>
 
   <script>
@@ -102,10 +103,10 @@
   }).extend({
     index: 'lib/index' //主入口模块
   }).use(['index', 'user', 'jquery', 'layer'], function(){
-    var $ = layui.jquery
-    ,setter = layui.setter
-    ,form = layui.form
-    ,layer = layui.layer
+    var $ = layui.jquery;
+    var setter = layui.setter;
+    var form = layui.form;
+    var layer = layui.layer;
 
     form.render();
 
@@ -116,7 +117,7 @@
       var passwd = $.trim($('#LAY-user-login-password').val());
       var gcode = $.trim($('#LAY-user-login-password-google').val());
       var vercode = $.trim($('#LAY-user-login-vercode').val());
-      var url = layui.setter.admin_url + "login/loginact";
+      var url = global.admin_url + "login/loginact";
       passwd = md5(passwd);
 
       ajax({
@@ -125,8 +126,7 @@
           username:username,
           passwd:passwd,
           gcode:gcode,
-          vercode:vercode,
-          f:"[[$data.f]]"
+          vercode:vercode
         },
         success: function(res){
           if (res.code != '0') {
@@ -142,7 +142,7 @@
           layui.data(setter.tableName, localData);
 
           layer.msg(res.msg, {icon: 1, time:1500 }, function(){
-            location.href = layui.setter.admin_url;
+            location.href = global.admin_url;
           });
         }
 

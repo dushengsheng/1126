@@ -9,6 +9,10 @@
  *
  * @link http://www.phpgangsta.de/
  */
+
+namespace app\common;
+
+
 class PHPGangsta_GoogleAuthenticator
 {
     protected $_codeLength = 6;

@@ -10,6 +10,8 @@ use think\Request;
 use think\captcha\Captcha;
 use think\Response;
 use think\Log;
+use app\common\PHPGangsta_GoogleAuthenticator;
+
 
 class Login extends Base
 {
@@ -49,7 +51,6 @@ class Login extends Base
         $params = $this->params;
         Log::write(var_export($params, true));
 
-        $f = intval($params['f']);
         $password = $params['passwd'];
         $account_name = $params['username'];
         $varify_code = strtolower($params['vercode']);
@@ -83,7 +84,6 @@ class Login extends Base
                     jReturn('-1', '请填写谷歌验证码');
                 }
                 $ga = new PHPGangsta_GoogleAuthenticator();
-                //$gcode=$ga->getCode($user['google_secret']);
                 $checkResult = $ga->verifyCode($user['google_secret'], $this->params['gcode'], 2);
                 if (!$checkResult) {
                     jReturn('-1', '谷歌验证失败');

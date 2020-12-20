@@ -12,16 +12,17 @@ function getScreen() {
 }
 
 function showImg(ts) {
+    var $ = layui.jquery;
     var obj = $(ts);
     var src = obj.attr('src');
-    layer.photos({photos: {"data": [{"src": src}]}});
+    layui.layer.photos({photos: {"data": [{"src": src}]}});
 }
 
 function _alert(msg) {
     var p1 = arguments[1] ? arguments[1] : {time: 1500};
     var p2 = arguments[2] ? arguments[2] : function () {
     };
-    layer.msg(msg, p1, p2);
+    layui.layer.msg(msg, p1, p2);
 }
 
 //ajax调用
@@ -77,7 +78,6 @@ function dataPage(opt) {
                 }
             }
 
-            console.log(res);
             return res;
         },
         cols: null,

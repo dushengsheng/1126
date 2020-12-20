@@ -74,9 +74,8 @@ function checkLogin()
     if (Request::instance()->isAjax()) {
         jReturn('-98', '请先登录');
     } else {
-        //$callback = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $f = isset($_GET['f']) ? intval($_GET['f']) : 0;
-        $url = ADMIN_URL . "/login/index?f={$f}";//&callback= . urlencode($callback);
+        $server = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+        $url = $server . "/" . Request::instance()->module() . "/login/index";
         header("Location:{$url}");
         exit();
     }
