@@ -29,7 +29,7 @@ class Login extends Base
             'data' => $this->params
         ];
 
-        return $this->fetch('user/login', $data);
+        return $this->fetch('Login/login', $data);
     }
 
     //检查是否已登录

@@ -128,13 +128,17 @@ function getUserByToken($token, $mysql = null)
     }
     $sys_user_token = $mysql->fetchRow("select * from sys_user_token where token='{$token}' and status=0");
     if (!$sys_user_token) {
+        $memcache->close();
+        unset($memcache);
         return -2;
     } else {
         //token有效期检测
         //...
     }
-    $user = $mysql->fetchRow("select * from sys_user where id={$sys_user_token['uid']}");
+    $user = getUserinfo($sys_user_token['uid']);
     if (!$user) {
+        $memcache->close();
+        unset($memcache);
         return -4;
     }
     if ($user['phone']) {

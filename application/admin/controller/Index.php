@@ -28,7 +28,7 @@ class Index extends Base
             'sys_group' => getConfig('sys_group'),
             'mysql_version' => $mysql_version
         );
-        return $this->fetch('/index', $data);
+        return $this->fetch('Index/index', $data);
     }
 
     public function tj()
