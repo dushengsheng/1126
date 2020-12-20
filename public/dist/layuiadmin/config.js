@@ -21,7 +21,6 @@ layui.define(['laytpl', 'layer', 'element', 'util'], function(exports){
     ,MOD_NAME: 'admin' //模块事件名
     
     ,debug: true //是否开启调试模式。如开启，接口异常时会抛出异常 URL 等信息
-    ,admin_url: 'http://1127.wepay.fun/admin/'
 
     //自定义请求字段
     ,request: {
