@@ -5,7 +5,7 @@ use app\common\Mysql;
 use app\common\MyMemcache;
 
 
-define('NKEY', Request::instance()->module() . '_' . Request::instance()->controller());
+define('NKEY', Request::instance()->controller() . '_' . Request::instance()->action());
 
 //检查权限
 function checkPower($nkey = '')
