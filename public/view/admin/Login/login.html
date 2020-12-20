@@ -129,7 +129,7 @@
           f:"[[$data.f]]"
         },
         success: function(res){
-          if (res.code != '1') {
+          if (res.code != '0') {
             layer.msg(res.msg, {icon: 0, time:1500});
             $('#LAY-user-get-captcha').trigger('click');
             return;

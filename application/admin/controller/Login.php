@@ -153,7 +153,7 @@ class Login extends Base
             ];
 
             actionLog(['opt_name' => '登录', 'sql_str' => '', 'logUid' => $user['id']], $this->mysql);
-            jReturn('1', '登录成功', $return_data);
+            jReturn('0', '登录成功', $return_data);
         }
     }
 
@@ -164,7 +164,7 @@ class Login extends Base
         doLogout();
 
         if (Request::instance()->isAjax()) {
-            jReturn('1', '退出成功');
+            jReturn('0', '退出成功');
         } else {
             header('Location:' . ADMIN_URL);
         }
