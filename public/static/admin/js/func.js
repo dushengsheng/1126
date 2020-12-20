@@ -62,11 +62,6 @@ function dataPage(opt) {
         elem: '#dataTable',
         method: 'post',
         where: {token: getToken()},
-        page: {
-            limit: 15,
-            groups: 7,
-            theme: 'mypage'
-        },
         toolbar: false,
         autoSort: false,
         cellMinWidth: 30, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
@@ -81,41 +76,15 @@ function dataPage(opt) {
                     _alert(res.msg);
                 }
             }
-            var odata = {};
-            for (var i in res.data) {
-                if (i == 'list') {
-                    continue;
-                }
-                odata[i] = res.data[i];
-            }
-            return {
-                "code": res.code == '1' ? 0 : res.code, //解析接口状态
-                "msg": res.msg, //解析提示文本
-                "count": res.data.count, //解析数据长度
-                "data": res.data.list, //解析数据列表
-                "odata": odata
-            };
+
+            return res;
         },
         cols: null,
-        /*[
-            
-            [
-                {field:'id', width:80, title: 'ID'},
-                {field:'username', width:80, title: '用户名'},
-                {field:'sex', width:80, title: '性别'},
-                {field:'city', width:80, title: '城市'},
-                {field:'sign', title: '签名', width: '30%', minWidth: 100}, //minWidth：局部定义当前单元格的最小宽度，layui 2.2.1 新增
-                {field:'experience', title: '积分'},
-                {field:'score', title: '评分'},
-                {field:'classify', title: '职业'},
-                {field:'wealth', width:137, title: '财富'},
-                {field:'', width:180, title: '操作',toolbar:'#barItemAct'}
-            ]*
-        ]*/
         done: function (res, curr, count) {
             //console.log(res);
         }
     }
+    var $ = layui.jquery;
     var options = $.extend(true, def, opt);
     layui.table.render(options);
 }

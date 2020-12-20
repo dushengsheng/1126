@@ -55,6 +55,7 @@ function dataPage(opt){
 	if(window.IS_PAGEING){
 		return false;
 	}
+	var $ = layui.jquery;
 	var default_opt={};
 	var opt=$.extend(default_opt,opt);
 	opt.data=$.extend(opt.data,{page:window.NOW_PAGE?window.NOW_PAGE:1});
