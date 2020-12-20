@@ -37,6 +37,7 @@ defined('SYS_KEY') or define('SYS_KEY', 'Signsduihfnsk&5sdHwifjpWF@#TUIsfzl'); /
 defined('NOW_TIME') or define('NOW_TIME', time());
 defined('NOW_DATE') or define('NOW_DATE', date('Y-m-d H:i:s',NOW_TIME));
 
+define('SERVER_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}");
 define('ADMIN_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}/admin");
 define('HOME_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}/home");
 //defined('APP_URL') or define('APP_URL', trim($_SERVER['SCRIPT_NAME'],'/'));
