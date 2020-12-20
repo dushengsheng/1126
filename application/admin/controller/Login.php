@@ -38,8 +38,9 @@ class Login extends Base
     private function checkLogin()
     {
         $user = isLogin();
-        if ($user && $user['gid'] < 91) {
-            header('Location:/' . Request::instance()->server('SCRIPT_NAME'));
+        if ($user) {
+            $server = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
+            header('Location:' . $server . '/' . Request::instance()->module());
             exit();
         }
         return $user;

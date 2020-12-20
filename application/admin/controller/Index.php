@@ -16,9 +16,6 @@ class Index extends Base
     public function index()
     {
         $pageuser = checkPower();
-        if ($pageuser['gid'] >= 91) {
-            exit('抱歉，没有权限访问');
-        }
         $mysql_version = $this->mysql->fetchResult("select version()");
 
         $menu = getUserMenu($pageuser['id'], $this->mysql);
@@ -29,14 +26,5 @@ class Index extends Base
             'mysql_version' => $mysql_version
         );
         return $this->fetch('Index/index', $data);
-    }
-
-    public function tj()
-    {
-        checkPower();
-        $data = [
-            'tj' => getConfig('cnf_default_tj')
-        ];
-        display('Default/tj.html', $data);
     }
 }

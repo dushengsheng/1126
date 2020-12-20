@@ -12,10 +12,32 @@ class User extends Base
         parent::__construct($request);
     }
 
+    public function agent()
+    {
+        $pageuser = checkPower();
+        $user = getUserinfo($pageuser['id']);
+        $sys_group = getConfig('sys_group');
+        $sys_group_arr = [];
+        foreach ($sys_group as $key => $value) {
+            if (!in_array($key, [81, 91])) {
+                continue;
+            }
+            if ($key >= $user['gid']) {
+                $sys_group_arr[$key] = $value;
+            }
+        }
+        $data = [
+            'user' => $user,
+            'sys_group' => $sys_group_arr
+        ];
+
+        return $this->fetch("User/agent", $data);
+    }
+
     public function agentlist()
     {
         $pageuser = checkPower();
-        file_put_contents(ROOT_PATH."logs/test.txt", var_export($this->params, true)."\n\n", FILE_APPEND);
+        //file_put_contents(ROOT_PATH."logs/test.txt", var_export($this->params, true)."\n\n", FILE_APPEND);
         $user = getUserinfo($pageuser['id']);
         $sys_group = getConfig('sys_group');
         $sys_group_arr = [];
