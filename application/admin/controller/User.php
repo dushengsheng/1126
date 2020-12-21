@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use think\Exception;
 use think\Request;
 
 
@@ -37,22 +38,119 @@ class User extends Base
     public function agentlist()
     {
         $pageuser = checkPower();
-        //file_put_contents(ROOT_PATH."logs/test.txt", var_export($this->params, true)."\n\n", FILE_APPEND);
-        $user = getUserinfo($pageuser['id']);
-        $sys_group = getConfig('sys_group');
-        $sys_group_arr = [];
-        foreach ($sys_group as $key => $value) {
-            if (!in_array($key, [81, 91])) {
-                continue;
-            }
-            if ($key >= $user['gid']) {
-                $sys_group_arr[$key] = $value;
-            }
+        $params = $this->params;
+        $where = "where status<99";
+        if ($pageuser['gid'] > 41) {
+            $uid_arr = getDownUser($pageuser['id']);
+            $uid_str = implode(',', $uid_arr);
+            $where .= " and id in ({$uid_str})";
+        } else {
+            $where .= " and gid in (81,91)";
         }
-        $data = [
-            'user' => $user,
-            'sys_group' => $sys_group_arr
-        ];
-        return json_decode('{"code":0,"msg":"","count":1000,"data":[{"id":10000,"username":"user-0","sex":"女","city":"城市-0","sign":"签名-0","experience":255,"logins":24,"wealth":82830700,"classify":"作家","score":57},{"id":10001,"username":"user-1","sex":"男","city":"城市-1","sign":"签名-1","experience":884,"logins":58,"wealth":64928690,"classify":"词人","score":27},{"id":10002,"username":"user-2","sex":"女","city":"城市-2","sign":"签名-2","experience":650,"logins":77,"wealth":6298078,"classify":"酱油","score":31},{"id":10003,"username":"user-3","sex":"女","city":"城市-3","sign":"签名-3","experience":362,"logins":157,"wealth":37117017,"classify":"诗人","score":68},{"id":10004,"username":"user-4","sex":"男","city":"城市-4","sign":"签名-4","experience":807,"logins":51,"wealth":76263262,"classify":"作家","score":6},{"id":10005,"username":"user-5","sex":"女","city":"城市-5","sign":"签名-5","experience":173,"logins":68,"wealth":60344147,"classify":"作家","score":87},{"id":10006,"username":"user-6","sex":"女","city":"城市-6","sign":"签名-6","experience":982,"logins":37,"wealth":57768166,"classify":"作家","score":34},{"id":10007,"username":"user-7","sex":"男","city":"城市-7","sign":"签名-7","experience":727,"logins":150,"wealth":82030578,"classify":"作家","score":28},{"id":10008,"username":"user-8","sex":"男","city":"城市-8","sign":"签名-8","experience":951,"logins":133,"wealth":16503371,"classify":"词人","score":14},{"id":10009,"username":"user-9","sex":"女","city":"城市-9","sign":"签名-9","experience":484,"logins":25,"wealth":86801934,"classify":"词人","score":75}]}');
+        if (isset($params['s_gid']) && $params['s_gid']) {
+            $where .= " and gid={$params['s_gid']}";
+        }
+        if (isset($params['s_is_online']) && $params['s_is_online'] != 'all') {
+            $params['s_is_online'] = intval($params['s_is_online']);
+            $where .= " and is_online={$params['s_is_online']}";
+        }
+        if (isset($params['s_keyword']) && $params['s_keyword']) {
+            $where .= " and (id='{$params['s_keyword']}' or account='{$params['s_keyword']}' or phone='{$params['s_keyword']}' or realname like '%{$params['s_keyword']}%' or nickname like '%{$params['s_keyword']}%')";
+        }
+
+        $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
+		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user {$where}";
+        $count_item = $this->mysql->fetchRow($sql_cnt);
+        $sql = "select * from sys_user {$where} order by id desc";
+        $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
+        $sys_group = getConfig('sys_group');
+        $account_status = getConfig('account_status');
+        $yes_or_no = getConfig('yes_or_no');
+        $now_day = date('Ymd');
+
+        foreach ($list as &$item) {
+            unset($item['password'], $item['password2']);
+            $item['gname'] = $sys_group[$item['gid']];
+            $item['status_flag'] = $account_status[$item['status']];
+            $item['is_online_flag'] = $yes_or_no[$item['is_online']];
+            $item['reg_time'] = date('Y-m-d H:i:s', $item['reg_time']);
+            if ($item['login_time']) {
+                $item['login_time'] = date('Y-m-d H:i:s', $item['login_time']);
+            }
+            if ($item['pid']) {
+                $p_user = $this->mysql->fetchRow("select account,nickname,realname from sys_user where id={$item['pid']}");
+                $item['paccount'] = $p_user['account'];
+                $item['prealname'] = $p_user['realname'] ? $p_user['realname'] : $p_user['nickname'];
+            }
+
+            //统计码商今日/累计收款
+            $all_sql = "select count(1) as cnt,sum(log.money) as money from sk_order log where 1";
+            if (in_array($item['gid'], [81, 91])) {
+                $all_sql .= " and log.muid={$item['id']}";
+
+                //统计一下码商或码商代理的佣金
+                $yong_sql = "select sum(money) as money from sk_yong where uid={$item['id']} and type=1 and level>0";
+                $yong_item = $this->mysql->fetchRow($yong_sql);
+                $item['yong_money'] = floatval($yong_item['money']);
+
+            } elseif (in_array($item['gid'], [61, 71])) {
+                $all_sql .= " and log.suid={$item['id']}";
+
+                //统计一下商户或商户代理的佣金
+                $yong_sql = "select sum(money) as money from sk_yong where uid={$item['id']} and type=2 and level>0";
+                $yong_item = $this->mysql->fetchRow($yong_sql);
+                $item['yong_money'] = floatval($yong_item['money']);
+            }
+
+            if ($item['gid'] >= 61) {
+                $all_item = $this->mysql->fetchRow($all_sql);
+                $td_sql = $all_sql . " and log.create_day={$now_day}";
+                $td_item = $this->mysql->fetchRow($td_sql);
+
+                $all_sql_ok = $all_sql . " and log.pay_status=9";
+                $all_item_ok = $this->mysql->fetchRow($all_sql_ok);
+                $td_sql_ok = $all_sql_ok . " and log.create_day={$now_day}";
+                $td_item_ok = $this->mysql->fetchRow($td_sql_ok);
+
+                $item['all_money'] = floatval($all_item['money']);
+                $item['all_cnt'] = intval($all_item['cnt']);
+                $item['td_money'] = floatval($td_item['money']);
+                $item['td_cnt'] = intval($td_item['cnt']);
+
+                $item['all_money_ok'] = floatval($all_item_ok['money']);
+                $item['all_cnt_ok'] = intval($all_item_ok['cnt']);
+                $item['td_money_ok'] = floatval($td_item_ok['money']);
+                $item['td_cnt_ok'] = intval($td_item_ok['cnt']);
+
+                $all_percent = '0%';
+                if ($item['all_cnt'] > 0) {
+                    $all_percent = round(($item['all_cnt_ok'] / $item['all_cnt']) * 100, 2) . '%';
+                }
+                $td_percent = '0%';
+                if ($item['td_cnt'] > 0) {
+                    $td_percent = round(($item['td_cnt_ok'] / $item['td_cnt']) * 100, 2) . '%';
+                }
+                $item['all_percent'] = $all_percent;
+                $item['td_percent'] = $td_percent;
+            }
+
+            $item['edit'] = hasPower($pageuser, 'User_user_update') ? 1 : 0;
+            $item['kick'] = hasPower($pageuser, 'User_user_kick') ? 1 : 0;
+            $item['del'] = hasPower($pageuser, 'User_user_delete') ? 1 : 0;
+            $item['recharge'] = hasPower($pageuser, 'User_pay_balance') ? 1 : 0;
+
+        }
+
+        $data = array(
+            'list' => $list,
+            'count' => intval($count_item['cnt']),
+            'limit' => $this->pageSize,
+            'balance' => (float)$count_item['balance'],
+            'sx_balance' => (float)$count_item['sx_balance'],
+            'fz_balance' => (float)$count_item['fz_balance'],
+            'kb_balance' => (float)$count_item['kb_balance']
+        );
+        //file_put_contents(ROOT_PATH. "logs/test.txt", var_export($data, true) . "\n\n", FILE_APPEND);
+        jReturn('0', 'ok', $data);
     }
 }

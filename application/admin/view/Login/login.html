@@ -98,13 +98,8 @@
   <script src="/js/md5.js"></script>
 
   <script>
-  layui.config({
-    base: '/dist/layuiadmin/' //静态资源所在路径
-  }).extend({
-    index: 'lib/index' //主入口模块
-  }).use(['index', 'user', 'jquery', 'layer'], function(){
+  layui.use(['jquery', 'layer', 'form'], function(){
     var $ = layui.jquery;
-    var setter = layui.setter;
     var form = layui.form;
     var layer = layui.layer;
 

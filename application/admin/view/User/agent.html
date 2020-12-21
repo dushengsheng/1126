@@ -10,23 +10,17 @@
 </head>
 <body>
 
-<div style="padding: 20px; background-color: #F2F2F2;">
+<div style="padding: 18px; background-color: #F2F2F2;">
     <div class="layui-card">
         <div class="layui-card-header">
-            <div class="layui-row">
-                <div class="layui-col-md6">
-                    <span><b>代理列表</b></span>
-                </div>
-                <div class="layui-col-md1 layui-col-md-offset5">
-                    <span class="layui-btn layui-btn-radius layui-btn-normal layui-btn-sm">新增下级代理</span>
-                </div>
-            </div>
+            <span><b>代理列表</b></span>
+            <span class="layui-btn layui-btn-radius layui-btn-normal layui-btn-sm" style="float: right; margin-top: 8px">新增下级代理</span>
         </div>
         <div class="layui-card-body">
             <form action="" class="layui-form" id="searchForm">
-                <div class="layui-form-item" style="text-align: right">
+                <div class="layui-form-item" style="text-align: center">
                     <div class="layui-inline">
-                        <label class="layui-form-label" style="width:40px;">分组</label>
+                        <label class="layui-form-label" style="width:50px;">分组</label>
                         <div class="layui-input-inline" style="width:100px;">
                             <select id="s_gid" name="s_gid">
                                 <option value="0">全部</option>
@@ -37,7 +31,7 @@
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <label class="layui-form-label" style="width:40px;">在线</label>
+                        <label class="layui-form-label" style="width:50px;">在线</label>
                         <div class="layui-input-inline" style="width:100px;">
                             <select id="s_is_online" name="s_is_online">
                                 <option value="all">全部</option>
@@ -48,9 +42,9 @@
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <label class="layui-form-label">用户名</label>
+                        <label class="layui-form-label" style="width:50px;">关键字</label>
                         <div class="layui-input-inline">
-                            <input autocomplete="off" class="layui-input" name="title" placeholder="用户名" type="text">
+                            <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字" type="text">
                         </div>
                     </div>
                     <div class="layui-inline">
@@ -90,11 +84,7 @@
 
 
 <script>
-    layui.config({
-        base: '/dist/layuiadmin/' //静态资源所在路径
-    }).extend({
-        index: 'lib/index' //主入口模块
-    }).use(['table', 'jquery', 'index', 'form'], function () {
+    layui.use(['table', 'jquery', 'form'], function () {
         var $ = layui.jquery;
         var table = layui.table;
         var form = layui.form;
@@ -102,14 +92,25 @@
 
 
         function onAgentList() {
+            var params = {
+                s_gid : $('#s_gid').val(),
+                s_is_online : $('#s_is_online').val(),
+                s_keyword : $.trim($('#s_keyword').val())
+            };
+
             dataPage({
                 elem: '#userAgent',
                 url: global.admin_url + 'user/agentlist',
+                where: params,
                 page: true,
                 cols: [[
-                    {field: 'id', title: 'ID'},
+                    {field: 'id', title: 'ID', style:"height:60"},
                     {field: 'gname', title: '账号/分组', templet: function (d) {
-                            return d.account + '<br/>' + d.gname;
+                            var html = '<div style="text-align: center">';
+                            html += '<div>' + d.account + '</div>';
+                            html += '<div>' + d.gname + '</div>';
+                            html += '</div>';
+                            return html;
                         }},
                     {field: 'paccount', title: '上级代理', templet: function (d) {
                             if (d.paccount) {
@@ -137,8 +138,8 @@
                                 return '/';
                             }
                             var html = '<div style="text-align:left;line-height:18px;">';
-                            html += '<div>金额：<b>' + d.all_money_ok + '</b> / <b>' + d.all_money + '</b></div>';
-                            html += '<div>订单：<b>' + d.all_cnt_ok + '</b> / <b>' + d.all_cnt + '</b></div>';
+                            html += '<div>金额：<b>' + d.all_money_ok + '</b>/<b>' + d.all_money + '</b></div>';
+                            html += '<div>订单：<b>' + d.all_cnt_ok + '</b>/<b>' + d.all_cnt + '</b></div>';
                             html += '<div>成功：<b>' + d.all_percent + '<b></div>';
                             html += '</div>';
                             return html;
@@ -146,18 +147,21 @@
                     {field:'status_flag', title: '状态', templet: function (d) {
                             var online_status = '离线';
                             if (d.is_online) online_status = '抢单中';
-                            return d.status_flag + '<br/>' + online_status;
+                            var html = '<div style="text-align: center">';
+                            html += '<div>' + d.status_flag + '</div><br/>';
+                            html += '<div>' + online_status + '</div>';
+                            html += '</div>';
+                            return html;
                         }},
                     {field:'', align:'center', title:'操作', toolbar:'#barItemAct'}
                 ]],
                 done:function(res, curr, count) {
-                    console.log(res);
                     if($('.sumLine').length < 1) {
-                        var html = '<div class="sumLine">';
-                        html += '<span>用户数：' + res.data.count + '</span>';
-                        html += '<span>可提余额：' + res.data.balance + '</span>';
-                        html += '<span>接单余额：' + res.data.sx_balance + '</span>';
-                        html += '<span>应回款：' + res.data.kb_balance + '</span>';
+                        var html = '<div class="sumLine" style="text-align: center">';
+                        html += '<span style="padding: 18px">用户数：' + res.count + '</span>';
+                        html += '<span style="padding: 18px">可提余额：' + res.odata.balance + '</span>';
+                        html += '<span style="padding: 18px">接单余额：' + res.odata.sx_balance + '</span>';
+                        html += '<span style="padding: 18px">冻结中：' + res.odata.fz_balance + '</span>';
                         html += '</div>';
                         $('.layui-table-header').before(html);
                     }
@@ -167,8 +171,10 @@
 
 
         $('#searchBtn').on('click', function () {
-            _alert('this is a click search');
-        })
+            onAgentList();
+        });
+
+        $('#searchBtn').trigger('click');
 
     });
 </script>

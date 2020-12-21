@@ -67,18 +67,30 @@ function dataPage(opt) {
         autoSort: false,
         cellMinWidth: 30, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
         parseData: function (res) {
-            if (res.code) {
+            if (res.code != '0') {
                 if (res.code == '-98') {
                     _alert(res.msg, {}, function () {
                         location.href = 'admin';
                     });
-                    return;
                 } else {
                     _alert(res.msg);
                 }
+                return;
             }
-
-            return res;
+            var odata = {};
+            for (var i in res.data) {
+                if (i == 'list') {
+                    continue;
+                }
+                odata[i] = res.data[i];
+            }
+            return {
+                "code": res.code, //解析接口状态
+                "msg": res.msg, //解析提示文本
+                "count": res.data.count, //解析数据长度
+                "data": res.data.list, //解析数据列表
+                "odata": odata
+            };
         },
         cols: null,
         done: function (res, curr, count) {

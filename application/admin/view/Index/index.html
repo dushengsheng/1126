@@ -166,7 +166,6 @@
 </div>
 
 <script src="/dist/layuiadmin/layui/layui.js"></script>
-<script src="/dist/layuiadmin/config.js"></script>
 <script src="/static/admin/js/func.js"></script>
 <script src="/js/global.js"></script>
 
@@ -193,9 +192,7 @@
         index: 'lib/index' //主入口模块
     }).use(['index', 'admin', 'jquery', 'layer', 'laytpl'], function () {
         var $ = layui.jquery;
-        var setter = layui.setter;
         var form = layui.form;
-        var admin = layui.admin;
         var layer = layui.layer;
         var laytpl = layui.laytpl;
         var router = layui.router();

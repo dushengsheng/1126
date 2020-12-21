@@ -35,22 +35,32 @@ function hasPower($user, $nkey)
     if (!$nkey) {
         $nkey = NKEY;
     }
+
     $mysql = new Mysql(0);
-    $node = $mysql->fetchRow("select id,public from sys_node where nkey='{$nkey}'");
-    if (!$node) {
-        return false;
-    }
-    if ($node['public']) {
-        return true;
-    }
-    $access_ids_arr = getAccessNode($user['id'], $mysql);
-    if (!$access_ids_arr) {
-        return false;
-    }
-    if (!in_array($node['id'], $access_ids_arr)) {
-        return false;
-    }
-    return true;
+    $result = false;
+    do {
+        $node = $mysql->fetchRow("select id,public from sys_node where nkey='{$nkey}'");
+        if (!$node) {
+            break;
+        }
+        if ($node['public']) {
+            $result = true;
+            break;
+        }
+        $access_ids_arr = getAccessNode($user['id'], $mysql);
+        if (!$access_ids_arr) {
+            break;
+        }
+        if (!in_array($node['id'], $access_ids_arr)) {
+            break;
+        }
+        $result = true;
+    } while (0);
+
+    $mysql->close();
+    unset($mysql);
+
+    return $result;
 }
 
 //获取个人菜单
