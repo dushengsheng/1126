@@ -27,4 +27,9 @@ class Index extends Base
         );
         return $this->fetch('Index/index', $data);
     }
+
+    public function console()
+    {
+        return $this->fetch('Index/console');
+    }
 }
