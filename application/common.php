@@ -14,8 +14,8 @@ namespace app;
 // 应用公共文件
 
 // 通用函数库
-include_once 'common.func.php';
-include_once 'user.func.php';
+include_once APP_PATH . 'common.func.php';
+include_once APP_PATH. 'user.func.php';
 
 
 
