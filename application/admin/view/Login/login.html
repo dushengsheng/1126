@@ -138,8 +138,8 @@
           //请求成功后，写入 access_token
           var localData = {};
           localData['account'] = res.data.account;
-          localData[setter.request.tokenName] = res.data.token;
-          layui.data(setter.tableName, localData);
+          localData[global.tokenName] = res.data.token;
+          layui.data(global.tableName, localData);
 
           layer.msg(res.msg, {icon: 1, time:1500 }, function(){
             location.href = global.admin_url;
