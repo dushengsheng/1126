@@ -24,7 +24,29 @@
         </div>
         <div class="layui-card-body">
             <form action="" class="layui-form" id="searchForm">
-                <div class="layui-form-item">
+                <div class="layui-form-item" style="text-align: right">
+                    <div class="layui-inline">
+                        <label class="layui-form-label" style="width:40px;">分组</label>
+                        <div class="layui-input-inline" style="width:100px;">
+                            <select id="s_gid" name="s_gid">
+                                <option value="0">全部</option>
+                                [[foreach name="$sys_group" item="vo" key="skey"]]
+                                <option value="[[$skey]]">[[$vo]]</option>
+                                [[/foreach]]
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label" style="width:40px;">在线</label>
+                        <div class="layui-input-inline" style="width:100px;">
+                            <select id="s_is_online" name="s_is_online">
+                                <option value="all">全部</option>
+                                [[foreach name="'yes_or_no'|getConfig" item="vo" key="skey"]]
+                                <option value="[[$skey]]">[[$vo]]</option>
+                                [[/foreach]]
+                            </select>
+                        </div>
+                    </div>
                     <div class="layui-inline">
                         <label class="layui-form-label">用户名</label>
                         <div class="layui-input-inline">
@@ -32,32 +54,9 @@
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <label class="layui-form-label" style="width:40px;">分组</label>
-                        <div class="layui-input-inline" style="width:80px;">
-                            <select id="s_gid" name="s_gid">
-                                <option value="0">全部</option>
-                                [[foreach name=$sys_group item=vo key=skey]]
-                                <option value="[[$skey]]">[[$vo]]</option>
-                                [[/foreach]]
-                            </select>
+                        <div class="layui-input-inline">
+                            <span class="layui-btn layui-btn-radius layui-btn-normal" id="searchBtn">查询</span>
                         </div>
-                    </div>
-                    <div class="layui-inline">
-                        <label class="layui-form-label" style="width:50px;">在线</label>
-                        <div class="layui-input-inline" style="width:80px;">
-                            <select id="s_is_online" name="s_is_online">
-                                <option value="all">全部</option>
-                                <option value="0">离线</option>
-                                <option value="1">在线</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="layui-inline">
-                        <button class="layui-btn layui-btn-radius layui-btn-normal" lay-filter="searchBtn" lay-submit="searchBtn"
-                                type="submit">提交
-                        </button>
-                        <button class="layui-btn layui-btn-radius layui-btn-primary" type="reset">重置</button>
                     </div>
                 </div>
             </form>
@@ -95,11 +94,13 @@
         base: '/dist/layuiadmin/' //静态资源所在路径
     }).extend({
         index: 'lib/index' //主入口模块
-    }).use(['table', 'jquery', 'index'], function () {
+    }).use(['table', 'jquery', 'index', 'form'], function () {
+        var $ = layui.jquery;
         var table = layui.table;
+        var form = layui.form;
 
 
-        /*
+
         function onAgentList() {
             dataPage({
                 elem: '#userAgent',
@@ -163,7 +164,11 @@
                 }
             });
         }
-        */
+
+
+        $('#searchBtn').on('click', function () {
+            _alert('this is a click search');
+        })
 
     });
 </script>
