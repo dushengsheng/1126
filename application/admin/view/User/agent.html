@@ -69,6 +69,7 @@
 <script src="/static/admin/js/func.js"></script>
 <script src="/js/global.js"></script>
 <script src="/js/func.js"></script>
+<script src="/js/md5.js"></script>
 
 <!--item操作工具条-->
 <script type="text/html" id="laytpl-table-item">
@@ -118,7 +119,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">分组：</label>
             <div class="layui-input-block" style="width:120px;">
-                <select id="gid">
+                <select id="add-user-gid">
                     <option value="0">请选择分组</option>
                     [[foreach name="$sys_group" item="vo" key="skey"]]
                     <option value="[[$skey]]">[[$vo]]</option>
@@ -220,6 +221,12 @@
         $('#searchBtn').trigger('click');
 
 
+        <!--新增或者更新用户-->
+        function addOrUpdateUser(ojb) {
+            //TODO
+        }
+
+
         <!--添加或编辑用户-->
         function onAddOrEditBtn(obj) {
             var title = '添加用户';
@@ -239,19 +246,21 @@
                 success: function () {
                     if (add_or_update == 'update') {
                         $('#add-user-account').prop('disabled', true);
+                        $('#add-user-account').val(obj.account);
+                        $('#add-user-gid').val(obj.gid);
                     } else {
                         $('#add-user-account').prop('disabled', false);
                     }
-
                     form.render();
                 },
                 yes: function(index, layero) {
-                    _alert("you clicked yes");
+                    obj.gid = $('#add-user-gid').val();
+                    obj.password = md5($.trim($('#add-user-passwd').val()));
+
                     layer.close(index);
                     return true;
                 },
                 btn2: function(index, layero) {
-                    _alert("you clicked no");
                     return true;
                 }
             });
@@ -261,6 +270,7 @@
         $('#addBtn').on('click', function () {
             onAddOrEditBtn();
         });
+
 
         <!--监听行按钮-->
         table.on('tool(userAgent)', function (obj) {
