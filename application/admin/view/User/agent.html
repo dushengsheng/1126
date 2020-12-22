@@ -7,51 +7,55 @@
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
     <link href="/dist/layuiadmin/layui/css/layui.css" media="all" rel="stylesheet">
+    <link href="/static/admin/css/admin.css" rel="stylesheet">
 </head>
 <body>
 
 <div style="padding: 18px; background-color: #F2F2F2;">
     <div class="layui-card">
         <div class="layui-card-header">
-            <span><b>代理列表</b></span>
-            <span class="layui-btn layui-btn-radius layui-btn-normal layui-btn-sm" style="float: right; margin-top: 8px">新增下级代理</span>
+            <span>代理列表</span>
+            <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn" style="margin-top: 4px">新增</span>
         </div>
         <div class="layui-card-body">
             <form action="" class="layui-form" id="searchForm">
                 <div class="layui-form-item" style="text-align: center">
-                    <div class="layui-inline">
-                        <label class="layui-form-label" style="width:50px;">分组</label>
-                        <div class="layui-input-inline" style="width:100px;">
-                            <select id="s_gid" name="s_gid">
-                                <option value="0">全部</option>
-                                [[foreach name="$sys_group" item="vo" key="skey"]]
-                                <option value="[[$skey]]">[[$vo]]</option>
-                                [[/foreach]]
-                            </select>
+                    <div style="float: right">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">分组</label>
+                            <div class="layui-input-inline" style="width:100px;">
+                                <select id="s_gid" name="s_gid">
+                                    <option value="0">全部</option>
+                                    [[foreach name="$sys_group" item="vo" key="skey"]]
+                                    <option value="[[$skey]]">[[$vo]]</option>
+                                    [[/foreach]]
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">在线</label>
+                            <div class="layui-input-inline" style="width:100px;">
+                                <select id="s_is_online" name="s_is_online">
+                                    <option value="all">全部</option>
+                                    [[foreach name="'yes_or_no'|getConfig" item="vo" key="skey"]]
+                                    <option value="[[$skey]]">[[$vo]]</option>
+                                    [[/foreach]]
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">关键字</label>
+                            <div class="layui-input-inline">
+                                <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字" type="text">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search" id="searchBtn">查询</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="layui-inline">
-                        <label class="layui-form-label" style="width:50px;">在线</label>
-                        <div class="layui-input-inline" style="width:100px;">
-                            <select id="s_is_online" name="s_is_online">
-                                <option value="all">全部</option>
-                                [[foreach name="'yes_or_no'|getConfig" item="vo" key="skey"]]
-                                <option value="[[$skey]]">[[$vo]]</option>
-                                [[/foreach]]
-                            </select>
-                        </div>
-                    </div>
-                    <div class="layui-inline">
-                        <label class="layui-form-label" style="width:50px;">关键字</label>
-                        <div class="layui-input-inline">
-                            <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字" type="text">
-                        </div>
-                    </div>
-                    <div class="layui-inline">
-                        <div class="layui-input-inline">
-                            <span class="layui-btn layui-btn-radius layui-btn-normal" id="searchBtn">查询</span>
-                        </div>
-                    </div>
+
                 </div>
             </form>
 
@@ -69,17 +73,23 @@
 <!--item操作工具条-->
 <script type="text/html" id="barItemAct">
     {{#if(d.del==1){}}
-    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</a>
     {{#}}}
     {{#if(d.kick==1){}}
-    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="kick">踢下线</a>
+    <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="kick">踢掉</a>
     {{#}}}
     {{#if(d.edit==1){}}
-    <a class="layui-btn layui-btn-xs layui-btn-primary" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
     {{#}}}
-    {{#if(d.pay==1){}}
-    <a class="layui-btn layui-btn-xs" lay-event="recharge">充值</a>
+    <!--
+    {{#if(d.recharge==1){}}
+    <a class="layui-btn layui-btn-sm" lay-event="recharge">充值</a>
     {{#}}}
+    -->
+</script>
+
+<script type="text/html" id="layer-add-or-update-user">
+
 </script>
 
 
@@ -104,7 +114,7 @@
                 where: params,
                 page: true,
                 cols: [[
-                    {field: 'id', title: 'ID', style:"height:60"},
+                    {field: 'id', title: 'ID', width: 80},
                     {field: 'gname', title: '账号/分组', templet: function (d) {
                             var html = '<div style="text-align: center">';
                             html += '<div>' + d.account + '</div>';
@@ -119,9 +129,9 @@
                                 return '';
                             }
                         }},
-                    {field: 'balance', title: '可提余额'},
-                    {field: 'sx_balance', title: '接单余额'},
-                    {field: 'fz_balance', title: '冻结中'},
+                    {field: 'balance', title: '可提余额', width: 100},
+                    {field: 'sx_balance', title: '接单余额', width: 100},
+                    {field: 'fz_balance', title: '冻结中', width: 100},
                     {field: 'td_money', title: '今日收款', templet:function (d) {
                             if (d.gid < 81) {
                                 return '/';
@@ -144,24 +154,24 @@
                             html += '</div>';
                             return html;
                         }},
-                    {field:'status_flag', title: '状态', templet: function (d) {
+                    {field:'status_flag', title: '状态', width: 80, templet: function (d) {
                             var online_status = '离线';
                             if (d.is_online) online_status = '抢单中';
                             var html = '<div style="text-align: center">';
-                            html += '<div>' + d.status_flag + '</div><br/>';
+                            html += '<div>' + d.status_flag + '</div>';
                             html += '<div>' + online_status + '</div>';
                             html += '</div>';
                             return html;
                         }},
-                    {field:'', align:'center', title:'操作', toolbar:'#barItemAct'}
+                    {field:'', title:'操作', width:280, toolbar:'#barItemAct'}
                 ]],
                 done:function(res, curr, count) {
                     if($('.sumLine').length < 1) {
-                        var html = '<div class="sumLine" style="text-align: center">';
-                        html += '<span style="padding: 18px">用户数：' + res.count + '</span>';
-                        html += '<span style="padding: 18px">可提余额：' + res.odata.balance + '</span>';
-                        html += '<span style="padding: 18px">接单余额：' + res.odata.sx_balance + '</span>';
-                        html += '<span style="padding: 18px">冻结中：' + res.odata.fz_balance + '</span>';
+                        var html = '<div class="sumLine">';
+                        html += '<span>用户数：' + res.count + '</span>';
+                        html += '<span>可提余额：' + res.odata.balance + '</span>';
+                        html += '<span>接单余额：' + res.odata.sx_balance + '</span>';
+                        html += '<span>冻结中：' + res.odata.fz_balance + '</span>';
                         html += '</div>';
                         $('.layui-table-header').before(html);
                     }
