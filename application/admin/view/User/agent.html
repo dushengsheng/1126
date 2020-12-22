@@ -59,7 +59,7 @@
                 </div>
             </form>
 
-            <table class="layui-hide" id="userAgent"></table>
+            <table class="layui-hide" lay-filter="userAgent" id="userAgent"></table>
         </div>
     </div>
 </div>
@@ -71,37 +71,76 @@
 <script src="/js/func.js"></script>
 
 <!--item操作工具条-->
-<script type="text/html" id="barItemAct">
+<script type="text/html" id="laytpl-table-item">
     {{#if(d.del==1){}}
     <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</a>
-    {{#}}}
-    {{#if(d.kick==1){}}
-    <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="kick">踢掉</a>
     {{#}}}
     {{#if(d.edit==1){}}
     <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
     {{#}}}
     <!--
+    {{#if(d.kick==1){}}
+    <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="kick">踢掉</a>
+    {{#}}}
     {{#if(d.recharge==1){}}
     <a class="layui-btn layui-btn-sm" lay-event="recharge">充值</a>
     {{#}}}
     -->
 </script>
 
-<script type="text/html" id="layer-add-or-update-user">
 
+<!--用户上下线工具条-->
+<script type="text/html" id="laytpl-online-switch">
+    <div>{{d.status_flag}}</div>
+    <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch"
+           {{#if (d.is_online != '0') {}}
+           checked
+           {{#}}}
+    />
+</script>
+
+
+<!--添加或编辑用户信息的弹层-->
+<script type="text/html" id="laytpl-add-user">
+    <div class="layui-form" lay-filter="form-add-user">
+        <div class="layui-form-item">
+            <label class="layui-form-label">账号:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="add-user-passwd" placeholder="密码" type="password">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">分组：</label>
+            <div class="layui-input-block" style="width:120px;">
+                <select id="gid">
+                    <option value="0">请选择分组</option>
+                    [[foreach name="$sys_group" item="vo" key="skey"]]
+                    <option value="[[$skey]]">[[$vo]]</option>
+                    [[/foreach]]
+                </select>
+            </div>
+        </div>
+    </div>
 </script>
 
 
 <script>
-    layui.use(['table', 'jquery', 'form'], function () {
+    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl'], function () {
         var $ = layui.jquery;
         var table = layui.table;
         var form = layui.form;
+        var layer = layui.layer;
+        var laytpl = layui.laytpl;
 
 
-
-        function onAgentList() {
+        <!--获取用户列表-->
+        function onSearchBtn() {
             var params = {
                 s_gid : $('#s_gid').val(),
                 s_is_online : $('#s_is_online').val(),
@@ -154,18 +193,11 @@
                             html += '</div>';
                             return html;
                         }},
-                    {field:'status_flag', title: '状态', width: 80, templet: function (d) {
-                            var online_status = '离线';
-                            if (d.is_online) online_status = '抢单中';
-                            var html = '<div style="text-align: center">';
-                            html += '<div>' + d.status_flag + '</div>';
-                            html += '<div>' + online_status + '</div>';
-                            html += '</div>';
-                            return html;
-                        }},
-                    {field:'', title:'操作', width:280, toolbar:'#barItemAct'}
+                    {field:'status_flag', title: '状态', width: 100, templet: "#laytpl-online-switch"},
+                    {field:'', title:'操作', width:280, toolbar:'#laytpl-table-item'}
                 ]],
-                done:function(res, curr, count) {
+                done: function(res, curr, count) {
+                    //console.log(res);
                     if($('.sumLine').length < 1) {
                         var html = '<div class="sumLine">';
                         html += '<span>用户数：' + res.count + '</span>';
@@ -180,11 +212,79 @@
         }
 
 
+        <!--触发搜索按钮-->
         $('#searchBtn').on('click', function () {
-            onAgentList();
+            onSearchBtn();
         });
 
         $('#searchBtn').trigger('click');
+
+
+        <!--添加或编辑用户-->
+        function onAddOrEditBtn(obj) {
+            var title = '添加用户';
+            var add_or_update = 'add';
+            if (obj) {
+                title = '编辑用户';
+                add_or_update = 'update';
+            }
+
+            layer.open({
+                title: title,
+                type: 1,
+                shadeClose: true,
+                area: ['500px', '600px'],
+                btn: ['确定', '取消'],
+                content: laytpl($('#laytpl-add-user').html()).render({item:obj}),
+                success: function () {
+                    if (add_or_update == 'update') {
+                        $('#add-user-account').prop('disabled', true);
+                    } else {
+                        $('#add-user-account').prop('disabled', false);
+                    }
+
+                    form.render();
+                },
+                yes: function(index, layero) {
+                    _alert("you clicked yes");
+                    layer.close(index);
+                    return true;
+                },
+                btn2: function(index, layero) {
+                    _alert("you clicked no");
+                    return true;
+                }
+            });
+        }
+
+        <!--新增用户-->
+        $('#addBtn').on('click', function () {
+            onAddOrEditBtn();
+        });
+
+        <!--监听行按钮-->
+        table.on('tool(userAgent)', function (obj) {
+           var data = obj.data;
+           var layevent = obj.event;
+
+            //TODO
+
+           if (layevent === 'edit') {
+               onAddOrEditBtn(data);
+           } else if (layevent === 'del') {
+               _alert('event = del');
+           } else if (layevent === 'kick') {
+               _alert('event = kick');
+           }
+        });
+
+        <!--监听上下线按钮-->
+        form.on('switch(user-online-switch)', function (obj) {
+            console.log(obj);
+            console.log(obj.elem.checked);
+            _alert('user-online-switch');
+            //TODO
+        });
 
     });
 </script>
