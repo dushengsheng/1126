@@ -16,19 +16,19 @@ class User extends Base
     public function agent()
     {
         $pageuser = checkPower();
-        $user = getUserinfo($pageuser['id']);
+        //$user = getUserinfo($pageuser['id']);
         $sys_group = getConfig('sys_group');
         $sys_group_arr = [];
         foreach ($sys_group as $key => $value) {
             if (!in_array($key, [81, 91])) {
                 continue;
             }
-            if ($key >= $user['gid']) {
+            if ($key >= $pageuser['gid']) {
                 $sys_group_arr[$key] = $value;
             }
         }
         $data = [
-            'user' => $user,
+            'user' => $pageuser,
             'sys_group' => $sys_group_arr
         ];
 
@@ -71,6 +71,8 @@ class User extends Base
         $account_status = getConfig('account_status');
         $yes_or_no = getConfig('yes_or_no');
         $now_day = date('Ymd');
+        $has_power_checked = false;
+        $power_arr = [];
 
         foreach ($list as &$item) {
             unset($item['password'], $item['password2']);
@@ -138,10 +140,20 @@ class User extends Base
                 $item['td_percent'] = $td_percent;
             }
 
-            $item['del'] = hasPower($pageuser, 'User_user_delete') ? 1 : 0;
-            $item['kick'] = hasPower($pageuser, 'User_user_kick') ? 1 : 0;
-            $item['edit'] = hasPower($pageuser, 'User_user_update') ? 1 : 0;
-            $item['recharge'] = hasPower($pageuser, 'User_pay_balance') ? 1 : 0;
+            // 只检查一次权限
+            if (!$has_power_checked) {
+                $has_power_checked = true;
+                $power_arr['del'] = hasPower($pageuser, 'User_DeleteUser') ? 1 : 0;
+                $power_arr['kick'] = hasPower($pageuser, 'User_Offline') ? 1 : 0;
+                $power_arr['edit'] = hasPower($pageuser, 'User_UpdateUser') ? 1 : 0;
+                $power_arr['channel'] = hasPower($pageuser, 'User_ChannelRate') ? 1 : 0;
+                $power_arr['recharge'] = hasPower($pageuser, 'Finance_Recharge') ? 1 : 0;
+            }
+            $item['power_del'] = $power_arr['del'];
+            $item['power_kick'] = $power_arr['kick'];
+            $item['power_edit'] = $power_arr['edit'];
+            $item['power_channel'] = $power_arr['channel'];
+            $item['power_recharge'] = $power_arr['recharge'];
         }
 
         $data = array(
@@ -154,5 +166,14 @@ class User extends Base
             'kb_balance' => (float)$count_item['kb_balance']
         );
         jReturn('0', 'ok', $data);
+    }
+
+    /*
+     * 增加或更新用户
+     */
+    public function updateuser()
+    {
+        $pageuser = checkPower();
+        $params = $this->params;
     }
 }

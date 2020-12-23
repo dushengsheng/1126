@@ -21,6 +21,6 @@ Route::rule('admin/login/logoutact', 'admin/Login/logoutAct');
 
 Route::rule('admin/user/agent', 'admin/User/agent');
 Route::rule('admin/user/agentlist', 'admin/User/agentlist');
-
+Route::rule('admin/user/updateuser', 'admin/User/updateuser');
 
 

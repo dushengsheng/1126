@@ -1,16 +1,20 @@
-
 [菜单]
 |1.后台首页Index
 |2.用户管理User
 	|20.我的代理User_Agent
+		|200.代理列表User_Agentlist
+		|201.添加或编辑用户User_UpdateUser
+		|202.删除用户User_DeleteUser
+		|203.用户通道费率User_ChannelRate
+		|204.踢用户下线User_Offline
 	|21.我的商户User_Merchant
 	|
 |3.资金管理Finanace
-	|30.旗下用户Finanace_Users
-	|31.资金明细Finanace_Detail
-	|32.我的银行卡Finanace_Card
-	|33.用户提现Finanace_UserWithdrawal
-	|34.收款管理Finanace_Recharge
+	|30.旗下用户Finance_Users
+	|31.资金明细Finance_Detail
+	|32.我的银行卡Finance_Card
+	|33.用户提现Finance_UserWithdrawal
+	|34.收款管理Finance_Recharge
 	|35.异常收款Finance_RechargeError
 	|36.提现申请Finance_Withdrawal
 	|
@@ -25,23 +29,23 @@
 
 
 [用户分组]
-1=超管,
-11=运营,
-31=财务,
-41=客服,
-61=商户代理,
-71=商户,              <-81
-81=码商代理,          <-85
+1=超管
+11=运营
+31=财务
+41=客服
+61=商户代理
+71=商户
+81=码商代理
 91=码商
 
 
 
 [权限管理]
 1={*}
-11,31,41={1,2,3,4,8,9,20,21,30,33,40}
+11,31,41={1,2,3,4,8,9,20,21,30,33,40,200,204}
 61={1,3,4,9,31,35,36,40}
 71={1,3,4,9,31,35,36,40}
-81={1,2,3,4,8,9,20,21,30,31,32,33,34,35,40}
+81={1,2,3,4,8,9,20,21,30,31,32,33,34,35,40,200,201,202,203,204}
 91={1,3,4,8,9,31,32,40}
 
 

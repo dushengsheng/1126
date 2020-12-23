@@ -15,7 +15,7 @@
     <div class="layui-card">
         <div class="layui-card-header">
             <span>代理列表</span>
-            <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn" style="margin-top: 4px">新增</span>
+            <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn" style="margin-top: 4px"> 新增</span>
         </div>
         <div class="layui-card-body">
             <form action="" class="layui-form" id="searchForm">
@@ -51,7 +51,7 @@
                         </div>
                         <div class="layui-inline">
                             <div class="layui-input-inline">
-                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search" id="searchBtn">查询</span>
+                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search" id="searchBtn"> 查询</span>
                             </div>
                         </div>
                     </div>
@@ -73,11 +73,14 @@
 
 <!--item操作工具条-->
 <script type="text/html" id="laytpl-table-item">
-    {{#if(d.del==1){}}
-    <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</a>
+    {{#if(d.power_del==1){}}
+    <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="del">删除</a>
     {{#}}}
-    {{#if(d.edit==1){}}
+    {{#if(d.power_edit==1){}}
     <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
+    {{#}}}
+    {{#if(d.power_channel==1){}}
+    <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="channel">通道</a>
     {{#}}}
     <!--
     {{#if(d.kick==1){}}
@@ -256,6 +259,34 @@
                 yes: function(index, layero) {
                     obj.gid = $('#add-user-gid').val();
                     obj.password = md5($.trim($('#add-user-passwd').val()));
+
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/user/updateuser',
+                        data:{
+                            username:username,
+                            passwd:passwd,
+                            gcode:gcode,
+                            vercode:vercode
+                        },
+                        success: function(res){
+                            if (res.code != '0') {
+                                layer.msg(res.msg, {icon: 0, time:1500});
+                                $('#LAY-user-get-captcha').trigger('click');
+                                return;
+                            }
+
+                            //请求成功后，写入 access_token
+                            var localData = {};
+                            localData['account'] = res.data.account;
+                            localData[global.tokenName] = res.data.token;
+                            layui.data(global.tableName, localData);
+
+                            layer.msg(res.msg, {icon: 1, time:1500 }, function(){
+                                location.href = '[[$Think.ADMIN_URL]]';
+                            });
+                        }
+
+                    });
 
                     layer.close(index);
                     return true;
