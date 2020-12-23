@@ -181,7 +181,7 @@ function formatSeconds(value) {
 /////////////////////////////////////////////////////////
 
 //获取token
-function getToken() {
+function getAccessToken() {
     //请求成功后，写入 access_token
     var local = layui.data(global.tableName);
     var token = local[global.tokenName];

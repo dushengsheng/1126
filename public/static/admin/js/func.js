@@ -62,7 +62,7 @@ function dataPage(opt) {
     var def = {
         elem: '#dataTable',
         method: 'post',
-        where: {token: getToken()},
+        where: {token: getAccessToken()},
         toolbar: false,
         autoSort: false,
         cellMinWidth: 30, //全局定义常规单元格的最小宽度，layui 2.2.1 新增

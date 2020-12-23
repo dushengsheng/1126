@@ -104,7 +104,6 @@ function isLogin()
         if ($sign == $cookie_arr['sign']) {
             $token = $cookie_arr['token'];
             $user = getUserByToken($token);
-            debugLog('isLogin: user= ' . var_export($user, true));
             if (!$user || !is_array($user)) {
                 return false;
             }
