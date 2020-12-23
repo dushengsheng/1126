@@ -16,7 +16,7 @@ class User extends Base
     public function agent()
     {
         $pageuser = checkPower();
-        //$user = getUserinfo($pageuser['id']);
+        $up_agents = getDownAgent($pageuser['id']);
         $sys_group = getConfig('sys_group');
         $sys_group_arr = [];
         foreach ($sys_group as $key => $value) {
@@ -29,13 +29,14 @@ class User extends Base
         }
         $data = [
             'user' => $pageuser,
-            'sys_group' => $sys_group_arr
+            'sys_group' => $sys_group_arr,
+            'sys_agent' => $up_agents
         ];
 
         return $this->fetch("User/agent", $data);
     }
 
-    public function agentlist()
+    public function agentList()
     {
         $pageuser = checkPower();
         $params = $this->params;
@@ -171,9 +172,152 @@ class User extends Base
     /*
      * 增加或更新用户
      */
-    public function updateuser()
+    public function updateUser()
     {
         $pageuser = checkPower();
         $params = $this->params;
+
+        debugLog("updateuser: params = " . var_export($params, true));
+        jReturn('0', '操作成功');
+
+        $item_id = intval($params['item_id']);
+        if (!$params['realname']) {
+            jReturn('-1', '请填写姓名');
+        }
+        if (!$params['nickname']) {
+            jReturn('-1', '请填写昵称');
+        }
+        $data = array(
+            'realname' => $params['realname'],
+            'nickname' => $params['nickname']
+        );
+
+        if ($params['phone']) {
+            if (!isPhone($params['phone'])) {
+                jReturn('-1', '请填写正确的手机号');
+            }
+            $check_phone = $this->mysql->fetchRow("select * from sys_user where phone='{$params['phone']}'");
+            if ($check_phone) {
+                if (!$item_id || ($item_id && $item_id != $check_phone['id'])) {
+                    jReturn('-1', '手机号已存在请更换');
+                }
+            }
+        }
+        if ($pageuser['gid'] == 1) {
+            $is_google = intval($params['is_google']);
+            if ($is_google > 1) {
+                $data['is_online'] = 0;
+                $data['google_hide'] = 0;
+                $data['google_secret'] = '';
+            } else {
+                $data['is_google'] = $is_google;
+            }
+        }
+
+        $data['is_online'] = intval($params['is_online']);
+        $data['status'] = intval($params['status']);
+        if (!$params['forbid_time_flag']) {
+            $params['forbid_time_flag'] = 'max';
+        }
+        if ($params['forbid_time_flag'] == 'max') {
+            $data['forbid_time'] = NOW_TIME * 2;
+        } else {
+            $data['forbid_time'] = NOW_TIME + $params['forbid_time_flag'] * 60;
+        }
+        $data['forbid_time_flag'] = $params['forbid_time_flag'];
+        $data['forbid_msg'] = $params['forbid_msg'];
+
+        $data['phone'] = $params['phone'];
+        $data['gid'] = intval($params['gid']);
+        if ($pageuser['gid'] != 1) {
+            if ($data['gid'] < $pageuser['gid']) {
+                jReturn('-1', '您的级别不足以设置该所属分组');
+            }
+        }
+
+        if ($params['password']) {
+            $data['password'] = getPassword($params['password']);
+        }
+        if ($params['password2']) {
+            $data['password2'] = getPassword($params['password2']);
+        }
+
+        //邀请人判断
+        if ($pageuser['gid'] == 1) {
+            if ($params['paccount']) {
+                $p_user = $this->mysql->fetchRow("select id,account,realname from sys_user where account='{$params['paccount']}' or phone='{$params['paccount']}'");
+                if ($p_user['id']) {
+                    //被编辑者的下级
+                    if ($item_id) {
+                        $down_ids = getDownUser($item_id);
+                        if (in_array($p_user['id'], $down_ids)) {
+                            jReturn('-1', '邀请人不能是该用户的下级');
+                        }
+                    }
+                    $data['pid'] = $p_user['id'];
+                } else {
+                    jReturn('-1', '不存在该邀请人账号：' . $params['paccount']);
+                }
+            }
+        } else {
+            if (!$item_id) {
+                $data['pid'] = $pageuser['id'];
+            }
+        }
+
+        if (!$item_id) {
+            if (!$params['account']) {
+                jReturn('-1', '请填写账号');
+            }
+            if (utf8_strlen($params['account']) < 3 || utf8_strlen($params['account']) > 15) {
+                jReturn('-1', '请输入3-15个字符的账号');
+            }
+            //检查帐号是否已经存在
+            $account = $this->mysql->fetchRow("select id from sys_user where account='{$params['account']}'");
+            if ($account['id']) {
+                jReturn('-1', "账号{$params['account']}已经存在");
+            }
+            $data['icode'] = genIcode($this->mysql);
+            $data['account'] = $params['account'];
+            $data['openid'] = $params['account'];
+            $data['reg_time'] = NOW_TIME;
+            $data['reg_ip'] = CLIENT_IP;
+            $data['headimgurl'] = 'public/images/head.png';
+        } else {
+            if ($pageuser['gid'] > 41) {
+                $uid_arr = getDownUser($pageuser['id']);
+                if (!in_array($item_id, $uid_arr)) {
+                    jReturn('-1', '不是自己的用户无法编辑');
+                }
+            }
+            if ($item_id == 1) {
+                $data['gid'] = 1;
+                $data['status'] = 2;
+            } else {
+                //用户被禁用同时踢下线
+                if ($data['status'] == 1) {
+                    kickUser($item_id, $this->mysql);
+                }
+            }
+        }
+
+        if ($item_id) {
+            $res = $this->mysql->update($data, "id={$item_id}", 'sys_user');
+            $user = $this->mysql->fetchRow("select * from sys_user where id={$item_id}");
+            $data['account'] = $user['account'];
+        } else {
+            $res = $this->mysql->insert($data, 'sys_user');
+            $data['id'] = $res;
+        }
+        if ($res === false) {
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+        actionLog(['opt_name' => '更新用户', 'sql_str' => json_encode($data, 256)], $this->mysql);
+        $return_data = [];
+        if ($p_user) {
+            $return_data['paccount'] = $p_user['account'];
+            $return_data['prealname'] = $p_user['realname'];
+        }
+        jReturn('1', '操作成功', $return_data);
     }
 }

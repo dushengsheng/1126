@@ -65,12 +65,6 @@
 </div>
 
 
-<script src="/dist/layuiadmin/layui/layui.js"></script>
-<script src="/static/admin/js/func.js"></script>
-<script src="/js/global.js"></script>
-<script src="/js/func.js"></script>
-<script src="/js/md5.js"></script>
-
 <!--item操作工具条-->
 <script type="text/html" id="laytpl-table-item">
     {{#if(d.power_del==1){}}
@@ -93,14 +87,23 @@
 </script>
 
 
-<!--用户上下线工具条-->
+<!--用户状态/上下线工具条-->
 <script type="text/html" id="laytpl-online-switch">
-    <div>{{d.status_flag}}</div>
-    <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch"
-           {{#if (d.is_online != '0') {}}
-           checked
-           {{#}}}
-    />
+    <div>
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="user-forbidden-switch"
+        {{#if (d.status == '2') {}}
+        checked
+        {{#}}}
+        />
+    </div>
+    <hr/>
+    <div>
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch"
+        {{#if (d.is_online != '0' && d.status == '2') {}}
+        checked
+        {{#}}}
+        />
+    </div>
 </script>
 
 
@@ -120,8 +123,19 @@
             </div>
         </div>
         <div class="layui-form-item">
+            <label class="layui-form-label">上级：</label>
+            <div class="layui-input-block" style="width:180px;">
+                <select id="add-user-pid">
+                    <option value="0">请选择上级代理</option>
+                    [[foreach name="$sys_agent" item="vo"]]
+                    <option value="[[$vo.id]]">[[$vo.account]]</option>
+                    [[/foreach]]
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
             <label class="layui-form-label">分组：</label>
-            <div class="layui-input-block" style="width:120px;">
+            <div class="layui-input-block" style="width:180px;">
                 <select id="add-user-gid">
                     <option value="0">请选择分组</option>
                     [[foreach name="$sys_group" item="vo" key="skey"]]
@@ -132,6 +146,14 @@
         </div>
     </div>
 </script>
+
+
+<!--引用其他js文件-->
+<script src="/dist/layuiadmin/layui/layui.js"></script>
+<script src="/static/admin/js/func.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/func.js"></script>
+<script src="/js/md5.js"></script>
 
 
 <script>
@@ -157,7 +179,7 @@
                 where: params,
                 page: true,
                 cols: [[
-                    {field: 'id', title: 'ID', width: 80},
+                    {field: 'id', title: 'ID', width: 100},
                     {field: 'gname', title: '账号/分组', templet: function (d) {
                             var html = '<div style="text-align: center">';
                             html += '<div>' + d.account + '</div>';
@@ -179,7 +201,7 @@
                             if (d.gid < 81) {
                                 return '/';
                             }
-                            var html = '<div style="text-align:left;line-height:18px;">';
+                            var html = '<div style="text-align:left;">';
                             html += '<div>金额：<b>' + d.td_money_ok + '</b>/<b>' + d.td_money + '</b></div>';
                             html += '<div>订单：<b>' + d.td_cnt_ok + '</b>/<b>' + d.td_cnt + '</b></div>';
                             html += '<div>成功：<b>' + d.td_percent + '<b></div>';
@@ -190,7 +212,7 @@
                             if (d.gid < 81) {
                                 return '/';
                             }
-                            var html = '<div style="text-align:left;line-height:18px;">';
+                            var html = '<div style="text-align:left;">';
                             html += '<div>金额：<b>' + d.all_money_ok + '</b>/<b>' + d.all_money + '</b></div>';
                             html += '<div>订单：<b>' + d.all_cnt_ok + '</b>/<b>' + d.all_cnt + '</b></div>';
                             html += '<div>成功：<b>' + d.all_percent + '<b></div>';
@@ -198,7 +220,7 @@
                             return html;
                         }},
                     {field:'status_flag', title: '状态', width: 100, templet: "#laytpl-online-switch"},
-                    {field:'', title:'操作', width:280, toolbar:'#laytpl-table-item'}
+                    {field:'', title:'操作', width:240, toolbar:'#laytpl-table-item'}
                 ]],
                 done: function(res, curr, count) {
                     //console.log(res);
@@ -221,7 +243,7 @@
             onSearchBtn();
         });
 
-        $('#searchBtn').trigger('click');
+        onSearchBtn();
 
 
         <!--新增或者更新用户-->
@@ -232,11 +254,14 @@
 
         <!--添加或编辑用户-->
         function onAddOrEditBtn(obj) {
+            var item = null;
             var title = '添加用户';
-            var add_or_update = 'add';
+            var is_update = false;
+
             if (obj) {
+                item = obj.data;
                 title = '编辑用户';
-                add_or_update = 'update';
+                is_update = true;
             }
 
             layer.open({
@@ -245,47 +270,54 @@
                 shadeClose: true,
                 area: ['500px', '600px'],
                 btn: ['确定', '取消'],
-                content: laytpl($('#laytpl-add-user').html()).render({item:obj}),
+                content: laytpl($('#laytpl-add-user').html()).render({item: item}),
                 success: function () {
-                    if (add_or_update == 'update') {
+                    if (is_update) {
                         $('#add-user-account').prop('disabled', true);
-                        $('#add-user-account').val(obj.account);
-                        $('#add-user-gid').val(obj.gid);
+                        $('#add-user-account').val(item.account);
+                        $('#add-user-gid').val(item.gid);
+                        $('#add-user-pid').val(item.pid);
                     } else {
                         $('#add-user-account').prop('disabled', false);
+                        item = [];
                     }
                     form.render();
                 },
                 yes: function(index, layero) {
-                    obj.gid = $('#add-user-gid').val();
-                    obj.password = md5($.trim($('#add-user-passwd').val()));
+                    item.gid = $.trim($('#add-user-gid').val());
+                    item.pid = $.trim($('#add-user-pid').val());
+                    item.password = md5($.trim($('#add-user-passwd').val()));
+                    if (item.gid) {
+                        item.gname = $('#add-user-gid').find('option[value="' + item.gid + '"]').text();
+                    }
+                    if (item.pid) {
+                        item.paccount = $('#add-user-pid').find('option[value="' + item.pid + '"]').text();
+                    }
+                    if (!is_update) {
+                        item.account = $.trim($('#add-user-account').val());
+                    }
+                    if (item.id && item.pid == item.id) {
+                        _alert('自己不能作为自己的上级');
+                        return true;
+                    }
 
                     ajax({
                         url: '[[$Think.ADMIN_URL]]/user/updateuser',
-                        data:{
-                            username:username,
-                            passwd:passwd,
-                            gcode:gcode,
-                            vercode:vercode
-                        },
-                        success: function(res){
+                        data: item,
+                        success: function(res) {
                             if (res.code != '0') {
                                 layer.msg(res.msg, {icon: 0, time:1500});
-                                $('#LAY-user-get-captcha').trigger('click');
                                 return;
                             }
 
-                            //请求成功后，写入 access_token
-                            var localData = {};
-                            localData['account'] = res.data.account;
-                            localData[global.tokenName] = res.data.token;
-                            layui.data(global.tableName, localData);
-
-                            layer.msg(res.msg, {icon: 1, time:1500 }, function(){
-                                location.href = '[[$Think.ADMIN_URL]]';
-                            });
+                            if (is_update) {
+                                console.log(item);
+                                obj.update(item);
+                                form.render();
+                            } else {
+                                onSearchBtn();
+                            }
                         }
-
                     });
 
                     layer.close(index);
@@ -305,16 +337,15 @@
 
         <!--监听行按钮-->
         table.on('tool(userAgent)', function (obj) {
-           var data = obj.data;
-           var layevent = obj.event;
+            var lay_event = obj.event;
 
             //TODO
 
-           if (layevent === 'edit') {
-               onAddOrEditBtn(data);
-           } else if (layevent === 'del') {
+           if (lay_event === 'edit') {
+               onAddOrEditBtn(obj);
+           } else if (lay_event === 'del') {
                _alert('event = del');
-           } else if (layevent === 'kick') {
+           } else if (lay_event === 'kick') {
                _alert('event = kick');
            }
         });

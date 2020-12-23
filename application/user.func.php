@@ -233,3 +233,28 @@ function getUpUser($uid, $return_user_array = false, $level = 1, $level_limit = 
     return $result;
 }
 
+function getDownAgent($uid)
+{
+    $myself = getUserinfo($uid);
+    if (!$myself) {
+        return false;
+    }
+    $children = [];
+    if ($myself['gid'] < 41) {
+        $mysql = new Mysql(0);
+        $children = $mysql->fetchRows("select * from sys_user where gid in (1, 61, 81) and status < 99");
+        $mysql->close();
+        unset($mysql);
+    } else {
+        $temp_children = getDownUser($uid, true);
+        foreach ($temp_children as $child) {
+            if ($child['status'] < 99 && in_array($child['gid'], [61, 81])) {
+                $children[] = $child;
+            }
+        }
+        $children[] = $myself;
+    }
+
+    return $children;
+}
+

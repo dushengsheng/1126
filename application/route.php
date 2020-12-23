@@ -20,7 +20,7 @@ Route::rule('admin/login/loginact', 'admin/Login/loginAct');
 Route::rule('admin/login/logoutact', 'admin/Login/logoutAct');
 
 Route::rule('admin/user/agent', 'admin/User/agent');
-Route::rule('admin/user/agentlist', 'admin/User/agentlist');
-Route::rule('admin/user/updateuser', 'admin/User/updateuser');
+Route::rule('admin/user/agentlist', 'admin/User/agentList');
+Route::rule('admin/user/updateuser', 'admin/User/updateUser');
 
 
