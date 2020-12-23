@@ -62,8 +62,6 @@ class User extends Base
             $where .= " and (id='{$params['s_keyword']}' or phone='{$params['s_keyword']}' or account like '%{$params['s_keyword']}%' or realname like '%{$params['s_keyword']}%' or nickname like '%{$params['s_keyword']}%')";
         }
 
-        file_put_contents(ROOT_PATH . "logs/test.txt", "agentlist: where=" . $where . "\n\n", FILE_APPEND);
-
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
 		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
@@ -155,7 +153,6 @@ class User extends Base
             'fz_balance' => (float)$count_item['fz_balance'],
             'kb_balance' => (float)$count_item['kb_balance']
         );
-        //file_put_contents(ROOT_PATH. "logs/test.txt", var_export($data, true) . "\n\n", FILE_APPEND);
         jReturn('0', 'ok', $data);
     }
 }

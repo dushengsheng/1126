@@ -89,6 +89,8 @@ function isLogin()
     if ($token) {
         $user = getUserByToken($token);
     }
+    debugLog('isLogin: token= ' . $token);
+    debugLog('isLogin: $user= ' . var_export($user, true));
     if (!$user || !is_array($user)) {
         $cookie_json = getUserCookie();
         $cookie_arr = json_decode($cookie_json,true);

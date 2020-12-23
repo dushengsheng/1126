@@ -66,7 +66,7 @@ function hasPower($user, $nkey)
         'parentId' => $user['pid'],
         'result' => $result,
     ];
-    file_put_contents(ROOT_PATH . "logs/test.txt", "hasPower: " . var_export($param_dump, true) . "\n\n", FILE_APPEND);
+    debugLog("hasPower: " . var_export($param_dump, true));
     return $result;
 }
 
@@ -172,4 +172,16 @@ function getAccessNode($uid = 0, $mysql = null)
     }
     unset($memcache);
     return $access_ids_arr;
+}
+
+function debugLog($param)
+{
+    if (!$param) {
+        return;
+    }
+    if (is_string($param)) {
+        file_put_contents(ROOT_PATH . 'logs/test.txt', $param . "\n\n", FILE_APPEND);
+    } else {
+        file_put_contents(ROOT_PATH . 'logs/test.txt', var_export($param, true) . "\n\n", FILE_APPEND);
+    }
 }
