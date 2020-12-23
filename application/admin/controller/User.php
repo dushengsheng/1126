@@ -42,8 +42,12 @@ class User extends Base
         $where = "where status<99";
         if ($pageuser['gid'] > 41) {
             $uid_arr = getDownUser($pageuser['id']);
-            $uid_str = implode(',', $uid_arr);
-            $where .= " and id in ({$uid_str})";
+            if ($uid_arr) {
+                $uid_str = implode(',', $uid_arr);
+                $where .= " and id in ({$uid_str})";
+            } else {
+                $where = 'where 0';
+            }
         } else {
             $where .= " and gid in (81,91)";
         }
@@ -55,13 +59,15 @@ class User extends Base
             $where .= " and is_online={$params['s_is_online']}";
         }
         if (isset($params['s_keyword']) && $params['s_keyword']) {
-            $where .= " and (id='{$params['s_keyword']}' or account='{$params['s_keyword']}' or phone='{$params['s_keyword']}' or realname like '%{$params['s_keyword']}%' or nickname like '%{$params['s_keyword']}%')";
+            $where .= " and (id='{$params['s_keyword']}' or phone='{$params['s_keyword']}' or account like '%{$params['s_keyword']}%' or realname like '%{$params['s_keyword']}%' or nickname like '%{$params['s_keyword']}%')";
         }
+
+        file_put_contents(ROOT_PATH . "logs/test.txt", "agentlist: where=" . $where . "\n\n", FILE_APPEND);
 
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
 		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
-        $sql = "select * from sys_user {$where} order by id desc";
+        $sql = "select * from sys_user {$where} order by id";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
         $sys_group = getConfig('sys_group');
         $account_status = getConfig('account_status');
@@ -134,11 +140,10 @@ class User extends Base
                 $item['td_percent'] = $td_percent;
             }
 
-            $item['edit'] = hasPower($pageuser, 'User_user_update') ? 1 : 0;
-            $item['kick'] = hasPower($pageuser, 'User_user_kick') ? 1 : 0;
             $item['del'] = hasPower($pageuser, 'User_user_delete') ? 1 : 0;
+            $item['kick'] = hasPower($pageuser, 'User_user_kick') ? 1 : 0;
+            $item['edit'] = hasPower($pageuser, 'User_user_update') ? 1 : 0;
             $item['recharge'] = hasPower($pageuser, 'User_pay_balance') ? 1 : 0;
-
         }
 
         $data = array(

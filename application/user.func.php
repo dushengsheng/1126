@@ -56,8 +56,7 @@ function getUserinfo($uid, $mysql = null)
     if (!$mysql) {
         $mysql = new Mysql(0);
     }
-    $user = $mysql->fetchRow("select * from sys_user where id={$uid}");
-    return $user;
+    return $mysql->fetchRow("select * from sys_user where id={$uid}");
 }
 
 //检查登录
@@ -74,11 +73,12 @@ function checkLogin()
     if (Request::instance()->isAjax()) {
         jReturn('-98', '请先登录');
     } else {
-        $server = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
-        $url = $server . "/" . Request::instance()->module() . "/login/index";
+        $url = SERVER_URL . "/" . Request::instance()->module() . "/login/index";
         header("Location:{$url}");
         exit();
     }
+
+    return null;
 }
 
 //检查登录
@@ -151,3 +151,71 @@ function getUserByToken($token, $mysql = null)
     unset($memcache);
     return $user;
 }
+
+/*
+ * @uid 指定id, 查找该id下级用户
+ * @return_user_array true=返回user数组, false=返回id数组
+ * @level 当前查询等级层数
+ * @level_limit 查询最高层数, 0表示不限制层数
+ */
+function getDownUser($uid, $return_user_array = false, $level = 1, $level_limit = 0, &$result = array())
+{
+    if ($level_limit && $level > $level_limit) {
+        return $result;
+    }
+    $mysql = new Mysql(0);
+    if ($uid) {
+        $children = $mysql->fetchRows("select * from sys_user where pid={$uid}");
+        foreach ($children as $child) {
+            if ($child['id'] && $child['id'] != $uid) {
+                if ($return_user_array) {
+                    $child['agent_level'] = $level;
+                    $result[] = $child;
+                    //array_push($result, $child);
+                } else {
+                    if (!in_array($child['id'], $result)) {
+                        $result[] = $child['id'];
+                        //array_push($result, $child['id']);
+                    }
+                }
+                getDownUser($child['id'], $return_user_array, $level + 1, $level_limit, $result);
+                //$grandChildren = getDownUser($child['id'], $return_user_array, $level + 1, $level_limit);
+                //$result = array_merge_recursive($result, $grandChildren);
+            }
+        }
+    }
+    $mysql->close();
+    unset($mysql);
+    return $result;
+}
+
+/*
+ * 查找上级用户, 原理与getDownUser相似
+*/
+function getUpUser($uid, $return_user_array = false, $level = 1, $level_limit = 0, &$result = array())
+{
+    if ($level_limit && $level > $level_limit + 1) {
+        return $result;
+    }
+    $mysql = new Mysql(0);
+    $myslef = $mysql->fetchRow("select * from sys_user where id={$uid}");
+    if ($myslef) {
+        if ($level > 1) {
+            if ($return_user_array) {
+                $myslef['agent_level'] = $level - 1;
+                array_push($result, $myslef);
+            } else {
+                if (!in_array($myslef['id'], $result)) {
+                    array_push($result, $myslef['id']);
+                }
+            }
+        }
+        if ($myslef['pid'] && $myslef['id'] != $myslef['pid']) {
+            getUpUser($myslef['pid'], $return_user_array, $level + 1, $level_limit, $result);
+        }
+    }
+    $mysql->close();
+    unset($mysql);
+    return $result;
+}
+

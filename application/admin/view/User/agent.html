@@ -150,7 +150,7 @@
 
             dataPage({
                 elem: '#userAgent',
-                url: global.admin_url + 'user/agentlist',
+                url: '[[$Think.ADMIN_URL]]/user/agentlist',
                 where: params,
                 page: true,
                 cols: [[
@@ -250,6 +250,7 @@
                         $('#add-user-gid').val(obj.gid);
                     } else {
                         $('#add-user-account').prop('disabled', false);
+                        obj.pid = [[user.id]];
                     }
                     form.render();
                 },

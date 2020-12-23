@@ -5,8 +5,6 @@ use app\common\Mysql;
 use app\common\MyMemcache;
 
 
-define('NKEY', Request::instance()->controller() . '_' . Request::instance()->action());
-
 //检查权限
 function checkPower($nkey = '')
 {
@@ -33,7 +31,7 @@ function hasPower($user, $nkey)
         return true;
     }
     if (!$nkey) {
-        $nkey = NKEY;
+        $nkey = Request::instance()->controller() . '_' . Request::instance()->action();
     }
 
     $mysql = new Mysql(0);
@@ -60,6 +58,15 @@ function hasPower($user, $nkey)
     $mysql->close();
     unset($mysql);
 
+    $param_dump = [
+        'nkey' => $nkey,
+        'userId' => $user['id'],
+        'userGid' => $user['gid'],
+        'account' => $user['account'],
+        'parentId' => $user['pid'],
+        'result' => $result,
+    ];
+    file_put_contents(ROOT_PATH . "logs/test.txt", "hasPower: " . var_export($param_dump, true) . "\n\n", FILE_APPEND);
     return $result;
 }
 

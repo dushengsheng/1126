@@ -25,6 +25,7 @@ class Index extends Base
             'sys_group' => getConfig('sys_group'),
             'mysql_version' => $mysql_version
         );
+        file_put_contents(ROOT_PATH . "logs/test.txt", "index menu: " . var_export($data['menu_json'], true) . "\n\n", FILE_APPEND);
         return $this->fetch('Index/index', $data);
     }
 

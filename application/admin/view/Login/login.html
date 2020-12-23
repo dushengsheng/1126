@@ -112,7 +112,7 @@
       var passwd = $.trim($('#LAY-user-login-password').val());
       var gcode = $.trim($('#LAY-user-login-password-google').val());
       var vercode = $.trim($('#LAY-user-login-vercode').val());
-      var url = global.admin_url + "login/loginact";
+      var url = '[[$Think.ADMIN_URL]]/login/loginact';
       passwd = md5(passwd);
 
       ajax({
@@ -137,7 +137,7 @@
           layui.data(global.tableName, localData);
 
           layer.msg(res.msg, {icon: 1, time:1500 }, function(){
-            location.href = global.admin_url;
+            location.href = '[[$Think.ADMIN_URL]]';
           });
         }
 
