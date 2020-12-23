@@ -7,10 +7,10 @@ use app\common\MyMemcache;
 
 function clearToken($uid, $mysql = null)
 {
-    $need_close = false;
+    $to_free_mysql = false;
     if (!$mysql) {
         $mysql = new Mysql(0);
-        $need_close = true;
+        $to_free_mysql = true;
     }
     $memcache = new MyMemcache(0);
     $token_arr = $mysql->fetchRows("select * from sys_user_token where uid={$uid}", 1, 1000);
@@ -19,7 +19,7 @@ function clearToken($uid, $mysql = null)
         $memcache->delete($mem_key);
     }
     $mysql->delete("uid={$uid}", 'sys_user_token');
-    if ($need_close) {
+    if ($to_free_mysql) {
         $mysql->close();
         unset($mysql);
     }
@@ -35,7 +35,8 @@ function doLogout()
     if (!$user) {
         return true;
     }
-    deleteCookie();//清理cookie
+    //清理cookie
+    deleteCookie();
     //清理token
     clearToken($user['id']);
     //清理节点缓存
@@ -53,10 +54,17 @@ function getUserinfo($uid, $mysql = null)
     if (!$uid) {
         return false;
     }
+    $to_free_mysql = false;
     if (!$mysql) {
         $mysql = new Mysql(0);
+        $to_free_mysql = true;
     }
-    return $mysql->fetchRow("select * from sys_user where id={$uid}");
+    $user = $mysql->fetchRow("select * from sys_user where id={$uid}");
+    if ($to_free_mysql) {
+        $mysql->close();
+        unset($mysql);
+    }
+    return $user;
 }
 
 //检查登录
@@ -89,8 +97,6 @@ function isLogin()
     if ($token) {
         $user = getUserByToken($token);
     }
-    debugLog('isLogin: token= ' . $token);
-    debugLog('isLogin: $user= ' . var_export($user, true));
     if (!$user || !is_array($user)) {
         $cookie_json = getUserCookie();
         $cookie_arr = json_decode($cookie_json,true);
@@ -98,6 +104,7 @@ function isLogin()
         if ($sign == $cookie_arr['sign']) {
             $token = $cookie_arr['token'];
             $user = getUserByToken($token);
+            debugLog('isLogin: user= ' . var_export($user, true));
             if (!$user || !is_array($user)) {
                 return false;
             }
@@ -113,42 +120,48 @@ function isLogin()
 function getUserByToken($token, $mysql = null)
 {
     if (!$token) {
-        return -1;
+        return false;
     }
     $memcache = new MyMemcache(0);
     $mem_key = 'token_' . $token;
     $user = $memcache->get($mem_key);
+    $to_free_mysql = false;
+
+    do {
+        if ($user) {
+            break;
+        }
+        if (!$mysql) {
+            $mysql = new Mysql(0);
+            $to_free_mysql = true;
+        }
+
+        $sys_user_token = $mysql->fetchRow("select * from sys_user_token where token='{$token}' and status=0");
+        if (!$sys_user_token) {
+            break;
+        } else {
+            //token有效期检测
+            //...
+        }
+        $user = getUserinfo($sys_user_token['uid']);
+        if (!$user) {
+            break;
+        }
+        if ($user['phone']) {
+            $user['phone_flag'] = substr($user['phone'], 0, 3) . '***' . substr($user['phone'], 8);
+        } else {
+            $user['phone_flag'] = '';
+        }
+    } while (0);
+
+    if ($to_free_mysql) {
+        $mysql->close();
+        unset($mysql);
+    }
     if ($user) {
-        $memcache->close();
-        unset($memcache);
-        return $user;
+        $memcache->set($mem_key, $user, 3600);
     }
 
-    if (!$mysql) {
-        $mysql = new Mysql(0);
-    }
-    $sys_user_token = $mysql->fetchRow("select * from sys_user_token where token='{$token}' and status=0");
-    if (!$sys_user_token) {
-        $memcache->close();
-        unset($memcache);
-        return -2;
-    } else {
-        //token有效期检测
-        //...
-    }
-    $user = getUserinfo($sys_user_token['uid']);
-    if (!$user) {
-        $memcache->close();
-        unset($memcache);
-        return -4;
-    }
-    if ($user['phone']) {
-        $user['phone_flag'] = substr($user['phone'], 0, 3) . '***' . substr($user['phone'], 8);
-    } else {
-        $user['phone_flag'] = '';
-    }
-
-    $memcache->set($mem_key, $user, 3600);
     $memcache->close();
     unset($memcache);
     return $user;
@@ -200,20 +213,20 @@ function getUpUser($uid, $return_user_array = false, $level = 1, $level_limit = 
         return $result;
     }
     $mysql = new Mysql(0);
-    $myslef = $mysql->fetchRow("select * from sys_user where id={$uid}");
-    if ($myslef) {
+    $myself = $mysql->fetchRow("select * from sys_user where id={$uid}");
+    if ($myself) {
         if ($level > 1) {
             if ($return_user_array) {
-                $myslef['agent_level'] = $level - 1;
-                array_push($result, $myslef);
+                $myself['agent_level'] = $level - 1;
+                array_push($result, $myself);
             } else {
-                if (!in_array($myslef['id'], $result)) {
-                    array_push($result, $myslef['id']);
+                if (!in_array($myself['id'], $result)) {
+                    array_push($result, $myself['id']);
                 }
             }
         }
-        if ($myslef['pid'] && $myslef['id'] != $myslef['pid']) {
-            getUpUser($myslef['pid'], $return_user_array, $level + 1, $level_limit, $result);
+        if ($myself['pid'] && $myself['id'] != $myself['pid']) {
+            getUpUser($myself['pid'], $return_user_array, $level + 1, $level_limit, $result);
         }
     }
     $mysql->close();

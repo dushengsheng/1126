@@ -167,17 +167,19 @@ function getConfig($key, $mysql = '')
     $memcache = new MyMemcache(0);
     $mem_arr = $memcache->get($mem_key);
     if (!$mem_arr) {
-        $will_create_db = false;
-        if (!is_object($mysql)) {
+        $to_free_mysql = false;
+        if (!$mysql) {
             $mysql = new Mysql(0);
-            $will_create_db = true;
+            $to_free_mysql = true;
         }
         $result_nodes = $mysql->fetchRow("select * from sys_config where skey='{$key}'");
-        if ($will_create_db) {
+        if ($to_free_mysql) {
             $mysql->close();
             unset($mysql);
         }
         if (!$result_nodes) {
+            $memcache->close();
+            unset($memcache);
             return false;
         }
         if ($result_nodes['single']) {
@@ -186,12 +188,12 @@ function getConfig($key, $mysql = '')
             $config_slice = explode(',', $result_nodes['config']);
             $result_arr = [];
             foreach ($config_slice as $config_item) {
-                $_var_58 = explode('=', $config_item);
-                $_var_59 = trim($_var_58[0]);
-                if ($_var_59 === '') {
+                $config_pair = explode('=', $config_item);
+                $config_key = trim($config_pair[0]);
+                if ($config_key === '') {
                     continue;
                 }
-                $result_arr[$_var_59] = trim($_var_58[1]);
+                $result_arr[$config_key] = trim($config_pair[1]);
             }
             $mem_arr = $result_arr;
         }
