@@ -102,7 +102,7 @@
                         <li class="layui-nav-item layui-nav-itemed {{#if((!item.sub_node||item.sub_node.length<1)&&((item.c+'_'+item.a)==d.selectedNav)){}}layui-this{{#}}}">
                             <a href="javascript:;" data-url="{{#if(item.url){}}{{item.url}}{{#}}}"
                                {{#if(!item.sub_node||item.sub_node.length<1){}}
-                            lay-href="[[$Think.ADMIN_URL]]/{{item.c}}/{{item.a||'index'}}"
+                            lay-href="[[$Think.ADMIN_URL]]/{{item.c}}/{{item.a||'index'}}?token={{getAccessToken()}}"
                             {{#}}}
                             lay-tips="{{item.name}}">
                             <i class="layui-icon">{{#if(item.ico){}}{{item.ico}}{{#}else{}}&#xe66e;{{#}}}</i>
@@ -112,7 +112,7 @@
                             <dl class="layui-nav-child">
                                 {{# layui.each(item.sub_node,function(index2,item2){}}
                                 <dd class="{{#if((item2.c+'_'+item2.a)==d.selectedNav){}}layui-this{{#}}}">
-                                    <a lay-href="[[$Think.ADMIN_URL]]/{{item2.c}}/{{item2.a||'index'}}">
+                                    <a lay-href="[[$Think.ADMIN_URL]]/{{item2.c}}/{{item2.a||'index'}}?token={{getAccessToken()}}">
                                         <i class="layui-icon">{{#if(item2.ico){}}{{item2.ico}}{{#}else{}}&#xe66e;{{#}}}</i>
                                         {{item2.name}}
                                     </a>
