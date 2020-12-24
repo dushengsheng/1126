@@ -197,5 +197,9 @@ function localStorageLoad() {
 
 function getAccessToken() {
     var data = localStorageLoad();
-    return data[global.tokenName];
+    if (data) {
+        return data[global.tokenName];
+    } else {
+        return '';
+    }
 }

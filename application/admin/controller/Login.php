@@ -25,8 +25,6 @@ class Login extends Base
     {
         $this->checkLogin();
         $data = [
-            //'callback' => urldecode($this->params['callback']),
-            //'module' => Request::instance()->module(),
             'server' => ADMIN_URL,
             'data' => $this->params
         ];
@@ -37,13 +35,12 @@ class Login extends Base
     //检查是否已登录
     private function checkLogin()
     {
-        $user = isLogin();
+        $user = checkUserToken();
         if ($user) {
             $server = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
             header('Location:' . $server . '/' . Request::instance()->module());
             exit();
         }
-        return $user;
     }
 
     //登录操作
@@ -126,32 +123,30 @@ class Login extends Base
                 'login_time' => NOW_TIME
             );
             $this->mysql->update($login_data, "id={$user['id']}", 'sys_user');
+
             $sys_user_token = [
-                'uid' => $user['id'],
+                'id' => $user['id'],
                 'account' => $user['account'],
-                'token' => md5(getRsn()),
+                'token' => getSerialNumber(),
                 'create_time' => NOW_TIME,
                 'update_time' => NOW_TIME
             ];
-            $res = $this->mysql->insert($sys_user_token, 'sys_user_token');
-            if (!$res) {
-                jReturn('-1', '登录失败');
-            }
 
-            //写入cookie
-            $cookie_arr = [
-                'account' => $user['account'],
-                'token' => $sys_user_token['token'],
-                'time' => NOW_TIME
-            ];
-            $cookie_arr['sign'] = sysSign($cookie_arr);
-            $cookie_json = json_encode($cookie_arr, 256);
-            setUserCookie($cookie_json);
+            //生成token
+            $rsa_result = generateToken($sys_user_token);
+            if ($rsa_result['code'] != '0') {
+                jReturn($rsa_result);
+            }
+            $token = $rsa_result['data'];
 
             $return_data = [
                 'account' => $user['account'],
-                'token' => $sys_user_token['token']
+                'token' => $token
             ];
+
+            //保存cookie
+            $cookie_json = json_encode($return_data, 256);
+            setUserCookie($cookie_json);
 
             actionLog(['opt_name' => '登录', 'sql_str' => '', 'logUid' => $user['id']], $this->mysql);
             jReturn('0', '登录成功', $return_data);

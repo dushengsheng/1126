@@ -2,75 +2,68 @@
 
 use think\Request;
 use app\common\Mysql;
-use app\common\MyMemcache;
 
 
-function clearToken($uid, $mysql = null)
-{
-    $to_free_mysql = false;
-    if (!$mysql) {
-        $mysql = new Mysql(0);
-        $to_free_mysql = true;
-    }
-    $memcache = new MyMemcache(0);
-    $token_arr = $mysql->fetchRows("select * from sys_user_token where uid={$uid}", 1, 1000);
-    foreach ($token_arr as $tk) {
-        $mem_key = 'token_' . $tk['token'];
-        $memcache->delete($mem_key);
-    }
-    $mysql->delete("uid={$uid}", 'sys_user_token');
-    if ($to_free_mysql) {
-        $mysql->close();
-        unset($mysql);
-    }
-    $memcache->close();
-    unset($memcache);
-    return true;
-}
-
-//执行退出清理
+/**
+ * 退出并清理缓存
+ * @return bool
+ */
 function doLogout()
 {
-    $user = isLogin();
+    $user = checkUserToken();
     if (!$user) {
         return true;
     }
-    //清理cookie
-    deleteCookie();
-    //清理token
-    clearToken($user['id']);
     //清理节点缓存
-    $memcache = new MyMemcache(0);
-    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . 'access_ids_' . $user['id'];
-    $memcache->delete($mem_key);
-    unset($memcache);
+    memcacheDelete('user_' . $user['id']);
+    memcacheDelete('access_ids_' . $user['id']);
+    //清理cookie
+    deleteUserCookie();
     return true;
 }
 
-//获取用户信息
-function getUserinfo($uid, $mysql = null)
+/**
+ * 从缓存或数据库中获取用户信息
+ * @param $uid 用户id
+ * @param false $fresh 是否刷新(从数据库中获取)
+ * @param null $mysql
+ * @return array|false
+ */
+function getUserinfo($uid, $fresh = false, $mysql = null)
 {
     $uid = intval($uid);
     if (!$uid) {
         return false;
     }
-    $to_free_mysql = false;
-    if (!$mysql) {
-        $mysql = new Mysql(0);
-        $to_free_mysql = true;
+    $mem_key = 'user_' . $uid;
+    $user = memcacheGet($mem_key);
+
+    if (!$user || $fresh) {
+        $to_free_mysql = false;
+        if (!$mysql) {
+            $mysql = new Mysql(0);
+            $to_free_mysql = true;
+        }
+        $user = $mysql->fetchRow("select * from sys_user where id={$uid}");
+        if ($to_free_mysql) {
+            $mysql->close();
+            unset($mysql);
+        }
+        if ($user) {
+            memcacheSet($mem_key, $user);
+        }
     }
-    $user = $mysql->fetchRow("select * from sys_user where id={$uid}");
-    if ($to_free_mysql) {
-        $mysql->close();
-        unset($mysql);
-    }
+
     return $user;
 }
 
-//检查登录
+/**
+ * 检查用户是否已登录，若未登录，则跳转到登录界面
+ * @return false|mixed|string
+ */
 function checkLogin()
 {
-    $user = isLogin();
+    $user = checkUserToken();
     if ($user) {
         return $user;
     }
@@ -85,85 +78,31 @@ function checkLogin()
         header("Location:{$url}");
         exit();
     }
-
-    return null;
 }
 
-//检查登录
-function isLogin()
+/**
+ * 检测token, 验证用户登录状态
+ * admin/index/index 可以通过cookie验证
+ * @return array|false
+ */
+function checkUserToken()
 {
     $token = getParam('token');
-    $user = null;
-    if ($token) {
-        $user = getUserByToken($token);
-    }
-    if (!$user || !is_array($user)) {
+    if (!$token && cookieAuthenticate()) {
         $cookie_json = getUserCookie();
-        $cookie_arr = json_decode($cookie_json,true);
-        $sign = sysSign($cookie_arr);
-        if ($sign == $cookie_arr['sign']) {
+        if ($cookie_json) {
+            $cookie_arr = json_decode($cookie_json, true);
             $token = $cookie_arr['token'];
-            $user = getUserByToken($token);
-            if (!$user || !is_array($user)) {
-                return false;
-            }
-        } else {
-            return false;
         }
     }
 
-    return $user;
-}
-
-//根据token获取用户信息
-function getUserByToken($token, $mysql = null)
-{
-    if (!$token) {
+    $check_result = checkTokenValid($token);
+    if ($check_result['code'] != '0') {
         return false;
     }
-    $memcache = new MyMemcache(0);
-    $mem_key = 'token_' . $token;
-    $user = $memcache->get($mem_key);
-    $to_free_mysql = false;
 
-    do {
-        if ($user) {
-            break;
-        }
-        if (!$mysql) {
-            $mysql = new Mysql(0);
-            $to_free_mysql = true;
-        }
-
-        $sys_user_token = $mysql->fetchRow("select * from sys_user_token where token='{$token}' and status=0");
-        if (!$sys_user_token) {
-            break;
-        } else {
-            //token有效期检测
-            //...
-        }
-        $user = getUserinfo($sys_user_token['uid']);
-        if (!$user) {
-            break;
-        }
-        if ($user['phone']) {
-            $user['phone_flag'] = substr($user['phone'], 0, 3) . '***' . substr($user['phone'], 8);
-        } else {
-            $user['phone_flag'] = '';
-        }
-    } while (0);
-
-    if ($to_free_mysql) {
-        $mysql->close();
-        unset($mysql);
-    }
-    if ($user) {
-        $memcache->set($mem_key, $user, 3600);
-    }
-
-    $memcache->close();
-    unset($memcache);
-    return $user;
+    $user = $check_result['data'];
+    return getUserinfo($user['id']);
 }
 
 /*
@@ -233,9 +172,14 @@ function getUpUser($uid, $return_user_array = false, $level = 1, $level_limit = 
     return $result;
 }
 
+/**
+ * 获取旗下所有代理人，包括管理员
+ * @param $uid
+ * @return array|false
+ */
 function getDownAgent($uid)
 {
-    $myself = getUserinfo($uid);
+    $myself = getUserinfo($uid, true);
     if (!$myself) {
         return false;
     }

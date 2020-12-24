@@ -25,7 +25,6 @@ class Index extends Base
             'sys_group' => getConfig('sys_group'),
             'mysql_version' => $mysql_version
         );
-        debugLog("index menu: " . var_export($data['menu_json'], true));
         return $this->fetch('Index/index', $data);
     }
 

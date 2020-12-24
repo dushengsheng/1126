@@ -31,7 +31,7 @@ function ajax(opt_p) {
         type: 'post',
         url: '',
         dataType: 'json',
-        data: {},
+        data: {token: getAccessToken()},
         xhrFields: {withCredentials: true},
         beforeSend: function () {
         },

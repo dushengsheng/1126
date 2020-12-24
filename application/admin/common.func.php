@@ -84,9 +84,8 @@ function getUserMenu($uid, $mysql)
         return false;
     }
 
-    $memcache = new MyMemcache(0);
-    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . 'menu_arr_' . $uid;
-    $menu_arr = $memcache->get($mem_key);
+    $mem_key = 'menu_arr_' . $uid;
+    $menu_arr = memcacheGet($mem_key);
     if (!$menu_arr) {
         if ($user['id'] == 1 || $user['gid'] == 1) {
             $node = $mysql->fetchRows("select * from sys_node where type=1 order by pid,sort,id");
@@ -128,10 +127,9 @@ function getUserMenu($uid, $mysql)
                 );
             }
         }
-        $memcache->set($mem_key, $menu_arr, 3600);
+        memcacheSet($mem_key, $menu_arr);
     }
 
-    unset($memcache);
     return $menu_arr;
 }
 
@@ -145,9 +143,8 @@ function getAccessNode($uid = 0, $mysql = null)
     if (!$user) {
         return false;
     }
-    $memcache = new MyMemcache(0);
-    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . 'access_ids_' . $uid;
-    $access_ids_arr = $memcache->get($mem_key);
+    $mem_key = 'access_ids_' . $uid;
+    $access_ids_arr = memcacheget($mem_key);
     if (!$access_ids_arr) {
         if (!$mysql) {
             $mysql = new Mysql(0);
@@ -168,9 +165,8 @@ function getAccessNode($uid = 0, $mysql = null)
         if ($access_ids_arr) {
             $access_ids_arr = array_unique($access_ids_arr);
         }
-        $memcache->set($mem_key, $access_ids_arr, 3600);
+        memcacheSet($mem_key, $access_ids_arr);
     }
-    unset($memcache);
     return $access_ids_arr;
 }
 
@@ -185,3 +181,57 @@ function debugLog($param)
         file_put_contents(ROOT_PATH . 'logs/test.txt', var_export($param, true) . "\n\n", FILE_APPEND);
     }
 }
+
+/**
+ * 数据缓存到 memcache
+ * @param $key
+ * @param $val
+ * @param null $memcache
+ */
+function memcacheSet($key, $val, $memcache = null)
+{
+    if (!$key || !$val) {
+        return;
+    }
+
+    if (!$memcache) {
+        $memcache = MyMemcache::instance();
+    }
+
+    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . $key;
+    $memcache->set($mem_key, $val, 3600);
+}
+
+/**
+ * 从 memcache读取数据
+ * @param $key
+ * @param null $memcache
+ * @return array|false|string
+ */
+function memcacheGet($key, $memcache = null)
+{
+    if (!$memcache) {
+        $memcache = MyMemcache::instance();
+    }
+
+    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . $key;
+    $result = $memcache->get($mem_key);
+
+    return $result;
+}
+
+/**
+ * 从 memcache中删除指定数据
+ * @param $key
+ * @param null $memcache
+ */
+function memcacheDelete($key, $memcache = null)
+{
+    if (!$memcache) {
+        $memcache = MyMemcache::instance();
+    }
+
+    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . $key;
+    $memcache->delete($mem_key);
+}
+

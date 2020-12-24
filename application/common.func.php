@@ -7,12 +7,11 @@ use think\Request;
 use think\Response;
 use think\Log;
 use app\common\Mysql;
-use app\common\MyMemcache;
 
 
 //将$data数组中的key/val对，按key升序排列(sign除外)
 //并返回md5编码
-function sysSign($data)
+function md5Sign($data, $key = null)
 {
     $result = '';
     if ($data) {
@@ -24,12 +23,20 @@ function sysSign($data)
             $result .= "{$key}={$val}&";
         }
     }
-    $result .= 'key=' . SYS_KEY;
+    if (!$key) {
+        $key = SYS_KEY;
+    }
+    $result .= 'key=' . $key;
     return md5($result);
 }
 
-//产生随机数，作为token
-function getRsn($seed = '', $length = 16)
+/**
+ * 产生随机数序列, 用于token, 或者用于订单号
+ * @param string $seed
+ * @param int $length
+ * @return false|string
+ */
+function getSerialNumber($seed = '', $length = 16)
 {
     if (!$seed) {
         $seed_ms = microtime();
@@ -99,7 +106,7 @@ function actionLog($data = array(), $mysql = '')
         $uid = $data['logUid'];
         unset($data['logUid']);
     } else {
-        $user = isLogin();
+        $user = checkUserToken();
         if (!$user) {
             return false;
         }
@@ -108,13 +115,13 @@ function actionLog($data = array(), $mysql = '')
     $userinfo = array('uid' => $uid, 'create_time' => NOW_TIME, 'create_ip' => getClientIp());
     $data = array_merge($data, $userinfo);
     $data['sql_str'] = addslashes($data['sql_str']);
-    $to_free = false;
+    $to_free_mysql = false;
     if (!$mysql) {
         $mysql = new Mysql(0);
-        $to_free = true;
+        $to_free_mysql = true;
     }
     $result = $mysql->insert($data, 'sys_log');
-    if ($to_free) {
+    if ($to_free_mysql) {
         $mysql->close();
         unset($mysql);
     }
@@ -147,12 +154,17 @@ function getClientIp($idx = 0)
 }
 
 //组织返回数据
-function jReturn($code, $msg, $data = array())
+function jReturn($code, $msg = '', $data = array())
 {
-    $arr = array('code' => $code, 'msg' => $msg);
-    if ($data) {
-        $arr['data'] = $data;
+    if (is_array($code)) {
+        $arr = $code;
+    } else {
+        $arr = array('code' => $code, 'msg' => $msg);
+        if ($data) {
+            $arr['data'] = $data;
+        }
     }
+
     echo json_encode($arr, 256);
     exit();
 }
@@ -163,9 +175,8 @@ function getConfig($key, $mysql = '')
     if (!$key) {
         return false;
     }
-    $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . 'sys_config_' . $key;
-    $memcache = new MyMemcache(0);
-    $mem_arr = $memcache->get($mem_key);
+    $mem_key = 'sys_config_' . $key;
+    $mem_arr = memcacheGet($mem_key);
     if (!$mem_arr) {
         $to_free_mysql = false;
         if (!$mysql) {
@@ -178,8 +189,6 @@ function getConfig($key, $mysql = '')
             unset($mysql);
         }
         if (!$result_nodes) {
-            $memcache->close();
-            unset($memcache);
             return false;
         }
         if ($result_nodes['single']) {
@@ -197,10 +206,9 @@ function getConfig($key, $mysql = '')
             }
             $mem_arr = $result_arr;
         }
-        $memcache->set($mem_key, $mem_arr, 7200);
+        memcacheSet($mem_key, $mem_arr);
     }
-    $memcache->close();
-    unset($memcache);
+
     return $mem_arr;
 }
 
@@ -233,7 +241,7 @@ function getUserCookie()
 }
 
 //清除cookie
-function deleteCookie()
+function deleteUserCookie()
 {
     //admin or home
     $who = Request::instance()->module();
@@ -245,3 +253,154 @@ function deleteCookie()
     }
     Cookie::delete($cookie_key);
 }
+
+/**
+ * 是否使用cookie鉴权
+ * @return bool
+ */
+function cookieAuthenticate()
+{
+    $module = Request::instance()->module();
+    $controller = Request::instance()->controller();
+    $action = Request::instance()->action();
+    $url = $module . '/' . $controller . '/' . $action;
+    $url = strtolower($url);
+
+    static $pattern_arr = [
+        //'admin/index/index',
+        'admin/user/agent',
+        'admin/user/merchant',
+        'admin/finance/users',
+        'admin/finance/detail',
+        'admin/finance/card',
+        'admin/finance/userwithdrawal',
+        'admin/finance/recharge',
+        'admin/finance/rechargeerror',
+        'admin/finance/withdrawal',
+        'admin/pay/order'
+    ];
+
+    return in_array($url, $pattern_arr);
+}
+
+
+/**
+ * rsa解密
+ * @param $base64_src 密文字符串, base64编码, 待解密
+ * @param $rsa_private_key rsa私钥
+ * @return array|string[]
+ */
+function decryptRsa($base64_src, $rsa_private_key)
+{
+    if (!$base64_src) {
+        return ['code' => '-1', 'msg' => '缺少解密参数'];
+    }
+    $base64_src = implode('+', explode(' ', $base64_src));
+    if (!$rsa_private_key) {
+        return ['code' => '-1', 'msg' => '缺少RSA私钥'];
+    }
+    $pkey = openssl_pkey_get_private($rsa_private_key);
+    if (!$pkey) {
+        return ['code' => '-1', 'msg' => 'RSA私钥不可用'];
+    }
+    $base64_dst = '';
+    $src_text = base64_decode($base64_src);
+    $length_of_bits = openssl_pkey_get_details($pkey)['bits'];
+    $src_byte_arr = str_split($src_text, $length_of_bits / 8);
+    foreach ($src_byte_arr as $src_byte) {
+        openssl_private_decrypt($src_byte, $dst_byte, $pkey);
+        if ($dst_byte) {
+            $base64_dst .= $dst_byte;
+        }
+    }
+    /*
+    $dst_text = base64_decode($base64_dst);
+
+    $dst_text = json_decode($dst_text, true);
+    if (!$dst_text) {
+        $dst_text = $base64_dst;
+    }
+    */
+
+    return ['code' => '0', 'msg' => '解密成功', 'data' => $base64_dst];
+}
+
+/**
+ * rsa加密
+ * @param $base64_src 明文字符串, base64编码, 待加密
+ * @param $rsa_public_key rsa公钥
+ * @return array|string[]
+ */
+function encryptRsa($base64_src, $rsa_public_key)
+{
+    if (!$base64_src) {
+        return ['code' => '-1', 'msg' => '缺少加密参数'];
+    }
+    if (!$rsa_public_key) {
+        return ['code' => '-1', 'msg' => '缺少RSA公钥'];
+    }
+    $pkey = openssl_pkey_get_public($rsa_public_key);
+    if (!$pkey) {
+        return ['code' => '-1', 'msg' => 'RSA公钥不可用'];
+    }
+    $dst_text = '';
+    $length_of_bits = openssl_pkey_get_details($pkey)['bits'];
+    $src_byte_arr = str_split($base64_src, $length_of_bits / 8 - 11);
+    foreach ($src_byte_arr as $src_byte) {
+        openssl_public_encrypt($src_byte, $dst_byte, $pkey);
+        $dst_text .= $dst_byte;
+    }
+    $base64_dst = base64_encode($dst_text);
+    return ['code' => '0', 'msg' => '加密成功', 'data' => $base64_dst];
+}
+
+/**
+ * 将数组签名, 并通过rsa加密
+ * @param $param_arr 待加密数组
+ * @return array|string[]
+ */
+function generateToken($param_arr)
+{
+    if (!$param_arr || !is_array($param_arr)) {
+        return ['code'=>'-1', 'msg'=>'请输入正确的明文数组'];
+    }
+    $rsa_public_key = getConfig('rsa_pt_public');
+    if (!$rsa_public_key) {
+        return ['code'=>'-1', 'msg'=>'请配置平台rsa公钥'];
+    }
+    $sign = md5Sign($param_arr);
+    $param_arr['sign'] = $sign;
+    $param_text = json_encode($param_arr,256);
+    $base64_str = base64_encode($param_text);
+    return encryptRsa($base64_str, $rsa_public_key);
+}
+
+/**
+ * 通过rsa解密字符串, 并验证签名
+ * @param $ciphertext 密文
+ * @return array|string[]
+ */
+function checkTokenValid($ciphertext)
+{
+    if (!$ciphertext || !is_string($ciphertext)) {
+        return ['code'=>'-1', 'msg'=>'请输入正确的密文字符串'];
+    }
+    $rsa_private_key = getConfig('rsa_pt_private');
+    if (!$rsa_private_key) {
+        return ['code'=>'-1', 'msg'=>'请配置平台rsa私钥'];
+    }
+    $decrypt_arr = decryptRsa($ciphertext, $rsa_private_key);
+    if ($decrypt_arr['code'] != '0') {
+        return $decrypt_arr;
+    }
+    $base64_str = $decrypt_arr['data'];
+    $param_text = base64_decode($base64_str);
+    $param_arr = json_decode($param_text, true);
+    $sign = md5Sign($param_arr);
+    if ($sign != $param_arr['sign']) {
+        return ['code'=>'-1', 'msg'=>'token验证失败'];
+    }
+    return ['code'=>'0', 'msg'=>'验证成功', 'data'=>$param_arr];
+}
+
+

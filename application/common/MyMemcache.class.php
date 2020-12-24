@@ -6,7 +6,16 @@ use Memcache;
 
 class MyMemcache extends Memcache
 {
-    private $index;
+    private $index = 0;
+    private static $instance = null;
+
+    public static function instance()
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new static(0);
+        }
+        return self::$instance;
+    }
 
     public function __construct($index = 0)
     {
