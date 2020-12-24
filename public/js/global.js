@@ -2,7 +2,7 @@ var global = {
     title: '管理后台',//页面标题
     user: {},//登录用户的信息
     params: {},//参数保存
-    tableName: 'YPFEN',
+    tableName: 'localStorage',
     tokenName: 'access_token',
     pageTabs: false, //是否开启页面选项卡功能，不推荐开启
     entry: ['Index', 'index'], //默认视图

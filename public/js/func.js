@@ -179,11 +179,23 @@ function formatSeconds(value) {
 }
 
 /////////////////////////////////////////////////////////
+//保存数据到localStorage
+function localStorageSave(data) {
+    var localData = {
+        key: 'data',
+        value: data
+    }
+    layui.data(global.tableName, localData);
+}
 
-//获取token
-function getAccessToken() {
+//从localStorage获取数据
+function localStorageLoad() {
     //请求成功后，写入 access_token
-    var local = layui.data(global.tableName);
-    var token = local[global.tokenName];
-    return token;
+    var localData = layui.data(global.tableName);
+    return localData.data;
+}
+
+function getAccessToken() {
+    var data = localStorageLoad();
+    return data[global.tokenName];
 }
