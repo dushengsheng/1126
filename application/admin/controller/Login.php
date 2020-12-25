@@ -37,8 +37,7 @@ class Login extends Base
     {
         $user = checkUserToken();
         if ($user) {
-            $server = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
-            header('Location:' . $server . '/' . Request::instance()->module());
+            header('Location:' . ADMIN_URL);
             exit();
         }
     }
