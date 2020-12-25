@@ -25,6 +25,25 @@ function _alert(msg) {
     layui.layer.msg(msg, p1, p2);
 }
 
+function alertWarning(msg) {
+    var p1 = arguments[1] ? arguments[1] : null;
+    layui.layer.msg(msg, {icon: 0, time:1500}, p1);
+}
+
+function alertSuccess(msg) {
+    var p1 = arguments[1] ? arguments[1] : null;
+    layui.layer.msg(msg, {icon: 1, time:1500}, p1);
+}
+
+function alertError(msg) {
+    var p1 = arguments[1] ? arguments[1] : null;
+    layui.layer.msg(msg, {icon: 2, time:1500}, p1);
+}
+
+function jResult(code, msg, data = null) {
+    return {code: code, msg: msg, data: data};
+}
+
 //ajax调用
 function ajax(opt_p) {
     var opt_default = {

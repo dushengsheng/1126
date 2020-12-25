@@ -109,11 +109,11 @@
 
 <!--添加或编辑用户信息的弹层-->
 <script type="text/html" id="laytpl-add-user">
-    <div class="layui-form" lay-filter="form-add-user">
+    <form class="layui-form" lay-filter="form-add-user">
         <div class="layui-form-item">
             <label class="layui-form-label">账号:</label>
             <div class="layui-input-block">
-                <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text">
+                <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text" name="account">
             </div>
         </div>
         <div class="layui-form-item">
@@ -125,7 +125,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">上级：</label>
             <div class="layui-input-block" style="width:180px;">
-                <select id="add-user-pid">
+                <select id="add-user-pid" name="pid">
                     <option value="0">请选择上级代理</option>
                     [[foreach name="$sys_agent" item="vo"]]
                     <option value="[[$vo.id]]">[[$vo.account]]</option>
@@ -136,7 +136,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">分组：</label>
             <div class="layui-input-block" style="width:180px;">
-                <select id="add-user-gid">
+                <select id="add-user-gid" name="gid">
                     <option value="0">请选择分组</option>
                     [[foreach name="$sys_group" item="vo" key="skey"]]
                     <option value="[[$skey]]">[[$vo]]</option>
@@ -144,7 +144,7 @@
                 </select>
             </div>
         </div>
-    </div>
+    </form>
 </script>
 
 
@@ -223,7 +223,6 @@
                     {field:'', title:'操作', width:240, toolbar:'#laytpl-table-item'}
                 ]],
                 done: function(res, curr, count) {
-                    //console.log(res);
                     if($('.sumLine').length < 1) {
                         var html = '<div class="sumLine">';
                         html += '<span>用户数：' + res.count + '</span>';
@@ -247,21 +246,60 @@
 
 
         <!--新增或者更新用户-->
-        function addOrUpdateUser(ojb) {
-            //TODO
+        function addOrUpdateUser(row, index) {
+            var item = [];
+            if (row) {
+                item = row.data;
+            }
+            var jq_gid = $('#add-user-gid');
+            var jq_pid = $('#add-user-pid');
+            item.gid = $.trim(jq_gid.val());
+            item.pid = $.trim(jq_pid.val());
+            item.password = md5($.trim($('#add-user-passwd').val()));
+
+            // row有值, 表示表示更新用户, 否则新增用户
+            if (row) {
+                if (item.gid !== '0') {
+                    item.gname = jq_gid.find('option[value="' + item.gid + '"]').text();
+                }
+                if (item.pid !== '0') {
+                    item.paccount = jq_pid.find('option[value="' + item.pid + '"]').text();
+                }
+            } else {
+                item.account = $.trim($('#add-user-account').val());
+            }
+
+            ajax({
+                url: '[[$Think.ADMIN_URL]]/user/updateuser',
+                data: item,
+                success: function(res) {
+                    if (res.code !== '0') {
+                        alertError(res.msg);
+                        return;
+                    }
+                    layer.close(index);
+                    alertSuccess(res.msg);
+
+                    if (row) {
+                        row.update(item);
+                        form.render();
+                    } else {
+                        onSearchBtn();
+                    }
+                }
+            });
         }
 
 
         <!--添加或编辑用户-->
-        function onAddOrEditBtn(obj) {
+        function onAddOrEditBtn(row) {
             var item = null;
             var title = '添加用户';
-            var is_update = false;
 
-            if (obj) {
-                item = obj.data;
+            // row 不为null表示更新
+            if (row) {
+                item = row.data;
                 title = '编辑用户';
-                is_update = true;
             }
 
             layer.open({
@@ -272,56 +310,29 @@
                 btn: ['确定', '取消'],
                 content: laytpl($('#laytpl-add-user').html()).render({item: item}),
                 success: function () {
-                    if (is_update) {
+                    if (row) {
                         $('#add-user-account').prop('disabled', true);
-                        $('#add-user-account').val(item.account);
-                        $('#add-user-gid').val(item.gid);
-                        $('#add-user-pid').val(item.pid);
-                    } else {
-                        $('#add-user-account').prop('disabled', false);
-                        item = [];
+                        form.val('form-add-user', item);
                     }
                     form.render();
                 },
                 yes: function(index, layero) {
-                    item.gid = $.trim($('#add-user-gid').val());
-                    item.pid = $.trim($('#add-user-pid').val());
-                    item.password = md5($.trim($('#add-user-passwd').val()));
-                    if (item.gid !== '0') {
-                        item.gname = $('#add-user-gid').find('option[value="' + item.gid + '"]').text();
+                    var gid = $('#add-user-gid').val();
+                    var pid = $('#add-user-pid').val();
+                    if (gid === '0') {
+                        alertWarning('请选择分组');
+                        return;
                     }
-                    if (item.pid !== '0') {
-                        item.paccount = $('#add-user-pid').find('option[value="' + item.pid + '"]').text();
+                    if (pid === '0') {
+                        alertWarning('请选择上级代理');
+                        return;
                     }
-                    if (!is_update) {
-                        item.account = $.trim($('#add-user-account').val());
-                    }
-                    if (item.id && item.pid === item.id) {
-                        _alert('自己不能作为自己的上级');
-                        return true;
+                    if (item.id && pid === item.id) {
+                        alertWarning('自己不能作为自己的上级');
+                        return;
                     }
 
-                    ajax({
-                        url: '[[$Think.ADMIN_URL]]/user/updateuser',
-                        data: item,
-                        success: function(res) {
-                            if (res.code !== '0') {
-                                layer.msg(res.msg, {icon: 0, time:1500});
-                                return;
-                            }
-
-                            if (is_update) {
-                                console.log(item);
-                                obj.update(item);
-                                form.render();
-                            } else {
-                                onSearchBtn();
-                            }
-                        }
-                    });
-
-                    layer.close(index);
-                    return true;
+                    addOrUpdateUser(row, index);
                 },
                 btn2: function(index, layero) {
                     return true;
@@ -331,7 +342,7 @@
 
         <!--新增用户-->
         $('#addBtn').on('click', function () {
-            onAddOrEditBtn();
+            onAddOrEditBtn(null);
         });
 
 
