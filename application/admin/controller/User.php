@@ -320,4 +320,9 @@ class User extends Base
         }
         jReturn('1', '操作成功', $return_data);
     }
+	
+	public function merchant()
+	{
+		echo 'this is test merchant';
+	}
 }
