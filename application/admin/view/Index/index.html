@@ -99,9 +99,9 @@
 
                     <script id="LAY-system-side-menu-tpl" type="text/html">
                         {{# layui.each(d.menu,function(index,item){}}
-                        <li class="layui-nav-item layui-nav-itemed {{#if((!item.sub_node||item.sub_node.length<1)&&((item.c+'_'+item.a)==d.selectedNav)){}}layui-this{{#}}}">
-                            <a href="javascript:;" data-url="{{#if(item.url){}}{{item.url}}{{#}}}"
-                               {{#if(!item.sub_node||item.sub_node.length<1){}}
+                        <li class="layui-nav-item layui-nav-itemed">
+                            <a href="javascript:;"
+                            {{#if(!item.sub_node||item.sub_node.length<1){}}
                             lay-href="[[$Think.ADMIN_URL]]/{{item.c}}/{{item.a||'index'}}?token={{getAccessToken()}}"
                             {{#}}}
                             lay-tips="{{item.name}}">
@@ -111,10 +111,10 @@
                             {{#if(item.sub_node&&item.sub_node.length>0){}}
                             <dl class="layui-nav-child">
                                 {{# layui.each(item.sub_node,function(index2,item2){}}
-                                <dd class="{{#if((item2.c+'_'+item2.a)==d.selectedNav){}}layui-this{{#}}}">
+                                <dd>
                                     <a lay-href="[[$Think.ADMIN_URL]]/{{item2.c}}/{{item2.a||'index'}}?token={{getAccessToken()}}">
                                         <i class="layui-icon">{{#if(item2.ico){}}{{item2.ico}}{{#}else{}}&#xe66e;{{#}}}</i>
-                                        {{item2.name}}
+                                        <cite>{{item2.name}}</cite>
                                     </a>
                                 </dd>
                                 {{#});}}

@@ -287,16 +287,16 @@
                     item.gid = $.trim($('#add-user-gid').val());
                     item.pid = $.trim($('#add-user-pid').val());
                     item.password = md5($.trim($('#add-user-passwd').val()));
-                    if (item.gid) {
+                    if (item.gid !== '0') {
                         item.gname = $('#add-user-gid').find('option[value="' + item.gid + '"]').text();
                     }
-                    if (item.pid) {
+                    if (item.pid !== '0') {
                         item.paccount = $('#add-user-pid').find('option[value="' + item.pid + '"]').text();
                     }
                     if (!is_update) {
                         item.account = $.trim($('#add-user-account').val());
                     }
-                    if (item.id && item.pid == item.id) {
+                    if (item.id && item.pid === item.id) {
                         _alert('自己不能作为自己的上级');
                         return true;
                     }
@@ -305,7 +305,7 @@
                         url: '[[$Think.ADMIN_URL]]/user/updateuser',
                         data: item,
                         success: function(res) {
-                            if (res.code != '0') {
+                            if (res.code !== '0') {
                                 layer.msg(res.msg, {icon: 0, time:1500});
                                 return;
                             }

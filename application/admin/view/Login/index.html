@@ -68,7 +68,7 @@
 
 </div>
 
-<form style="display: none" id="form-redirect" method="post" action="[[$Think.ADMIN_URL]]">
+<form style="display: none" id="form-for-redirect" method="post" action="[[$Think.ADMIN_URL]]">
     <input type="text" id="form-redirect-token" name="token" value=""/>
 </form>
 
@@ -125,7 +125,7 @@
                     layer.msg(res.msg, {icon: 1, time:1500 }, function() {
                         //location.href = '[[$Think.ADMIN_URL]]';
                         $('#form-redirect-token').val(res.data.token);
-                        $('#form-redirect').submit();
+                        $('#form-for-redirect').submit();
                     });
                 }
 
