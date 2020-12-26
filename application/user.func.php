@@ -235,14 +235,10 @@ function deleteUser($uid, $mysql = null)
     $mem_key = 'user_' . $uid;
     memcacheDelete($mem_key);
 
-    // 删除用户
+    // 删除用户及其名下所有收款码
     $data = ['status' => 99];
     $res1 = $mysql->update($data, "id={$uid}", 'sys_user');
-    actionLog(['opt_name' => '删除用户', 'sql_str' => $mysql->lastSql], $mysql);
-
-    // 删除其名下所有收款码
     $res2 = $mysql->update($data, "uid={$uid}", 'sk_ma');
-    actionLog(['opt_name' => '删除用户收款码', 'sql_str' => $mysql->lastSql], $mysql);
 
     if ($to_free_mysql) {
         $mysql->close();
@@ -270,7 +266,6 @@ function setUserForbidden($uid, $is_forbidden = true, $mysql = null)
     }
 
     $res1 = true;
-    $opt_name = '禁用账号';
     // 改变用户和收款码状态
     if ($is_forbidden) {
         $data_user = ['status' => 1, 'is_online' => 0];
@@ -282,12 +277,9 @@ function setUserForbidden($uid, $is_forbidden = true, $mysql = null)
         memcacheDelete($mem_key);
     } else {
         $data_user = ['status' => 2];
-        $opt_name = '启用账号';
     }
-
     // 改变用户状态
     $res2 = $mysql->update($data_user, "id={$uid}", 'sys_user');
-    actionLog(['opt_name' => $opt_name, 'sql_str' => $mysql->lastSql], $mysql);
 
     if ($to_free_mysql) {
         $mysql->close();
@@ -315,11 +307,9 @@ function setUserOnline($uid, $is_online = true, $mysql = null)
     }
 
     $res1 = true;
-    $opt_name = '禁止接单';
     // 改变用户和收款码状态
     if ($is_online) {
         $data_user = ['is_online' => 1];
-        $opt_name = '允许接单';
     } else {
         $data_user = ['is_online' => 0];
         $data_skma = ['status' => 1];
@@ -329,7 +319,6 @@ function setUserOnline($uid, $is_online = true, $mysql = null)
         memcacheDelete($mem_key);
     }
     $res2 = $mysql->update($data_user, "id={$uid}", 'sys_user');
-    actionLog(['opt_name' => $opt_name, 'sql_str' => $mysql->lastSql], $mysql);
 
     if ($to_free_mysql) {
         $mysql->close();

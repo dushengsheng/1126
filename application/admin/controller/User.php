@@ -307,6 +307,7 @@ class User extends Base
         if (!deleteUser($uid, $this->mysql)) {
             jReturn('-1', '系统繁忙请稍后再试');
         }
+        actionLog(['opt_name' => '删除用户', 'sql_str' => $this->mysql->lastSql], $this->mysql);
         jReturn('0', '操作成功');
     }
 
@@ -333,6 +334,11 @@ class User extends Base
         if (!setUserForbidden($uid, !$status, $this->mysql)) {
             jReturn('-1', '系统繁忙请稍后再试');
         }
+        $opt_name = '禁用账号';
+        if ($status) {
+            $opt_name = '启用账号';
+        }
+        actionLog(['opt_name' => $opt_name, 'sql_str' => $this->mysql->lastSql], $this->mysql);
         jReturn('0', '操作成功');
     }
 
@@ -361,6 +367,11 @@ class User extends Base
         if (!setUserOnline($uid, $status, $this->mysql)) {
             jReturn('-1', '系统繁忙请稍后再试');
         }
+        $opt_name = '禁止接单';
+        if ($status) {
+            $opt_name = '允许接单';
+        }
+        actionLog(['opt_name' => $opt_name, 'sql_str' => $this->mysql->lastSql], $this->mysql);
         jReturn('0', '操作成功');
     }
 
