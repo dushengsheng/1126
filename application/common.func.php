@@ -405,4 +405,19 @@ function checkTokenValid($ciphertext)
     return ['code'=>'0', 'msg'=>'验证成功', 'data'=>$param_arr];
 }
 
+/**
+ * 将数组以字段 $key 作为索引
+ * @param $src_arr
+ * @param string $key
+ * @return array
+ */
+function rows2arr($src_arr, $key = 'id')
+{
+    $dst_arr = array();
+    foreach ($src_arr as $src_item) {
+        $dst_arr[$src_item[$key]] = $src_item;
+    }
+    return $dst_arr;
+}
+
 

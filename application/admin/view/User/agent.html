@@ -186,14 +186,15 @@
                 page: true,
                 cols: [[
                     {field: 'id', title: 'ID', width: 100},
-                    {field: 'gname', title: '账号/分组', templet: function (d) {
+                    {field: 'gname', title: '账号/昵称/分组', templet: function (d) {
                             var html = '<div style="text-align: center">';
                             html += '<div>' + d.account + '</div>';
-                            html += '<div>' + d.gname + '</div>';
+                            html += '<div>' + d.nickname + '</div>';
+                            html += '<div><b>' + d.gname + '</b></div>';
                             html += '</div>';
                             return html;
                         }},
-                    {field: 'paccount', title: '上级代理', templet: function (d) {
+                    {field: 'paccount', title: '上级', templet: function (d) {
                             if (d.paccount) {
                                 return d.paccount;
                             } else {
@@ -204,7 +205,7 @@
                     {field: 'sx_balance', title: '接单余额', width: 100},
                     {field: 'fz_balance', title: '冻结中', width: 100},
                     {field: 'td_money', title: '今日收款', templet:function (d) {
-                            if (d.gid < 81) {
+                            if (d.gid != 61 && d.gid != 71) {
                                 return '/';
                             }
                             var html = '<div style="text-align:left;">';
@@ -215,7 +216,7 @@
                             return html;
                         }},
                     {field: 'all_money', title: '累计收款', templet:function (d) {
-                            if (d.gid < 81) {
+                            if (d.gid != 61 && d.gid != 71) {
                                 return '/';
                             }
                             var html = '<div style="text-align:left;">';
@@ -253,28 +254,26 @@
 
         <!--新增或者更新用户-->
         function addOrUpdateUser(row, index) {
-            var item = [];
-            if (row) {
-                item = row.data;
-            }
+            var item = {};
             var jq_gid = $('#add-user-gid');
             var jq_pid = $('#add-user-pid');
             item.gid = $.trim(jq_gid.val());
             item.pid = $.trim(jq_pid.val());
             item.nickname = $.trim($('#add-user-nickname').val());
             item.password = md5($.trim($('#add-user-passwd').val()));
+            item.account = $.trim($('#add-user-account').val());
 
-            // row有值, 表示表示更新用户, 否则新增用户
             if (row) {
-                if (item.gid !== '0') {
-                    item.gname = jq_gid.find('option[value="' + item.gid + '"]').text();
-                }
-                if (item.pid !== '0') {
-                    item.paccount = jq_pid.find('option[value="' + item.pid + '"]').text();
-                }
-            } else {
-                item.account = $.trim($('#add-user-account').val());
+                item.id = row.data.id;
             }
+            if (item.gid !== '0') {
+                item.gname = jq_gid.find('option[value="' + item.gid + '"]').text();
+            }
+            if (item.pid !== '0') {
+                item.paccount = jq_pid.find('option[value="' + item.pid + '"]').text();
+            }
+
+            console.log(item);
 
             ajax({
                 url: '[[$Think.ADMIN_URL]]/user/updateuser',
@@ -313,7 +312,7 @@
                 title: title,
                 type: 1,
                 shadeClose: true,
-                area: ['500px', '600px'],
+                area: ['550px', '700px'],
                 btn: ['确定', '取消'],
                 content: laytpl($('#laytpl-add-user').html()).render({item: item}),
                 success: function () {
@@ -322,6 +321,9 @@
                         $('#add-user-account').prop('disabled', true);
                         // 使用item填充表单
                         form.val('form-add-user', item);
+                    } else {
+                        // 新增用户时，默认将上级设置为自己
+                        $('#add-user-pid').val([[$user.id]]);
                     }
                     form.render();
                 },
@@ -329,6 +331,20 @@
                     var gid = $('#add-user-gid').val();
                     var pid = $('#add-user-pid').val();
                     var nick = $.trim($('#add-user-nickname').val());
+                    var account = $.trim($('#add-user-account').val());
+                    var password = md5($.trim($('#add-user-passwd').val()));
+                    if (account === '') {
+                        alertWarning('账号不能为空');
+                        return;
+                    }
+                    if (!row && password === md5('')) {
+                        alertWarning('密码不能为空');
+                        return;
+                    }
+                    if (nick === '') {
+                        alertWarning('昵称不能为空');
+                        return;
+                    }
                     if (gid === '0') {
                         alertWarning('请选择分组');
                         return;
@@ -337,13 +353,23 @@
                         alertWarning('请选择上级代理');
                         return;
                     }
-                    if (nick === '') {
-                        alertWarning('昵称不能为空');
-                        return;
-                    }
-                    if (item.id && pid === item.id) {
+                    if (item && pid === item.id) {
                         alertWarning('自己不能作为自己的上级');
                         return;
+                    }
+                    console.log(pid);
+                    console.log(gid);
+                    if (item) {
+                        console.log(item);
+                    }
+                    if (row &&
+                        item.gid === gid &&
+                        item.nickname === nick &&
+                        password === md5('') &&
+                        (item.pid === pid || pid === null)) {
+                        layer.close(index);
+                        alertWarning('没有任何改变');
+                        return true;
                     }
 
                     addOrUpdateUser(row, index);
