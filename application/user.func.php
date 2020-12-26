@@ -263,7 +263,7 @@ function setUserForbidden($uid, $is_forbidden = true, $mysql = null)
     $res1 = true;
     // 改变用户和收款码状态
     if ($is_forbidden) {
-        $data_user = ['status' => 1];
+        $data_user = ['status' => 1, 'is_online' => 0];
         $data_skma = ['status' => 1];
         $res1 = $mysql->update($data_skma, "uid={$uid}", 'sk_ma');
 
