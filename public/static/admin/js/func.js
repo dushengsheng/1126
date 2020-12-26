@@ -32,7 +32,7 @@ function alertWarning(msg, callback = null) {
 
 function alertSuccess(msg, callback = null) {
     var p1 = callback ? callback : function () {};
-    layui.layer.msg(msg, {icon: 1, time:1000}, p1);
+    layui.layer.msg(msg, {icon: 1, time:1200}, p1);
 }
 
 function alertError(msg, callback = null) {

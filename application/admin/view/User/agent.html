@@ -256,6 +256,9 @@
                         html += '</div>';
                         $('.layui-table-header').before(html);
                     }
+                    if (res.code === '0') {
+                        alertSuccess(res.msg);
+                    }
                 }
             });
         }
@@ -405,7 +408,6 @@
                     success: function (res) {
                         if (res.code !== '0') {
                             alertError(res.msg);
-                            return;
                         } else {
                             obj.del();
                             layer.close(index);

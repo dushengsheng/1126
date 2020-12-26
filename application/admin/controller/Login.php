@@ -46,8 +46,6 @@ class Login extends Base
     public function loginAct()
     {
         $params = $this->params;
-        debugLog('loginAct: ' . var_export($params, true));
-
         $password = $params['passwd'];
         $account = $params['account'];
         $varify_code = strtolower($params['vercode']);
@@ -145,7 +143,7 @@ class Login extends Base
             $cookie_json = json_encode($return_data, 256);
             setUserCookie($cookie_json);
 
-            actionLog(['opt_name' => '登录', 'sql_str' => '', 'logUid' => $user['id']], $this->mysql);
+            actionLog(['opt_name' => '登录', 'sql_str' => "{$user['account']}[{$user["nickname"]}] login", 'logUid' => $user['id']], $this->mysql);
             jReturn('0', '登录成功', $return_data);
         }
     }
@@ -153,8 +151,12 @@ class Login extends Base
     //登出
     public function logoutAct()
     {
-        actionLog(['opt_name' => '退出', 'sql_str' => ''], $this->mysql);
-        doLogout();
+        $str_logout = '';
+        $pageuser = doLogout();
+        if ($pageuser) {
+            $str_logout = "{$pageuser['account']}[{$pageuser["nickname"]}] logout";
+        }
+        actionLog(['opt_name' => '退出', 'sql_str' => $str_logout], $this->mysql);
 
         if (Request::instance()->isAjax()) {
             jReturn('0', '退出成功');

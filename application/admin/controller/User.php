@@ -58,7 +58,15 @@ class User extends Base
                 $uid_str = implode(',', $uid_arr);
                 $where .= " and id in ({$uid_str})";
             } else {
-                $where = 'where 0';
+                $ret_data = [
+                    'list' => [],
+                    'count' => 0,
+                    'balance' => 0,
+                    'sx_balance' => 0,
+                    'fz_balance' => 0,
+                    'kb_balance' => 0
+                ];
+                jReturn('0', '您还没有下级代理, 赶快来创建吧', $ret_data);
             }
         } else {
             $where .= " and gid in (61,71)";
@@ -308,7 +316,6 @@ class User extends Base
         $params = $this->params;
         $status = $params['status'];
         $uid = intval($params['id']);
-        debugLog('forbiddenStatus: uid = ' . $uid . ', status = ' . $status);
 
         if (!$uid) {
             jReturn('-1', '缺少参数');
@@ -335,7 +342,6 @@ class User extends Base
         $params = $this->params;
         $status = $params['status'];
         $uid = intval($params['id']);
-        debugLog('onlineStatus: uid = ' . $uid . ', status = ' . $status);
         if (!$uid) {
             jReturn('-1', '缺少参数');
         }
@@ -357,7 +363,18 @@ class User extends Base
         }
         jReturn('0', '操作成功');
     }
-	
+
+    public function channelRate()
+    {
+
+    }
+
+
+    /*
+     * 分割线，上半部分是码商功能，下半分部是商户功能
+     * -----------------------------------------------------*/
+
+
 	public function merchant()
 	{
 		echo 'this is test merchant';

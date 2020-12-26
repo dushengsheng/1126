@@ -79,7 +79,7 @@ function getUserMenu($uid, $mysql)
     if (!$mysql) {
         $mysql = new Mysql(0);
     }
-    $user = getUserinfo($uid, $mysql);
+    $user = getUserinfo($uid, false, $mysql);
     if (!$user) {
         return false;
     }
@@ -139,7 +139,7 @@ function getAccessNode($uid = 0, $mysql = null)
     if (!$uid) {
         return false;
     }
-    $user = getUserinfo($uid, $mysql);
+    $user = getUserinfo($uid, false, $mysql);
     if (!$user) {
         return false;
     }

@@ -26,5 +26,6 @@ Route::rule('admin/user/updateuser',       'admin/User/updateUser');
 Route::rule('admin/user/deleteuser',       'admin/User/deleteUser');
 Route::rule('admin/user/onlinestatus',     'admin/User/onlineStatus');
 Route::rule('admin/user/forbiddenstatus',  'admin/User/forbiddenStatus');
+Route::rule('admin/user/channelrate',      'admin/User/channelRate');
 
 
