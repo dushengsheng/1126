@@ -25,18 +25,18 @@ function _alert(msg) {
     layui.layer.msg(msg, p1, p2);
 }
 
-function alertWarning(msg) {
-    var p1 = arguments[1] ? arguments[1] : null;
+function alertWarning(msg, callback = null) {
+    var p1 = callback ? callback : function () {};
     layui.layer.msg(msg, {icon: 0, time:1500}, p1);
 }
 
-function alertSuccess(msg) {
-    var p1 = arguments[1] ? arguments[1] : null;
-    layui.layer.msg(msg, {icon: 1, time:1500}, p1);
+function alertSuccess(msg, callback = null) {
+    var p1 = callback ? callback : function () {};
+    layui.layer.msg(msg, {icon: 1, time:1000}, p1);
 }
 
-function alertError(msg) {
-    var p1 = arguments[1] ? arguments[1] : null;
+function alertError(msg, callback = null) {
+    var p1 = callback ? callback : function () {};
     layui.layer.msg(msg, {icon: 2, time:1500}, p1);
 }
 

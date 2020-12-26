@@ -18,24 +18,24 @@
         <div class="layadmin-user-login-box layadmin-user-login-header">
             <h2>咸鱼代付后台管理系统</h2>
         </div>
-        <form class="layadmin-user-login-box layadmin-user-login-body layui-form">
+        <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-username"
-                       for="LAY-user-login-username"></label>
-                <input class="layui-input" id="LAY-user-login-username" lay-verify="required" name="username" placeholder="用户名"
+                       for="LAY-user-login-account"></label>
+                <input class="layui-input" id="LAY-user-login-account" lay-verify="required" name="username" placeholder="用户名"
                        type="text">
             </div>
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-password"
                        for="LAY-user-login-password"></label>
                 <input class="layui-input" id="LAY-user-login-password" lay-verify="required" name="password"
-                       placeholder="密码" type="password">
+                       autocomplete="off" placeholder="密码" type="password">
             </div>
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-vercode"
-                       for="LAY-user-login-password"></label>
+                       for="LAY-user-login-password-google"></label>
                 <input class="layui-input" id="LAY-user-login-password-google" name="password" placeholder="谷歌验证码, 没开启可不填"
-                       type="password">
+                       autocomplete="off" type="password">
             </div>
             <div class="layui-form-item">
                 <div class="layui-row">
@@ -59,11 +59,10 @@
                 </button>
             </div>
         </div>
-    </div>
 
-    <div class="layui-trans layadmin-user-login-footer">
-
-        <p>© 2018</p>
+        <div class="layui-trans layadmin-user-login-footer">
+            <p>© 2018</p>
+        </div>
     </div>
 
 </div>
@@ -91,7 +90,7 @@
         //提交
         form.on('submit(LAY-user-login-submit)', function (obj) {
 
-            var username = $.trim($('#LAY-user-login-username').val());
+            var account = $.trim($('#LAY-user-login-account').val());
             var passwd = $.trim($('#LAY-user-login-password').val());
             var gcode = $.trim($('#LAY-user-login-password-google').val());
             var vercode = $.trim($('#LAY-user-login-vercode').val());
@@ -101,14 +100,14 @@
             ajax({
                 url: url,
                 data: {
-                    username: username,
+                    account: account,
                     passwd: passwd,
                     gcode: gcode,
                     vercode: vercode
                 },
                 success: function (res) {
-                    if (res.code != '0') {
-                        layer.msg(res.msg, {icon: 0, time: 1500});
+                    if (res.code !== '0') {
+                        alertError(res.msg);
                         $('#LAY-user-get-captcha').trigger('click');
                         $('#LAY-user-login-vercode').val('');
                         return;
@@ -120,12 +119,10 @@
                     localData[global.tokenName] = res.data.token;
                     localStorageSave(localData);
 
-                    console.log(localData);
-
-                    layer.msg(res.msg, {icon: 1, time:1500 }, function() {
-                        //location.href = '[[$Think.ADMIN_URL]]';
-                        $('#form-redirect-token').val(res.data.token);
-                        $('#form-for-redirect').submit();
+                    alertSuccess(res.msg, function () {
+                        location.href = '[[$Think.ADMIN_URL]]';
+                        //$('#form-redirect-token').val(res.data.token);
+                        //$('#form-for-redirect').submit();
                     });
                 }
 

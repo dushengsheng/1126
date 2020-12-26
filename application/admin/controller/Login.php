@@ -46,16 +46,16 @@ class Login extends Base
     public function loginAct()
     {
         $params = $this->params;
-        Log::write(var_export($params, true));
+        debugLog('loginAct: ' . var_export($params, true));
 
         $password = $params['passwd'];
-        $account_name = $params['username'];
+        $account = $params['account'];
         $varify_code = strtolower($params['vercode']);
         /*
-        if(strlen($account_name)<4||strlen($account_name)>15){
+        if(strlen($account)<4||strlen($account)>15){
             jReturn('-1','请输入4-15个字符的帐号');
         }
-        if($f&&!isPhone($account_name)){
+        if($f&&!isPhone($account)){
             jReturn('-1','请输入正确的手机账号');
         }
         */
@@ -68,7 +68,7 @@ class Login extends Base
             jReturn('-1', '图形验证码不正确');
         }
 
-        $user = $this->mysql->fetchRow("select * from sys_user where (account='{$account_name}' or phone='{$account_name}') and status=2");
+        $user = $this->mysql->fetchRow("select * from sys_user where (account='{$account}' or phone='{$account}') and status=2");
         //Log::write("loginAct: mysql query result: " . var_export($user, true));
 
         $login_status = 0;

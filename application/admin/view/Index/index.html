@@ -220,11 +220,11 @@
 
                 success: function (res) {
                     if (res.code != '0') {
-                        layer.msg(res.msg, {icon: 0, time: 1500});
+                        alertError(res.msg);
                         return;
                     }
 
-                    layer.msg(res.msg, {icon: 1, time: 1500}, function () {
+                    alertSuccess(res.msg, function () {
                         location.href = '[[$Think.ADMIN_URL]]/login/index';
                     });
                 }
