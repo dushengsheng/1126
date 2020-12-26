@@ -17,6 +17,7 @@ function doLogout()
     }
     //清理节点缓存
     memcacheDelete('user_' . $user['id']);
+    memcacheDelete('menu_arr_' . $user['id']);
     memcacheDelete('access_ids_' . $user['id']);
     //清理cookie
     deleteUserCookie();
