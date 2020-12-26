@@ -123,7 +123,13 @@
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">上级：</label>
+            <label class="layui-form-label">昵称:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="add-user-nickname" placeholder="昵称" type="text" name="nickname">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">上级:</label>
             <div class="layui-input-block" style="width:180px;">
                 <select id="add-user-pid" name="pid">
                     <option value="0">请选择上级代理</option>
@@ -134,7 +140,7 @@
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">分组：</label>
+            <label class="layui-form-label">分组:</label>
             <div class="layui-input-block" style="width:180px;">
                 <select id="add-user-gid" name="gid">
                     <option value="0">请选择分组</option>
@@ -255,6 +261,7 @@
             var jq_pid = $('#add-user-pid');
             item.gid = $.trim(jq_gid.val());
             item.pid = $.trim(jq_pid.val());
+            item.nickname = $.trim($('#add-user-nickname').val());
             item.password = md5($.trim($('#add-user-passwd').val()));
 
             // row有值, 表示表示更新用户, 否则新增用户
@@ -311,7 +318,9 @@
                 content: laytpl($('#laytpl-add-user').html()).render({item: item}),
                 success: function () {
                     if (row) {
+                        // 更新用户信息时，账号不可变更，
                         $('#add-user-account').prop('disabled', true);
+                        // 使用item填充表单
                         form.val('form-add-user', item);
                     }
                     form.render();
@@ -319,12 +328,17 @@
                 yes: function(index, layero) {
                     var gid = $('#add-user-gid').val();
                     var pid = $('#add-user-pid').val();
+                    var nick = $.trim($('#add-user-nickname').val());
                     if (gid === '0') {
                         alertWarning('请选择分组');
                         return;
                     }
                     if (pid === '0') {
                         alertWarning('请选择上级代理');
+                        return;
+                    }
+                    if (nick === '') {
+                        alertWarning('昵称不能为空');
                         return;
                     }
                     if (item.id && pid === item.id) {

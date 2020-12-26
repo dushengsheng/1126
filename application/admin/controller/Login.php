@@ -68,10 +68,8 @@ class Login extends Base
             jReturn('-1', '图形验证码不正确');
         }
 
-        $user = $this->mysql->fetchRow("select * from sys_user where (account='{$account}' or phone='{$account}') and status=2");
-        //Log::write("loginAct: mysql query result: " . var_export($user, true));
-
         $login_status = 0;
+        $user = $this->mysql->fetchRow("select * from sys_user where (account='{$account}' or phone='{$account}') and status=2");
         if (!$user || !$user['status']) {
             $login_status = 1;
         } else {
