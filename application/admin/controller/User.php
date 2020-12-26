@@ -345,6 +345,12 @@ class User extends Base
                 jReturn('-1', '不是自己的用户无法踢下线');
             }
         }
+        if ($status) {
+            $user = getUserinfo($uid, true, $this->mysql);
+            if (!$user || $user['status'] != 2) {
+                jReturn('-1', '用户已被删除或被禁用');
+            }
+        }
 
         if (!setUserOnline($uid, $status, $this->mysql)) {
             jReturn('-1', '系统繁忙请稍后再试');

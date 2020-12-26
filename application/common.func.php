@@ -115,6 +115,7 @@ function actionLog($data = array(), $mysql = '')
     $userinfo = array('uid' => $uid, 'create_time' => NOW_TIME, 'create_ip' => getClientIp());
     $data = array_merge($data, $userinfo);
     $data['sql_str'] = addslashes($data['sql_str']);
+    $data['readable_time'] = date('Y-m-d H:i:s', NOW_TIME);
     $to_free_mysql = false;
     if (!$mysql) {
         $mysql = new Mysql(0);

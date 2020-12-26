@@ -90,18 +90,21 @@
 </script>
 
 
-<!--用户状态/上下线工具条-->
-<script id="laytpl-online-switch" type="text/html">
+<!--用户禁用状态工具条-->
+<script id="laytpl-forbidden-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="user-forbidden-switch"
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="user-forbidden-switch" name="user-forbidden-switch"
                {{#if (d.status== '2') {}}
         checked="true"
         {{#}}}
         />
     </div>
-    <hr/>
+</script>
+
+<!--用户上下线工具条-->
+<script id="laytpl-online-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch"
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch" name="user-online-switch"
                {{#if (d.is_online !='0' && d.status== '2') {}}
         checked="true"
         {{#}}}
@@ -239,7 +242,8 @@
                             return html;
                         }
                     },
-                    {field: 'status_flag', title: '状态', width: 100, templet: "#laytpl-online-switch"},
+                    {field: 'status_flag', title: '状态', width: 100, templet: "#laytpl-forbidden-switch"},
+                    {field: 'status_flag', title: '接单', width: 100, templet: "#laytpl-online-switch"},
                     {field: '', title: '操作', width: 240, toolbar: '#laytpl-table-item'}
                 ]],
                 done: function (res, curr, count) {
@@ -430,15 +434,20 @@
             }
         });
 
-        <!--监听上下线按钮-->
-        form.on('switch(user-online-switch)', function (obj) {
-            var status = obj.elem.checked ? 1 : 0;
+
+        <!--监听禁用用户按钮-->
+        form.on('switch(user-forbidden-switch)', function (obj) {
+            var available = obj.elem.checked ? 1 : 0;
+            var back = obj.elem.checked !== true;
+
             ajax({
-                url: '[[$Think.ADMIN_URL]]/user/onlinestatus',
-                data: {id: obj.value, status: status},
+                url: '[[$Think.ADMIN_URL]]/user/forbiddenstatus',
+                data: {id: obj.value, status: available},
                 success: function (res) {
                     if (res.code !== '0') {
                         alertError(res.msg);
+                        $(obj.elem).attr('checked', back);
+                        form.render();
                     } else {
                         alertSuccess(res.msg);
                     }
@@ -446,20 +455,25 @@
             });
         });
 
-        <!--监听禁用用户按钮-->
-        form.on('switch(user-forbidden-switch)', function (obj) {
-            var status = obj.elem.checked ? 1 : 0;
+        <!--监听上下线按钮-->
+        form.on('switch(user-online-switch)', function (obj) {
+            var online = obj.elem.checked ? 1 : 0;
+            var back = obj.elem.checked !== true;
+
             ajax({
-                url: '[[$Think.ADMIN_URL]]/user/forbiddenstatus',
-                data: {id: obj.value, status: status},
+                url: '[[$Think.ADMIN_URL]]/user/onlinestatus',
+                data: {id: obj.value, status: online},
                 success: function (res) {
                     if (res.code !== '0') {
                         alertError(res.msg);
+                        $(obj.elem).attr('checked', back);
+                        form.render();
                     } else {
                         alertSuccess(res.msg);
                     }
                 }
             });
+
         });
 
     });
