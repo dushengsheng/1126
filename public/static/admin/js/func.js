@@ -86,13 +86,13 @@ function dataPage(opt) {
         autoSort: false,
         cellMinWidth: 30, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
         parseData: function (res) {
-            if (res.code != '0') {
-                if (res.code == '-98') {
-                    _alert(res.msg, {}, function () {
+            if (res.code !== '0') {
+                if (res.code === '-98') {
+                    alertError(res.msg, function () {
                         location.href = 'admin';
                     });
                 } else {
-                    _alert(res.msg);
+                    alertError(res.msg);
                 }
                 return;
             }

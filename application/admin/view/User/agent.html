@@ -15,7 +15,8 @@
     <div class="layui-card">
         <div class="layui-card-header">
             <span>代理列表</span>
-            <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn" style="margin-top: 4px"> 新增</span>
+            <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
+                  style="margin-top: 4px"> 新增</span>
         </div>
         <div class="layui-card-body">
             <form action="" class="layui-form" id="searchForm">
@@ -46,12 +47,14 @@
                         <div class="layui-inline">
                             <label class="layui-form-label" style="width:50px;">关键字</label>
                             <div class="layui-input-inline">
-                                <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字" type="text">
+                                <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字"
+                                       type="text">
                             </div>
                         </div>
                         <div class="layui-inline">
                             <div class="layui-input-inline">
-                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search" id="searchBtn"> 查询</span>
+                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search"
+                                      id="searchBtn"> 查询</span>
                             </div>
                         </div>
                     </div>
@@ -59,14 +62,14 @@
                 </div>
             </form>
 
-            <table class="layui-hide" lay-filter="userAgent" id="userAgent"></table>
+            <table class="layui-hide" id="userAgent" lay-filter="userAgent"></table>
         </div>
     </div>
 </div>
 
 
 <!--item操作工具条-->
-<script type="text/html" id="laytpl-table-item">
+<script id="laytpl-table-item" type="text/html">
     {{#if(d.power_del==1){}}
     <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="del">删除</a>
     {{#}}}
@@ -88,19 +91,19 @@
 
 
 <!--用户状态/上下线工具条-->
-<script type="text/html" id="laytpl-online-switch">
+<script id="laytpl-online-switch" type="text/html">
     <div>
         <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="user-forbidden-switch"
-        {{#if (d.status == '2') {}}
-        checked
+               {{#if (d.status== '2') {}}
+        checked="true"
         {{#}}}
         />
     </div>
     <hr/>
     <div>
         <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch"
-        {{#if (d.is_online != '0' && d.status == '2') {}}
-        checked
+               {{#if (d.is_online !='0' && d.status== '2') {}}
+        checked="true"
         {{#}}}
         />
     </div>
@@ -108,12 +111,13 @@
 
 
 <!--添加或编辑用户信息的弹层-->
-<script type="text/html" id="laytpl-add-user">
+<script id="laytpl-add-user" type="text/html">
     <form class="layui-form" lay-filter="form-add-user">
         <div class="layui-form-item">
             <label class="layui-form-label">账号:</label>
             <div class="layui-input-block">
-                <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text" name="account">
+                <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text"
+                       name="account">
             </div>
         </div>
         <div class="layui-form-item">
@@ -125,7 +129,8 @@
         <div class="layui-form-item">
             <label class="layui-form-label">昵称:</label>
             <div class="layui-input-block">
-                <input autocomplete="off" class="layui-input" id="add-user-nickname" placeholder="昵称" type="text" name="nickname">
+                <input autocomplete="off" class="layui-input" id="add-user-nickname" placeholder="昵称" type="text"
+                       name="nickname">
             </div>
         </div>
         <div class="layui-form-item">
@@ -174,9 +179,9 @@
         <!--获取用户列表-->
         function onSearchBtn() {
             var params = {
-                s_gid : $('#s_gid').val(),
-                s_is_online : $('#s_is_online').val(),
-                s_keyword : $.trim($('#s_keyword').val())
+                s_gid: $('#s_gid').val(),
+                s_is_online: $('#s_is_online').val(),
+                s_keyword: $.trim($('#s_keyword').val())
             };
 
             dataPage({
@@ -186,25 +191,30 @@
                 page: true,
                 cols: [[
                     {field: 'id', title: 'ID', width: 100},
-                    {field: 'gname', title: '账号/昵称/分组', templet: function (d) {
+                    {
+                        field: 'gname', title: '账号/昵称/分组', templet: function (d) {
                             var html = '<div style="text-align: center">';
                             html += '<div>' + d.account + '</div>';
                             html += '<div>' + d.nickname + '</div>';
                             html += '<div><b>' + d.gname + '</b></div>';
                             html += '</div>';
                             return html;
-                        }},
-                    {field: 'paccount', title: '上级', templet: function (d) {
+                        }
+                    },
+                    {
+                        field: 'paccount', title: '上级', templet: function (d) {
                             if (d.paccount) {
                                 return d.paccount;
                             } else {
                                 return '';
                             }
-                        }},
+                        }
+                    },
                     {field: 'balance', title: '可提余额', width: 100},
                     {field: 'sx_balance', title: '接单余额', width: 100},
                     {field: 'fz_balance', title: '冻结中', width: 100},
-                    {field: 'td_money', title: '今日收款', templet:function (d) {
+                    {
+                        field: 'td_money', title: '今日收款', templet: function (d) {
                             if (d.gid != 61 && d.gid != 71) {
                                 return '/';
                             }
@@ -214,8 +224,10 @@
                             html += '<div>成功：<b>' + d.td_percent + '<b></div>';
                             html += '</div>';
                             return html;
-                        }},
-                    {field: 'all_money', title: '累计收款', templet:function (d) {
+                        }
+                    },
+                    {
+                        field: 'all_money', title: '累计收款', templet: function (d) {
                             if (d.gid != 61 && d.gid != 71) {
                                 return '/';
                             }
@@ -225,12 +237,13 @@
                             html += '<div>成功：<b>' + d.all_percent + '<b></div>';
                             html += '</div>';
                             return html;
-                        }},
-                    {field:'status_flag', title: '状态', width: 100, templet: "#laytpl-online-switch"},
-                    {field:'', title:'操作', width:240, toolbar:'#laytpl-table-item'}
+                        }
+                    },
+                    {field: 'status_flag', title: '状态', width: 100, templet: "#laytpl-online-switch"},
+                    {field: '', title: '操作', width: 240, toolbar: '#laytpl-table-item'}
                 ]],
-                done: function(res, curr, count) {
-                    if($('.sumLine').length < 1) {
+                done: function (res, curr, count) {
+                    if ($('.sumLine').length < 1) {
                         var html = '<div class="sumLine">';
                         html += '<span>用户数：' + res.count + '</span>';
                         html += '<span>可提余额：' + res.odata.balance + '</span>';
@@ -278,7 +291,7 @@
             ajax({
                 url: '[[$Think.ADMIN_URL]]/user/updateuser',
                 data: item,
-                success: function(res) {
+                success: function (res) {
                     if (res.code !== '0') {
                         alertError(res.msg);
                         return;
@@ -327,7 +340,7 @@
                     }
                     form.render();
                 },
-                yes: function(index, layero) {
+                yes: function (index, layero) {
                     var gid = $('#add-user-gid').val();
                     var pid = $('#add-user-pid').val();
                     var nick = $.trim($('#add-user-nickname').val());
@@ -357,11 +370,6 @@
                         alertWarning('自己不能作为自己的上级');
                         return;
                     }
-                    console.log(pid);
-                    console.log(gid);
-                    if (item) {
-                        console.log(item);
-                    }
                     if (row &&
                         item.gid === gid &&
                         item.nickname === nick &&
@@ -374,7 +382,7 @@
 
                     addOrUpdateUser(row, index);
                 },
-                btn2: function(index, layero) {
+                btn2: function (index, layero) {
                     return true;
                 }
             });
@@ -386,27 +394,72 @@
         });
 
 
+        <!--删除用户-->
+        function deleteUser(row) {
+            layer.confirm('确定删除用户及其名下所有收款码？', {title: '系统提示', icon: 3}, function (index) {
+                ajax({
+                    url: '[[$Think.ADMIN_URL]]/user/deleteuser',
+                    data: {id: row.data.id},
+                    success: function (res) {
+                        if (res.code !== '0') {
+                            alertError(res.msg);
+                            return;
+                        } else {
+                            obj.del();
+                            layer.close(index);
+                            alertSuccess(res.msg);
+                        }
+                    }
+                });
+            });
+        }
+
+
         <!--监听行按钮-->
         table.on('tool(userAgent)', function (obj) {
             var lay_event = obj.event;
 
             //TODO
 
-           if (lay_event === 'edit') {
-               onAddOrEditBtn(obj);
-           } else if (lay_event === 'del') {
-               _alert('event = del');
-           } else if (lay_event === 'kick') {
-               _alert('event = kick');
-           }
+            if (lay_event === 'edit') {
+                onAddOrEditBtn(obj);
+            } else if (lay_event === 'del') {
+                deleteUser(obj);
+            } else if (lay_event === 'channel') {
+                alertSuccess('event = channel');
+            }
         });
 
         <!--监听上下线按钮-->
         form.on('switch(user-online-switch)', function (obj) {
-            console.log(obj);
-            console.log(obj.elem.checked);
-            _alert('user-online-switch');
-            //TODO
+            var status = obj.elem.checked ? 1 : 0;
+            ajax({
+                url: '[[$Think.ADMIN_URL]]/user/onlinestatus',
+                data: {id: obj.value, status: status},
+                success: function (res) {
+                    if (res.code !== '0') {
+                        alertError(res.msg);
+                    } else {
+                        alertSuccess(res.msg);
+                    }
+                }
+            });
+        });
+
+        <!--监听禁用用户按钮-->
+        form.on('switch(user-forbidden-switch)', function (obj) {
+            var status = obj.elem.checked ? 1 : 0;
+            ajax({
+                url: '[[$Think.ADMIN_URL]]/user/forbiddenstatus',
+                data: {id: obj.value, status: status},
+                success: function (res) {
+                    if (res.code !== '0') {
+                        alertError(res.msg);
+                    } else {
+                        alertSuccess(res.msg);
+                    }
+                }
+            });
         });
 
     });

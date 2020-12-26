@@ -272,9 +272,84 @@ class User extends Base
 
         $data['paccount'] = $user['account'];
         $data['pnickname'] = $user['nickname'];
-
-        debugLog("updateuser: data = " . var_export($data, true));
         jReturn('0', '操作成功', $data);
+    }
+
+    /**
+     * 删除用户及其名下收款码
+     */
+    public function deleteUser()
+    {
+        $pageuser = checkPower();
+        $params = $this->params;
+        $uid = intval($params['id']);
+        if (!$uid) {
+            jReturn('-1', '缺少参数');
+        }
+        if ($uid == 1) {
+            jReturn('-1', '管理员不能删除');
+        }
+        if ($pageuser['gid'] > 41) {
+            $uid_arr = getDownUser($pageuser['id']);
+            if (!in_array($uid, $uid_arr)) {
+                jReturn('-1', '不是自己的用户无法删除');
+            }
+        }
+
+        if (!deleteUser($uid, $this->mysql)) {
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+        jReturn('0', '操作成功');
+    }
+
+    public function forbiddenStatus()
+    {
+        $pageuser = checkPower();
+        $params = $this->params;
+        $status = $params['status'];
+        $uid = intval($params['id']);
+        debugLog('forbiddenStatus: uid = ' . $uid . ', status = ' . $status);
+
+        if (!$uid) {
+            jReturn('-1', '缺少参数');
+        }
+        if ($uid == 1) {
+            jReturn('-1', '不能禁用管理员');
+        }
+        if ($pageuser['gid'] > 41) {
+            $uid_arr = getDownUser($pageuser['id']);
+            if (!in_array($uid, $uid_arr)) {
+                jReturn('-1', '不是自己的用户无法禁用');
+            }
+        }
+
+        if (!setUserForbidden($uid, !$status, $this->mysql)) {
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+        jReturn('0', '操作成功');
+    }
+
+    public function onlineStatus()
+    {
+        $pageuser = checkPower();
+        $params = $this->params;
+        $status = $params['status'];
+        $uid = intval($params['id']);
+        debugLog('onlineStatus: uid = ' . $uid . ', status = ' . $status);
+        if (!$uid) {
+            jReturn('-1', '缺少参数');
+        }
+        if ($pageuser['gid'] > 41) {
+            $uid_arr = getDownUser($pageuser['id']);
+            if (!in_array($uid, $uid_arr)) {
+                jReturn('-1', '不是自己的用户无法踢下线');
+            }
+        }
+
+        if (!setUserOnline($uid, $status, $this->mysql)) {
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+        jReturn('0', '操作成功');
     }
 	
 	public function merchant()

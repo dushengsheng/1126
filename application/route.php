@@ -12,16 +12,19 @@
 use think\Route;
 
 
-Route::rule('admin/index',           'admin/Index/index');
-Route::rule('admin/index/console',   'admin/Index/console');
+Route::rule('admin/index',                 'admin/Index/index');
+Route::rule('admin/index/console',         'admin/Index/console');
 
-Route::rule('admin/login',           'admin/Login/index');
-Route::rule('admin/login/captcha',   'admin/Login/captcha');
-Route::rule('admin/login/loginact',  'admin/Login/loginAct');
-Route::rule('admin/login/logoutact', 'admin/Login/logoutAct');
+Route::rule('admin/login',                 'admin/Login/index');
+Route::rule('admin/login/captcha',         'admin/Login/captcha');
+Route::rule('admin/login/loginact',        'admin/Login/loginAct');
+Route::rule('admin/login/logoutact',       'admin/Login/logoutAct');
 
-Route::rule('admin/user/agent',      'admin/User/agent');
-Route::rule('admin/user/agentlist',  'admin/User/agentList');
-Route::rule('admin/user/updateuser', 'admin/User/updateUser');
+Route::rule('admin/user/agent',            'admin/User/agent');
+Route::rule('admin/user/agentlist',        'admin/User/agentList');
+Route::rule('admin/user/updateuser',       'admin/User/updateUser');
+Route::rule('admin/user/deleteuser',       'admin/User/deleteUser');
+Route::rule('admin/user/onlinestatus',     'admin/User/onlineStatus');
+Route::rule('admin/user/forbiddenstatus',  'admin/User/forbiddenStatus');
 
 

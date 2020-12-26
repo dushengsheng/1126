@@ -69,7 +69,7 @@ class Login extends Base
         }
 
         $login_status = 0;
-        $user = $this->mysql->fetchRow("select * from sys_user where (account='{$account}' or phone='{$account}') and status=2");
+        $user = $this->mysql->fetchRow("select * from sys_user where account='{$account}' and status=2");
         if (!$user || !$user['status']) {
             $login_status = 1;
         } else {
