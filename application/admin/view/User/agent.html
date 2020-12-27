@@ -163,7 +163,7 @@
 
 <!--设置用户通道费率的弹层-->
 <script type="text/html" id="laytpl-user-channel">
-    <form class="layui-form" onsubmit="return false;" style="margin: -10px -10px -10px -10px">
+    <form class="layui-form" onsubmit="return false;">
         <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
             <label class="layui-form-label">用户账号:</label>
             <div class="layui-form-label" style="text-align:left;padding-left:0;">
@@ -175,32 +175,27 @@
             <div class="layui-form-label" style="text-align:left;padding-left:0;">
                 {{d.data.paccount||'—'}}
             </div>
+            <input type="hidden" id="laytpl-user-channel-pgroup" value="{{d.data.pgid||1}}"/>
         </div>
         {{# layui.each(d.data.sys_channel, function(index,item){}}
         {{# if(item.is_open==1){}}
         <div class="layui-form-item">
             <div class="layui-input-inline" style="width:100px; text-align: right; margin-top: -2px">
-                <input type="checkbox" lay-skin="switch" value="{{index}}" lay-text="开|关" lay-filter="user-channel-switch" name="user-channel-switch"
+                <input type="checkbox" lay-skin="switch" channel-index="{{index}}" channel-name="{{item.name}}" lay-text="开|关" class="user-channel-switch"
                        {{#if (d.data.td_switch[index]) {}} checked="true" {{#}}} />
             </div>
             <div class="layui-inline">
-                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input user-channel-rate"
-                       channel-id="{{item.id}}" channel-rate="{{#if(d.data.pfy_rate[item.id]){}}{{(d.data.pfy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}"
-                       data-up-account="{{d.data.up_account||''}}" style="width:120px;"
-                       value="{{#if(d.data.fy_rate[item.id]){}}{{(d.data.fy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}" />
+                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input user-channel-rate" style="width:120px;"
+                       channel-index="{{index}}" channel-name="{{item.name}}" data-paccount="{{d.data.paccount||''}}"
+                       channel-prate="{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"
+                       value="{{#if(d.data.fy_rate[index]){}}{{(d.data.fy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}" />
                 <span style="position:absolute;left:100px;top:10px;">%</span>
             </div>
-            <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.data.pfy_rate[item.id]){}}{{(d.data.pfy_rate[item.id]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
+            <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
         </div>
         {{#}}}
         {{#});}}
-        <div class="layui-form-item">
-            <div class="layui-input-block">
-                <input type="hidden" id="user_id" value="{{d.data.id}}" />
-                <span class="layui-btn" onclick="saveFyrate(this)">提交</span>
-                <div style="color:#f00;">设置下级的分成比例-小数，不得超过上级分成比例</div>
-            </div>
-        </div>
+        <div style="color:#f00; text-align: center">设置下级的分成比例-小数，不得超过上级分成比例</div>
     </form>
 </script>
 
@@ -380,7 +375,6 @@
                 },
                 {
                     title: title,
-                    btn: ['确定', '取消'],
                     area: global.screenType < 2 ? ['80%', '300px'] : ['450px', '550px'],
                     laytplId: '#laytpl-add-user',
                     success: function () {
@@ -463,7 +457,45 @@
                         form.render();
                     },
                     yes: function (index, layero) {
-                        layer.close(index);
+                        var channel_rate = {};
+                        var channel_switch = {};
+                        var msg = null;
+                        var pgroup = $.trim($('#laytpl-user-channel-pgroup').val());
+
+                        $('.user-channel-switch').each(function (key, obj) {
+                            var othis = $(obj);
+                            var obj_index = othis.attr('channel-index');
+                            channel_switch[obj_index] = othis.prop('checked') ? 1 : 0;
+                        });
+                        $('.user-channel-rate').each(function (key, obj) {
+                            var othis = $(obj);
+                            var obj_index = othis.attr('channel-index');
+                            var obj_rate = (($.trim(othis.val())*1)/100).toFixed(4);
+                            var obj_prate = (($.trim(othis.attr('channel-prate'))*1)/100).toFixed(4);
+                            if (pgroup != 1 && obj_rate > obj_prate) {
+                                msg = '用户的分成比例超过了上级';
+                                return false;
+                            }
+                            channel_rate[obj_index] = obj_rate;
+                        });
+
+                        if (msg) {
+                            alertError(msg);
+                            return false;
+                        }
+
+                        ajax({
+                            url: '[[$Think.ADMIN_URL]]/user/channelrate',
+                            //data: item,
+                            success: function (res) {
+                                if (res.code !== '0') {
+                                    alertError(res.msg);
+                                    return;
+                                }
+                                layer.close(index);
+                                alertSuccess(res.msg);
+                            }
+                        });
                     },
                     btn2: function (index, layero) {
                         return true;

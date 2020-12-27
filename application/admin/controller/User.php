@@ -385,7 +385,7 @@ class User extends Base
 
     public function channelRate()
     {
-
+        jReturn('0', '通道费率更新成功');
     }
 
 
@@ -468,7 +468,9 @@ class User extends Base
         $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
         $data = [
             'id' => $user['id'],
+            'gid' => $user['gid'],
             'pid' => $user['pid'],
+            'pgid' => $puser ? $puser['gid'] : 1,
             'account' => $user['account'],
             'paccount' => $paccount,
             'sys_channel' => $channel_arr,
