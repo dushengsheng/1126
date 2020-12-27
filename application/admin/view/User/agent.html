@@ -161,6 +161,43 @@
     </form>
 </script>
 
+<!--设置用户通道费率的弹层-->
+<script type="text/html" id="laytpl-user-channel">
+    <form class="layui-form" onsubmit="return false;">
+        <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
+            <label class="layui-form-label">上级账号:</label>
+            <div class="layui-form-label" style="text-align:left;padding-left:0;">
+                {{d.item.paccount||'—'}}
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
+            <label class="layui-form-label">下级账号:</label>
+            <div class="layui-form-label" style="text-align:left;padding-left:0;">
+                {{d.item.account}}
+            </div>
+        </div>
+        {{#  layui.each(d.mtype_arr, function(index,item){}}
+        {{#if(item.is_open==1&&d.item.up_td_switch[item.id]>0){}}
+        <div class="layui-form-item">
+            <label class="layui-form-label">{{#if(index>1){}}&nbsp;{{#}else{}}分成比例：{{#}}}</label>
+            <div class="layui-inline">
+                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input fy_rate" data-mtype-id="{{item.id}}" data-up-rate="{{#if(d.item.up_fy_rate[item.id]){}}{{(d.item.up_fy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}" data-up-account="{{d.item.up_account||''}}" style="width:120px;" value="{{#if(d.item.fy_rate[item.id]){}}{{(d.item.fy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}" />
+                <span style="position:absolute;left:100px;top:10px;">%</span>
+            </div>
+            <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.item.up_fy_rate[item.id]){}}{{(d.item.up_fy_rate[item.id]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
+        </div>
+        {{#}}}
+        {{#});}}
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" id="user_id" value="{{d.item.id}}" />
+                <span class="layui-btn" onclick="saveFyrate(this)">提交</span>
+                <div style="color:#f00;">设置下级的分成比例-小数，不得超过上级分成比例</div>
+            </div>
+        </div>
+    </form>
+</script>
+
 
 <!--引用其他js文件-->
 <script src="/dist/layuiadmin/layui/layui.js"></script>
@@ -213,9 +250,9 @@
                             }
                         }
                     },
-                    {field: 'balance', title: '可提余额', width: 100},
-                    {field: 'sx_balance', title: '接单余额', width: 100},
-                    {field: 'fz_balance', title: '冻结中', width: 100},
+                    {field: 'balance', title: '可提余额', width: 120},
+                    {field: 'sx_balance', title: '接单余额', width: 120},
+                    {field: 'fz_balance', title: '冻结中', width: 120},
                     {
                         field: 'td_money', title: '今日收款', templet: function (d) {
                             if (d.gid != 61 && d.gid != 71) {
@@ -401,7 +438,9 @@
 
         <!--删除用户-->
         function deleteUser(row) {
-            layer.confirm('确定删除用户及其名下所有收款码？', {title: '系统提示', icon: 3}, function (index) {
+            layer.confirm('确定删除用户及其名下所有收款码？',
+                {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
+                function (index) {
                 ajax({
                     url: '[[$Think.ADMIN_URL]]/user/deleteuser',
                     data: {id: row.data.id},

@@ -1,5 +1,5 @@
 function getScreen() {
-    var width = $(window).width();
+    var width = window.screen.width;
     if (width > 1200) {
         return 3; //大屏幕
     } else if (width > 992) {

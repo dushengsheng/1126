@@ -51,12 +51,12 @@ class User extends Base
     {
         $pageuser = checkPower();
         $params = $this->params;
-        $where = "where status<99";
+        $where = "where log.status<99";
         if ($pageuser['gid'] > 41) {
             $uid_arr = getDownUser($pageuser['id']);
             if ($uid_arr) {
                 $uid_str = implode(',', $uid_arr);
-                $where .= " and id in ({$uid_str})";
+                $where .= " and log.id in ({$uid_str})";
             } else {
                 $ret_data = [
                     'list' => [],
@@ -69,23 +69,24 @@ class User extends Base
                 jReturn('0', '您还没有下级代理, 赶快来创建吧', $ret_data);
             }
         } else {
-            $where .= " and gid in (61,71)";
+            $where .= " and log.gid in (61,71)";
         }
         if (isset($params['s_gid']) && $params['s_gid']) {
-            $where .= " and gid={$params['s_gid']}";
+            $where .= " and log.gid={$params['s_gid']}";
         }
         if (isset($params['s_is_online']) && $params['s_is_online'] != 'all') {
             $params['s_is_online'] = intval($params['s_is_online']);
-            $where .= " and is_online={$params['s_is_online']}";
+            $where .= " and log.is_online={$params['s_is_online']}";
         }
         if (isset($params['s_keyword']) && $params['s_keyword']) {
-            $where .= " and (id='{$params['s_keyword']}' or phone='{$params['s_keyword']}' or account like '%{$params['s_keyword']}%' or realname like '%{$params['s_keyword']}%' or nickname like '%{$params['s_keyword']}%')";
+            $where .= " and (log.id='{$params['s_keyword']}' or log.account like '%{$params['s_keyword']}%' or log.nickname like '%{$params['s_keyword']}%')";
         }
 
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
-		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user {$where}";
+		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user log {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
-        $sql = "select * from sys_user {$where} order by id";
+        $sql = "select log.*,p.account as paccount,p.nickname as pnickname,p.td_switch as ptd_switch,p.td_rate as ptd_rate,p.fy_rate as pfy_rate 
+                from sys_user log left join sys_user p on log.pid=p.id {$where} order by log.id";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
         $sys_group = getConfig('sys_group');
         $account_status = getConfig('account_status');
@@ -103,11 +104,13 @@ class User extends Base
             if ($item['login_time']) {
                 $item['login_time'] = date('Y-m-d H:i:s', $item['login_time']);
             }
+            /*
             if ($item['pid']) {
                 $p_user = $this->mysql->fetchRow("select account,nickname,realname from sys_user where id={$item['pid']}");
                 $item['paccount'] = $p_user['account'];
                 $item['pnickname'] = $p_user['nickname'];
             }
+            */
 
             //统计码商今日/累计收款
             $all_sql = "select count(1) as cnt,sum(log.money) as money from sk_order log where 1";
@@ -164,7 +167,7 @@ class User extends Base
             if (!$has_power_checked) {
                 $has_power_checked = true;
                 $power_arr['del'] = hasPower($pageuser, 'User_DeleteUser') ? 1 : 0;
-                $power_arr['kick'] = hasPower($pageuser, 'User_Offline') ? 1 : 0;
+                $power_arr['kick'] = hasPower($pageuser, 'User_OnlineStatus') ? 1 : 0;
                 $power_arr['edit'] = hasPower($pageuser, 'User_UpdateUser') ? 1 : 0;
                 $power_arr['channel'] = hasPower($pageuser, 'User_ChannelRate') ? 1 : 0;
                 $power_arr['recharge'] = hasPower($pageuser, 'Finance_Recharge') ? 1 : 0;
@@ -185,6 +188,7 @@ class User extends Base
             'fz_balance' => (float)$count_item['fz_balance'],
             'kb_balance' => (float)$count_item['kb_balance']
         );
+        debugLog('agent list: ' . var_export($data, true));
         jReturn('0', 'ok', $data);
     }
 

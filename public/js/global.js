@@ -8,7 +8,7 @@ var global = {
     entry: ['Index', 'index'], //默认视图
     appurl: 'admin',
     admin_url: 'http://1127.wepay.fun/admin/',
-    //screenType: typeof (getScreen) == 'function' ? getScreen() : '',
+    screenType: typeof (getScreen) == 'function' ? getScreen() : '',
     theme: {//主题配置
         color: [
             {main: '#20222A', selected: '#009688', alias: 'default'},
