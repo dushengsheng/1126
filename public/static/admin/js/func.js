@@ -120,3 +120,23 @@ function dataPage(opt) {
     var options = $.extend(true, def, opt);
     layui.table.render(options);
 }
+
+function laytplAfterAjax(ajax_opt, laytpl_opt) {
+    ajax_opt.success = function (res) {
+        console.log(res);
+
+        if (res.code === '0') {
+            var $ = layui.jquery;
+            var data = res.data;
+            laytpl_opt.type = 1;
+            laytpl_opt.shadeClose = true;
+            laytpl_opt.btn = ['确定', '取消'];
+            laytpl_opt.content = layui.laytpl($(laytpl_opt.laytplId).html()).render({data: data}),
+            layui.layer.open(laytpl_opt);
+        } else {
+            alertError(code.msg);
+        }
+    };
+    ajax(ajax_opt);
+}
+
