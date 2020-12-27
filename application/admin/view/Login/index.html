@@ -22,20 +22,22 @@
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-username"
                        for="LAY-user-login-account"></label>
-                <input class="layui-input" id="LAY-user-login-account" lay-verify="required" name="username" placeholder="用户名"
+                <input class="layui-input" id="LAY-user-login-account" lay-verify="required" name="username"
+                       placeholder="用户名"
                        type="text">
             </div>
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-password"
                        for="LAY-user-login-password"></label>
-                <input class="layui-input" id="LAY-user-login-password" lay-verify="required" name="password"
-                       autocomplete="off" placeholder="密码" type="password">
+                <input autocomplete="off" class="layui-input" id="LAY-user-login-password" lay-verify="required"
+                       name="password" placeholder="密码" type="password">
             </div>
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-vercode"
                        for="LAY-user-login-password-google"></label>
-                <input class="layui-input" id="LAY-user-login-password-google" name="password" placeholder="谷歌验证码, 没开启可不填"
-                       autocomplete="off" type="password">
+                <input autocomplete="off" class="layui-input" id="LAY-user-login-password-google"
+                       name="password"
+                       placeholder="谷歌验证码, 没开启可不填" type="password">
             </div>
             <div class="layui-form-item">
                 <div class="layui-row">
@@ -67,10 +69,9 @@
 
 </div>
 
-<form style="display: none" id="form-for-redirect" method="post" action="[[$Think.ADMIN_URL]]">
-    <input type="text" id="form-redirect-token" name="token" value=""/>
+<form action="[[$Think.ADMIN_URL]]" id="form-for-redirect" method="post" style="display: none">
+    <input id="form-redirect-token" name="token" type="text" value=""/>
 </form>
-
 
 
 <script src="/dist/layuiadmin/layui/layui.js"></script>
@@ -136,6 +137,11 @@
             $(this).attr('src', captcha + '?rt=' + Math.random());
         });
 
+        $('#LAY-user-login-vercode, #LAY-user-login-password-google, #LAY-user-login-password, #LAY-user-login-account').on('keyup', function (e) {
+            if (e.keyCode == 13) {
+                $('#LAY-user-login-submit').trigger('click');
+            }
+        });
     });
 </script>
 </body>
