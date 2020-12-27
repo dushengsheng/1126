@@ -228,6 +228,20 @@ class User extends Base
             $data['password2'] = getPassword(md5('123456'));
             $data['reg_time'] = NOW_TIME;
             $data['reg_ip'] = getClientIp();
+
+            // 初始化通道费率
+            $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
+            $td_switch_arr = [];
+            $td_rate_arr = [];
+            $fy_rate_arr = [];
+            foreach ($channel_arr as $key => $val) {
+                $td_switch_arr[$key] = 0;
+                $td_rate_arr[$key] = 0;
+                $fy_rate_arr[$key] = 0;
+            }
+            $data['td_switch'] = json_encode($td_switch_arr, 256);
+            $data['td_rate'] = json_encode($td_rate_arr, 256);
+            $data['fy_rate'] = json_encode($fy_rate_arr, 256);
         }
 
         $data['gid'] = intval($params['gid']);
@@ -390,68 +404,9 @@ class User extends Base
     /*
      * 分割线，上部分是商户功能，下部分是ajax查询接口
      * -----------------------------------------------------*/
-    public function channelQuery()
-    {
-        $pageuser = checkLogin();
-        $params = $this->params;
-
-        $uid = 0;
-        $pid = null;
-        $user = null;
-        $puser = null;
-        if (isset($params['id'])) {
-            $uid = $params['id'];
-            $pid = $params['pid'];
-            $user = getUserinfo($uid, true, $this->mysql);
-            $puser = getUserinfo($pid, true, $this->mysql);
-
-            if ($pageuser['gid'] > 41) {
-                $down_user_arr = getDownUser($pageuser['id']);
-                if ($down_user_arr) {
-                    if (!in_array($uid, $down_user_arr)) {
-                        jReturn('-1', '操作失败! 该用户不是您的下级');
-                    }
-                }
-            }
-        }
-
-        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
-        $down_agents = getDownAgent($pageuser['id']);
-        $sys_group = getConfig('sys_group');
-        $sys_group_arr = [];
-        foreach ($sys_group as $key => $value) {
-            if ($pageuser['gid'] > $key) {
-                continue;
-            }
-            if (!in_array($key, [61, 71])) {
-                continue;
-            }
-            if ($key >= $pageuser['gid']) {
-                $sys_group_arr[$key] = $value;
-            }
-        }
-        $data = [
-            'sys_user' => $pageuser,
-            'sys_group' => $sys_group_arr,
-            'sys_agent' => $down_agents,
-            'sys_channel' => $channel_arr
-        ];
-
-        $user_td_switch = null;
-        $user_td_rate = null;
-        $user_fy_rate = null;
-        if ($user) {
-
-        }
-
-        jReturn('0', '查询通道信息成功', $data);
-    }
-
     public function agentQuery()
     {
         $pageuser = checkLogin();
-
-        //$channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
         $down_agents = getDownAgent($pageuser['id']);
         $sys_group = getConfig('sys_group');
         $sys_group_arr = [];
@@ -467,12 +422,66 @@ class User extends Base
             }
         }
         $data = [
-            'sys_user' => $pageuser,
-            'sys_group' => $sys_group_arr,
             'sys_agent' => $down_agents,
-            //'sys_channel' => $channel_arr
+            'sys_group' => $sys_group_arr,
         ];
 
         jReturn('0', '查询代理信息成功', $data);
     }
+
+    public function channelQuery()
+    {
+        $pageuser = checkLogin();
+        $params = $this->params;
+        $uid = $params['id'];
+
+        if ($pageuser['gid'] > 41) {
+            $down_user_arr = getDownUser($pageuser['id']);
+            if ($down_user_arr) {
+                if (!in_array($uid, $down_user_arr)) {
+                    jReturn('-1', '操作失败! 该用户不是您的下级');
+                }
+            }
+        }
+
+        // 获取用户和上级信息
+        $user = getUserinfo($uid, true, $this->mysql);
+        if (!$user) {
+            jReturn('-1', '操作失败! 用户不存在');
+        }
+        $puser = null;
+        if ($user['pid']) {
+            $puser = getUserinfo($user['pid'], true, $this->mysql);
+        }
+
+        $ptd_switch = array();
+        $ptd_rate = array();
+        $pfy_rate = array();
+        $paccount = null;
+        if ($puser) {
+            $ptd_switch = json_decode($puser['td_switch'], 256);
+            $ptd_rate = json_decode($puser['td_rate'], 256);
+            $pfy_rate = json_decode($puser['fy_rate'], 256);
+            $paccount = $puser['account'];
+        }
+
+        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
+        $data = [
+            'id' => $user['id'],
+            'pid' => $user['pid'],
+            'account' => $user['account'],
+            'paccount' => $paccount,
+            'sys_channel' => $channel_arr,
+            'td_switch' => json_decode($user['td_switch'], 256),
+            'td_rate' => json_decode($user['td_rate'], 256),
+            'fy_rate' => json_decode($user['fy_rate'], 256),
+            'ptd_switch' => $ptd_switch,
+            'ptd_rate' => $ptd_rate,
+            'pfy_rate' => $pfy_rate,
+        ];
+
+        jReturn('0', '查询通道信息成功', $data);
+    }
+
+
 }

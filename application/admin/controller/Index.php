@@ -21,7 +21,7 @@ class Index extends Base
         $menu = getUserMenu($pageuser['id'], $this->mysql);
         $data = array(
             'user' => $pageuser,
-            'menu_json' => json_encode(array_values($menu)),
+            'menu_json' => json_encode(array_values($menu), 256),
             'sys_group' => getConfig('sys_group'),
             'mysql_version' => $mysql_version
         );

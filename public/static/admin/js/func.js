@@ -130,7 +130,6 @@ function laytplAfterAjax(ajax_opt, laytpl_opt) {
             var data = res.data;
             laytpl_opt.type = 1;
             laytpl_opt.shadeClose = true;
-            laytpl_opt.btn = ['确定', '取消'];
             laytpl_opt.content = layui.laytpl($(laytpl_opt.laytplId).html()).render({data: data}),
             layui.layer.open(laytpl_opt);
         } else {
