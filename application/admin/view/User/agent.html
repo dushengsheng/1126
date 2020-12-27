@@ -118,27 +118,27 @@
     <form class="layui-form" lay-filter="form-add-user">
         <div class="layui-form-item">
             <label class="layui-form-label">账号:</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline" style="width:220px;">
                 <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text"
                        name="account">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">密码:</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline" style="width:220px;">
                 <input autocomplete="off" class="layui-input" id="add-user-passwd" placeholder="密码" type="password">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">昵称:</label>
-            <div class="layui-input-block">
+            <div class="layui-input-inline" style="width:220px;">
                 <input autocomplete="off" class="layui-input" id="add-user-nickname" placeholder="昵称" type="text"
                        name="nickname">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">上级:</label>
-            <div class="layui-input-block" style="width:180px;">
+            <div class="layui-input-block" style="width:220px;">
                 <select id="add-user-pid" name="pid">
                     <option value="0">请选择上级代理</option>
                     {{#  layui.each(d.data.sys_agent, function(index, item){}}
@@ -149,7 +149,7 @@
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">分组:</label>
-            <div class="layui-input-block" style="width:180px;">
+            <div class="layui-input-block" style="width:220px;">
                 <select id="add-user-gid" name="gid">
                     <option value="0">请选择分组</option>
                     {{#  layui.each(d.data.sys_group, function(index, item){}}
@@ -163,34 +163,40 @@
 
 <!--设置用户通道费率的弹层-->
 <script type="text/html" id="laytpl-user-channel">
-    <form class="layui-form" onsubmit="return false;">
+    <form class="layui-form" onsubmit="return false;" style="margin: -10px -10px -10px -10px">
+        <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
+            <label class="layui-form-label">用户账号:</label>
+            <div class="layui-form-label" style="text-align:left;padding-left:0;">
+                {{d.data.account}}
+            </div>
+        </div>
         <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
             <label class="layui-form-label">上级账号:</label>
             <div class="layui-form-label" style="text-align:left;padding-left:0;">
-                {{d.item.paccount||'—'}}
+                {{d.data.paccount||'—'}}
             </div>
         </div>
-        <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
-            <label class="layui-form-label">下级账号:</label>
-            <div class="layui-form-label" style="text-align:left;padding-left:0;">
-                {{d.item.account}}
-            </div>
-        </div>
-        {{#  layui.each(d.mtype_arr, function(index,item){}}
-        {{#if(item.is_open==1&&d.item.up_td_switch[item.id]>0){}}
+        {{# layui.each(d.data.sys_channel, function(index,item){}}
+        {{# if(item.is_open==1){}}
         <div class="layui-form-item">
-            <label class="layui-form-label">{{#if(index>1){}}&nbsp;{{#}else{}}分成比例：{{#}}}</label>
+            <div class="layui-input-inline" style="width:100px; text-align: right; margin-top: -2px">
+                <input type="checkbox" lay-skin="switch" value="{{index}}" lay-text="开|关" lay-filter="user-channel-switch" name="user-channel-switch"
+                       {{#if (d.data.td_switch[index]) {}} checked="true" {{#}}} />
+            </div>
             <div class="layui-inline">
-                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input fy_rate" data-mtype-id="{{item.id}}" data-up-rate="{{#if(d.item.up_fy_rate[item.id]){}}{{(d.item.up_fy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}" data-up-account="{{d.item.up_account||''}}" style="width:120px;" value="{{#if(d.item.fy_rate[item.id]){}}{{(d.item.fy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}" />
+                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input user-channel-rate"
+                       channel-id="{{item.id}}" channel-rate="{{#if(d.data.pfy_rate[item.id]){}}{{(d.data.pfy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}"
+                       data-up-account="{{d.data.up_account||''}}" style="width:120px;"
+                       value="{{#if(d.data.fy_rate[item.id]){}}{{(d.data.fy_rate[item.id]*100).toFixed(2)}}{{#}else{}}0{{#}}}" />
                 <span style="position:absolute;left:100px;top:10px;">%</span>
             </div>
-            <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.item.up_fy_rate[item.id]){}}{{(d.item.up_fy_rate[item.id]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
+            <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.data.pfy_rate[item.id]){}}{{(d.data.pfy_rate[item.id]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
         </div>
         {{#}}}
         {{#});}}
         <div class="layui-form-item">
             <div class="layui-input-block">
-                <input type="hidden" id="user_id" value="{{d.item.id}}" />
+                <input type="hidden" id="user_id" value="{{d.data.id}}" />
                 <span class="layui-btn" onclick="saveFyrate(this)">提交</span>
                 <div style="color:#f00;">设置下级的分成比例-小数，不得超过上级分成比例</div>
             </div>
@@ -208,13 +214,15 @@
 
 
 <script>
-    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl'], function () {
+    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl', 'element'], function () {
         var $ = layui.jquery;
         var table = layui.table;
         var form = layui.form;
         var layer = layui.layer;
         var laytpl = layui.laytpl;
+        var element = layui.element;
 
+        element.init();
 
         <!--获取用户列表-->
         function onSearchBtn() {
@@ -372,7 +380,8 @@
                 },
                 {
                     title: title,
-                    area: global.screenType < 2 ? ['80%', '300px'] : ['550px', '700px'],
+                    btn: ['确定', '取消'],
+                    area: global.screenType < 2 ? ['80%', '300px'] : ['450px', '550px'],
                     laytplId: '#laytpl-add-user',
                     success: function () {
                         if (row) {
@@ -444,14 +453,14 @@
         function userChannel(row) {
             laytplAfterAjax({
                     url: '[[$Think.ADMIN_URL]]/user/channelquery',
-                    data: {id: row.data.id, pid: row.data.pid}
+                    data: {id: row.data.id}
                 },
                 {
                     title: '用户通道费率',
-                    area: global.screenType < 2 ? ['80%', '300px'] : ['550px', '700px'],
+                    area: global.screenType < 2 ? ['80%', '300px'] : ['540px', '755px'],
                     laytplId: '#laytpl-user-channel',
                     success: function () {
-                        console.log('on laytplAfterAjax laytpl success');
+                        form.render();
                     },
                     yes: function (index, layero) {
                         layer.close(index);
