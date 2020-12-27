@@ -16,17 +16,9 @@ class User extends Base
     public function agent()
     {
         $pageuser = checkPower();
-        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
-        $down_agents = getDownAgent($pageuser['id']);
         $sys_group = getConfig('sys_group');
         $sys_group_arr = [];
         foreach ($sys_group as $key => $value) {
-            /*
-            if ($pageuser['id'] == 1 || $pageuser['gid'] <= 41) {
-                $sys_group_arr[$key] = $value;
-                continue;
-            }
-            */
             if ($pageuser['gid'] > $key) {
                 continue;
             }
@@ -38,10 +30,8 @@ class User extends Base
             }
         }
         $data = [
-            'user' => $pageuser,
-            'sys_group' => $sys_group_arr,
-            'sys_agent' => $down_agents,
-            'sys_channel' => $channel_arr
+            'sys_user' => $pageuser,
+            'sys_group' => $sys_group_arr
         ];
 
         return $this->fetch("User/agent", $data);
@@ -85,7 +75,7 @@ class User extends Base
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
 		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user log {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
-        $sql = "select log.*,p.account as paccount,p.nickname as pnickname,p.td_switch as ptd_switch,p.td_rate as ptd_rate,p.fy_rate as pfy_rate 
+        $sql = "select log.*,p.account as paccount,p.nickname as pnickname,p.status as pstatus,p.td_switch as ptd_switch,p.td_rate as ptd_rate,p.fy_rate as pfy_rate 
                 from sys_user log left join sys_user p on log.pid=p.id {$where} order by log.id";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
         $sys_group = getConfig('sys_group');
@@ -99,6 +89,7 @@ class User extends Base
             unset($item['password'], $item['password2']);
             $item['gname'] = $sys_group[$item['gid']];
             $item['status_flag'] = $account_status[$item['status']];
+            $item['pstatus_flag'] = $account_status[$item['pstatus']];
             $item['is_online_flag'] = $yes_or_no[$item['is_online']];
             $item['reg_time'] = date('Y-m-d H:i:s', $item['reg_time']);
             if ($item['login_time']) {
@@ -188,7 +179,6 @@ class User extends Base
             'fz_balance' => (float)$count_item['fz_balance'],
             'kb_balance' => (float)$count_item['kb_balance']
         );
-        debugLog('agent list: ' . var_export($data, true));
         jReturn('0', 'ok', $data);
     }
 
@@ -304,7 +294,7 @@ class User extends Base
         if ($pageuser['gid'] > 41) {
             $uid_arr = getDownUser($pageuser['id']);
             if (!in_array($uid, $uid_arr)) {
-                jReturn('-1', '不是自己的用户无法删除');
+                jReturn('-1', '操作失败! 该用户不是您的下级');
             }
         }
 
@@ -331,7 +321,7 @@ class User extends Base
         if ($pageuser['gid'] > 41) {
             $uid_arr = getDownUser($pageuser['id']);
             if (!in_array($uid, $uid_arr)) {
-                jReturn('-1', '不是自己的用户无法禁用');
+                jReturn('-1', '操作失败! 该用户不是您的下级');
             }
         }
 
@@ -358,7 +348,7 @@ class User extends Base
         if ($pageuser['gid'] > 41) {
             $uid_arr = getDownUser($pageuser['id']);
             if (!in_array($uid, $uid_arr)) {
-                jReturn('-1', '不是自己的用户无法踢下线');
+                jReturn('-1', '操作失败! 该用户不是您的下级');
             }
         }
         if ($status) {
@@ -386,7 +376,7 @@ class User extends Base
 
 
     /*
-     * 分割线，上半部分是码商功能，下半分部是商户功能
+     * 分割线，上部分是码商功能，下部分是商户功能
      * -----------------------------------------------------*/
 
 
@@ -394,4 +384,95 @@ class User extends Base
 	{
 		echo 'this is test merchant';
 	}
+
+
+
+    /*
+     * 分割线，上部分是商户功能，下部分是ajax查询接口
+     * -----------------------------------------------------*/
+    public function channelQuery()
+    {
+        $pageuser = checkLogin();
+        $params = $this->params;
+
+        $uid = 0;
+        $pid = null;
+        $user = null;
+        $puser = null;
+        if (isset($params['id'])) {
+            $uid = $params['id'];
+            $pid = $params['pid'];
+            $user = getUserinfo($uid, true, $this->mysql);
+            $puser = getUserinfo($pid, true, $this->mysql);
+
+            if ($pageuser['gid'] > 41) {
+                $down_user_arr = getDownUser($pageuser['id']);
+                if ($down_user_arr) {
+                    if (!in_array($uid, $down_user_arr)) {
+                        jReturn('-1', '操作失败! 该用户不是您的下级');
+                    }
+                }
+            }
+        }
+
+        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
+        $down_agents = getDownAgent($pageuser['id']);
+        $sys_group = getConfig('sys_group');
+        $sys_group_arr = [];
+        foreach ($sys_group as $key => $value) {
+            if ($pageuser['gid'] > $key) {
+                continue;
+            }
+            if (!in_array($key, [61, 71])) {
+                continue;
+            }
+            if ($key >= $pageuser['gid']) {
+                $sys_group_arr[$key] = $value;
+            }
+        }
+        $data = [
+            'sys_user' => $pageuser,
+            'sys_group' => $sys_group_arr,
+            'sys_agent' => $down_agents,
+            'sys_channel' => $channel_arr
+        ];
+
+        $user_td_switch = null;
+        $user_td_rate = null;
+        $user_fy_rate = null;
+        if ($user) {
+
+        }
+
+        jReturn('0', '查询通道信息成功', $data);
+    }
+
+    public function agentQuery()
+    {
+        $pageuser = checkLogin();
+
+        //$channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
+        $down_agents = getDownAgent($pageuser['id']);
+        $sys_group = getConfig('sys_group');
+        $sys_group_arr = [];
+        foreach ($sys_group as $key => $value) {
+            if ($pageuser['gid'] > $key) {
+                continue;
+            }
+            if (!in_array($key, [61, 71])) {
+                continue;
+            }
+            if ($key >= $pageuser['gid']) {
+                $sys_group_arr[$key] = $value;
+            }
+        }
+        $data = [
+            'sys_user' => $pageuser,
+            'sys_group' => $sys_group_arr,
+            'sys_agent' => $down_agents,
+            //'sys_channel' => $channel_arr
+        ];
+
+        jReturn('0', '查询代理信息成功', $data);
+    }
 }

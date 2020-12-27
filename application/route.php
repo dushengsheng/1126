@@ -28,4 +28,5 @@ Route::rule('admin/user/onlinestatus',     'admin/User/onlineStatus');
 Route::rule('admin/user/forbiddenstatus',  'admin/User/forbiddenStatus');
 Route::rule('admin/user/channelrate',      'admin/User/channelRate');
 
-
+Route::rule('admin/user/channelquery',      'admin/User/channelQuery');
+Route::rule('admin/user/agentquery',        'admin/User/agentQuery');

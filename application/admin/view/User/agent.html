@@ -141,9 +141,9 @@
             <div class="layui-input-block" style="width:180px;">
                 <select id="add-user-pid" name="pid">
                     <option value="0">请选择上级代理</option>
-                    [[foreach name="$sys_agent" item="vo"]]
-                    <option value="[[$vo.id]]">[[$vo.account]]</option>
-                    [[/foreach]]
+                    {{#  layui.each(d.data.sys_agent, function(index, item){}}
+                    <option value="{{item.id}}">{{item.account}}</option>
+                    {{#});}}
                 </select>
             </div>
         </div>
@@ -152,9 +152,9 @@
             <div class="layui-input-block" style="width:180px;">
                 <select id="add-user-gid" name="gid">
                     <option value="0">请选择分组</option>
-                    [[foreach name="$sys_group" item="vo" key="skey"]]
-                    <option value="[[$skey]]">[[$vo]]</option>
-                    [[/foreach]]
+                    {{#  layui.each(d.data.sys_group, function(index, item){}}
+                    <option value="{{index}}">{{item}}</option>
+                    {{#});}}
                 </select>
             </div>
         </div>
@@ -244,9 +244,13 @@
                     {
                         field: 'paccount', title: '上级', templet: function (d) {
                             if (d.paccount) {
-                                return d.paccount;
+                                var status = d.pstatus_flag;
+                                if (d.pstatus === '99') {
+                                    status = '<del style="color:red">' + d.pstatus_flag + '</del>';
+                                }
+                                return d.paccount + '<br/>' + status;
                             } else {
-                                return '';
+                                return '/';
                             }
                         }
                     },
@@ -354,86 +358,109 @@
 
         <!--添加或编辑用户-->
         function onAddOrEditBtn(row) {
-            var item = null;
+            var item = {};
             var title = '添加用户';
 
-            // row 不为null表示更新
+            // row 表示更新
             if (row) {
                 item = row.data;
                 title = '编辑用户';
             }
 
-            layer.open({
-                title: title,
-                type: 1,
-                shadeClose: true,
-                area: ['550px', '700px'],
-                btn: ['确定', '取消'],
-                content: laytpl($('#laytpl-add-user').html()).render({item: item}),
-                success: function () {
-                    if (row) {
-                        // 更新用户信息时，账号不可变更，
-                        $('#add-user-account').prop('disabled', true);
-                        // 使用item填充表单
-                        form.val('form-add-user', item);
-                    } else {
-                        // 新增用户时，默认将上级设置为自己
-                        $('#add-user-pid').val([[$user.id]]);
-                    }
-                    form.render();
+            laytplAfterAjax({
+                    url: '[[$Think.ADMIN_URL]]/user/agentquery'
                 },
-                yes: function (index, layero) {
-                    var gid = $('#add-user-gid').val();
-                    var pid = $('#add-user-pid').val();
-                    var nick = $.trim($('#add-user-nickname').val());
-                    var account = $.trim($('#add-user-account').val());
-                    var password = md5($.trim($('#add-user-passwd').val()));
-                    if (account === '') {
-                        alertWarning('账号不能为空');
-                        return;
-                    }
-                    if (!row && password === md5('')) {
-                        alertWarning('密码不能为空');
-                        return;
-                    }
-                    if (nick === '') {
-                        alertWarning('昵称不能为空');
-                        return;
-                    }
-                    if (gid === '0') {
-                        alertWarning('请选择分组');
-                        return;
-                    }
-                    if (pid === '0') {
-                        alertWarning('请选择上级代理');
-                        return;
-                    }
-                    if (item && pid === item.id) {
-                        alertWarning('自己不能作为自己的上级');
-                        return;
-                    }
-                    if (row &&
-                        item.gid === gid &&
-                        item.nickname === nick &&
-                        password === md5('') &&
-                        (item.pid === pid || pid === null)) {
-                        layer.close(index);
-                        alertWarning('没有任何改变');
+                {
+                    title: title,
+                    area: global.screenType < 2 ? ['80%', '300px'] : ['550px', '700px'],
+                    laytplId: '#laytpl-add-user',
+                    success: function () {
+                        if (row) {
+                            // 更新用户信息时，账号不可变更，
+                            $('#add-user-account').prop('disabled', true);
+                            // 使用item填充表单
+                            form.val('form-add-user', item);
+                        } else {
+                            // 新增用户时，默认将上级设置为自己
+                            $('#add-user-pid').val([[$sys_user.id]]);
+                        }
+                        form.render();
+                    },
+                    yes: function (index, layero) {
+                        var gid = $('#add-user-gid').val();
+                        var pid = $('#add-user-pid').val();
+                        var nick = $.trim($('#add-user-nickname').val());
+                        var account = $.trim($('#add-user-account').val());
+                        var password = md5($.trim($('#add-user-passwd').val()));
+                        if (account === '') {
+                            alertWarning('账号不能为空');
+                            return;
+                        }
+                        if (!row && password === md5('')) {
+                            alertWarning('密码不能为空');
+                            return;
+                        }
+                        if (nick === '') {
+                            alertWarning('昵称不能为空');
+                            return;
+                        }
+                        if (gid === '0') {
+                            alertWarning('请选择分组');
+                            return;
+                        }
+                        if (pid === '0') {
+                            alertWarning('请选择上级代理');
+                            return;
+                        }
+                        if (item && pid === item.id) {
+                            alertWarning('自己不能作为自己的上级');
+                            return;
+                        }
+                        if (row &&
+                            item.gid === gid &&
+                            item.nickname === nick &&
+                            password === md5('') &&
+                            (item.pid === pid || pid === null)) {
+                            layer.close(index);
+                            alertWarning('没有任何改变');
+                            return true;
+                        }
+
+                        addOrUpdateUser(row, index);
+                    },
+                    btn2: function (index, layero) {
                         return true;
                     }
-
-                    addOrUpdateUser(row, index);
-                },
-                btn2: function (index, layero) {
-                    return true;
-                }
-            });
+                });
         }
 
         <!--新增用户-->
         $('#addBtn').on('click', function () {
             onAddOrEditBtn(null);
         });
+
+
+        <!--用户通道费率-->
+        function userChannel(row) {
+            laytplAfterAjax({
+                    url: '[[$Think.ADMIN_URL]]/user/channelquery',
+                    data: {id: row.data.id, pid: row.data.pid}
+                },
+                {
+                    title: '用户通道费率',
+                    area: global.screenType < 2 ? ['80%', '300px'] : ['550px', '700px'],
+                    laytplId: '#laytpl-user-channel',
+                    success: function () {
+                        console.log('on laytplAfterAjax laytpl success');
+                    },
+                    yes: function (index, layero) {
+                        layer.close(index);
+                    },
+                    btn2: function (index, layero) {
+                        return true;
+                    }
+                });
+        }
 
 
         <!--删除用户-->
@@ -448,7 +475,7 @@
                         if (res.code !== '0') {
                             alertError(res.msg);
                         } else {
-                            obj.del();
+                            row.del();
                             layer.close(index);
                             alertSuccess(res.msg);
                         }
@@ -462,14 +489,12 @@
         table.on('tool(userAgent)', function (obj) {
             var lay_event = obj.event;
 
-            //TODO
-
             if (lay_event === 'edit') {
                 onAddOrEditBtn(obj);
             } else if (lay_event === 'del') {
                 deleteUser(obj);
             } else if (lay_event === 'channel') {
-                alertSuccess('event = channel');
+                userChannel(obj);
             }
         });
 
