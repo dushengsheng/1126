@@ -13,6 +13,10 @@ class User extends Base
         parent::__construct($request);
     }
 
+    /**
+     * 渲染代理首页
+     * @return mixed
+     */
     public function agent()
     {
         $pageuser = checkPower();
@@ -95,13 +99,6 @@ class User extends Base
             if ($item['login_time']) {
                 $item['login_time'] = date('Y-m-d H:i:s', $item['login_time']);
             }
-            /*
-            if ($item['pid']) {
-                $p_user = $this->mysql->fetchRow("select account,nickname,realname from sys_user where id={$item['pid']}");
-                $item['paccount'] = $p_user['account'];
-                $item['pnickname'] = $p_user['nickname'];
-            }
-            */
 
             //统计码商今日/累计收款
             $all_sql = "select count(1) as cnt,sum(log.money) as money from sk_order log where 1";
@@ -173,7 +170,6 @@ class User extends Base
         $data = array(
             'list' => $list,
             'count' => intval($count_item['cnt']),
-            'limit' => $this->pageSize,
             'balance' => (float)$count_item['balance'],
             'sx_balance' => (float)$count_item['sx_balance'],
             'fz_balance' => (float)$count_item['fz_balance'],
@@ -270,7 +266,7 @@ class User extends Base
             if ($uid) {
                 //更新时，不能将下级用户设置为上级，形成环
                 $down_users = getDownUser($uid);
-                if(in_array($user['id'], $down_users)) {
+                if (in_array($user['id'], $down_users)) {
                     jReturn('-1', "{$user['account']}是{$data['account']}的下级");
                 }
             }
@@ -412,8 +408,6 @@ class User extends Base
             'td_switch' => $td_switch_json
         ];
 
-        debugLog('channelRate: $data = ' . var_export($data, true));
-
         $res = $this->mysql->update($data, "id={$uid}", 'sys_user');
         if (!$res) {
             jReturn('-1', '系统繁忙, 请稍后再试');
@@ -427,11 +421,10 @@ class User extends Base
      * -----------------------------------------------------*/
 
 
-	public function merchant()
-	{
-		echo 'this is test merchant';
-	}
-
+    public function merchant()
+    {
+        echo 'this is test merchant';
+    }
 
 
     /*
