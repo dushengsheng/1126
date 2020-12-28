@@ -174,8 +174,9 @@ class User extends Base
         $pageuser = checkLogin();
         $params = $this->params;
         $group = intval($params['group']);
-        $down_agents = getDownAgent($pageuser['id']);
+        $sys_agent = getDownAgent($pageuser['id']);
         $sys_group = getConfig('sys_group');
+        $sys_agent_arr = [];
         $sys_group_arr = [];
         $group_to_query = [];
         if ($group == 61) {
@@ -185,6 +186,7 @@ class User extends Base
         } else {
             jReturn('-1', '请选择合适的分组');
         }
+
         foreach ($sys_group as $key => $value) {
             if ($pageuser['gid'] > $key) {
                 continue;
@@ -192,12 +194,20 @@ class User extends Base
             if (!in_array($key, $group_to_query)) {
                 continue;
             }
-            if ($key >= $pageuser['gid']) {
-                $sys_group_arr[$key] = $value;
+            $sys_group_arr[$key] = $value;
+        }
+        foreach ($sys_agent as $user) {
+            if ($pageuser['gid'] > $user['gid']) {
+                continue;
             }
+            $group_to_query[] = 1;
+            if (!in_array($user['gid'], $group_to_query)) {
+                continue;
+            }
+            $sys_agent_arr[] = $user;
         }
         $data = [
-            'sys_agent' => $down_agents,
+            'sys_agent' => $sys_agent_arr,
             'sys_group' => $sys_group_arr,
         ];
 

@@ -191,11 +191,11 @@
                 <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input user-channel-rate"
                        style="width:120px;"
                        channel-index="{{index}}" channel-name="{{item.name}}" data-paccount="{{d.data.paccount||''}}"
-                       channel-prate="{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"
-                       value="{{#if(d.data.fy_rate[index]){}}{{(d.data.fy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"/>
+                       channel-prate="{{#if(d.data.ptd_rate[index]){}}{{(d.data.ptd_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"
+                       value="{{#if(d.data.td_rate[index]){}}{{(d.data.td_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"/>
                 <span style="position:absolute;left:100px;top:10px;">%</span>
             </div>
-            <span style="color:#f60;">【{{item.name}}】上级费率：{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
+            <span style="color:#f60;">【{{item.name}}】上级费率：{{#if(d.data.ptd_rate[index]){}}{{(d.data.ptd_rate[index]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
         </div>
         {{#}}}
         {{#});}}
