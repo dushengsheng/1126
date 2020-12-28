@@ -175,10 +175,12 @@ function debugLog($param)
     if (!$param) {
         return;
     }
+    $now_str = date('Y-m-d H:i:s');
+    $route_str = Request::instance()->controller() . '/' .Request::instance()->action();
     if (is_string($param)) {
-        file_put_contents(ROOT_PATH . 'logs/test.txt', $param . "\n\n", FILE_APPEND);
+        file_put_contents(ROOT_PATH . 'logs/test.txt', "[{$now_str}][{$route_str}]: " . $param . "\n\n", FILE_APPEND);
     } else {
-        file_put_contents(ROOT_PATH . 'logs/test.txt', var_export($param, true) . "\n\n", FILE_APPEND);
+        file_put_contents(ROOT_PATH . 'logs/test.txt', "[{$now_str}][{$route_str}]: " . var_export($param, true) . "\n\n", FILE_APPEND);
     }
 }
 

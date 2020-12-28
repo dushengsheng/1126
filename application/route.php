@@ -22,6 +22,7 @@ Route::rule('admin/login/logoutact',       'admin/Login/logoutAct');
 
 Route::rule('admin/user/agent',            'admin/User/agent');
 Route::rule('admin/user/agentlist',        'admin/User/agentList');
+
 Route::rule('admin/user/updateuser',       'admin/User/updateUser');
 Route::rule('admin/user/deleteuser',       'admin/User/deleteUser');
 Route::rule('admin/user/onlinestatus',     'admin/User/onlineStatus');
@@ -30,3 +31,8 @@ Route::rule('admin/user/channelrate',      'admin/User/channelRate');
 
 Route::rule('admin/user/channelquery',      'admin/User/channelQuery');
 Route::rule('admin/user/agentquery',        'admin/User/agentQuery');
+
+Route::rule('admin/user/merchant',          'admin/User/merchant');
+Route::rule('admin/user/merchantlist',      'admin/User/merchantList');
+
+

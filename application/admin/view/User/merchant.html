@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>我的代理</title>
+    <title>我的商户</title>
     <meta content="webkit" name="renderer">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
@@ -14,7 +14,7 @@
 <div style="padding: 18px; background-color: #F2F2F2;">
     <div class="layui-card">
         <div class="layui-card-header">
-            <span>代理列表</span>
+            <span>商户列表</span>
             <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
                   style="margin-top: 4px"> 新增</span>
         </div>
@@ -62,7 +62,7 @@
                 </div>
             </form>
 
-            <table class="layui-hide" id="userAgent" lay-filter="userAgent"></table>
+            <table class="layui-hide" id="userMerchant" lay-filter="userMerchant"></table>
         </div>
     </div>
 </div>
@@ -195,11 +195,11 @@
                        value="{{#if(d.data.fy_rate[index]){}}{{(d.data.fy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"/>
                 <span style="position:absolute;left:100px;top:10px;">%</span>
             </div>
-            <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
+            <span style="color:#f60;">【{{item.name}}】上级费率：{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
         </div>
         {{#}}}
         {{#});}}
-        <div style="color:#f00; text-align: center">设置下级的分成比例-小数，不得超过上级分成比例</div>
+        <div style="color:#f00; text-align: center">设置下级的通道费率-小数，不得低于上级费率</div>
     </form>
 </script>
 
@@ -229,8 +229,8 @@
             };
 
             dataPage({
-                elem: '#userAgent',
-                url: '[[$Think.ADMIN_URL]]/user/agentlist',
+                elem: '#userMerchant',
+                url: '[[$Think.ADMIN_URL]]/user/merchantlist',
                 where: params,
                 page: true,
                 cols: [[
@@ -373,7 +373,7 @@
 
             laytplAfterAjax({
                     url: '[[$Think.ADMIN_URL]]/user/agentquery',
-                    data: {group: 61}
+                    data: {group: 81}
                 },
                 {
                     title: title,
@@ -452,7 +452,7 @@
                     data: {id: row.data.id}
                 },
                 {
-                    title: '码商分成比例',
+                    title: '商户通道费率',
                     area: global.screenType < 2 ? ['80%', '300px'] : ['540px', '755px'],
                     laytplId: '#laytpl-user-channel',
                     success: function () {
@@ -474,8 +474,8 @@
                             var obj_index = othis.attr('channel-index');
                             var obj_rate = (($.trim(othis.val()) * 1) / 100).toFixed(4);
                             var obj_prate = (($.trim(othis.attr('channel-prate')) * 1) / 100).toFixed(4);
-                            if (pgroup != 1 && obj_rate > obj_prate) {
-                                msg = '用户的分成比例超过了上级';
+                            if (pgroup != 1 && obj_rate < obj_prate) {
+                                msg = '用户的费率比例低于上级';
                                 return false;
                             }
                             channel_rate[obj_index] = obj_rate;
@@ -529,7 +529,7 @@
 
 
         <!--监听行按钮-->
-        table.on('tool(userAgent)', function (obj) {
+        table.on('tool(userMerchant)', function (obj) {
             var lay_event = obj.event;
 
             if (lay_event === 'edit') {

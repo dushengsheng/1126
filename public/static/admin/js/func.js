@@ -134,7 +134,7 @@ function laytplAfterAjax(ajax_opt, laytpl_opt) {
             laytpl_opt.content = layui.laytpl($(laytpl_opt.laytplId).html()).render({data: data}),
             layui.layer.open(laytpl_opt);
         } else {
-            alertError(code.msg);
+            alertError(res.msg);
         }
     };
     ajax(ajax_opt);
