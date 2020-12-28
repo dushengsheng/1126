@@ -93,7 +93,8 @@
 <!--用户禁用状态工具条-->
 <script id="laytpl-forbidden-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="user-forbidden-switch" name="user-forbidden-switch"
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="user-forbidden-switch"
+               name="user-forbidden-switch"
                {{#if (d.status== '2') {}}
         checked="true"
         {{#}}}
@@ -104,7 +105,8 @@
 <!--用户上下线工具条-->
 <script id="laytpl-online-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch" name="user-online-switch"
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|离线" lay-filter="user-online-switch"
+               name="user-online-switch"
                {{#if (d.is_online !='0' && d.status== '2') {}}
         checked="true"
         {{#}}}
@@ -141,7 +143,7 @@
             <div class="layui-input-block" style="width:220px;">
                 <select id="add-user-pid" name="pid">
                     <option value="0">请选择上级代理</option>
-                    {{#  layui.each(d.data.sys_agent, function(index, item){}}
+                    {{# layui.each(d.data.sys_agent, function(index, item){}}
                     <option value="{{item.id}}">{{item.account}}</option>
                     {{#});}}
                 </select>
@@ -152,7 +154,7 @@
             <div class="layui-input-block" style="width:220px;">
                 <select id="add-user-gid" name="gid">
                     <option value="0">请选择分组</option>
-                    {{#  layui.each(d.data.sys_group, function(index, item){}}
+                    {{# layui.each(d.data.sys_group, function(index, item){}}
                     <option value="{{index}}">{{item}}</option>
                     {{#});}}
                 </select>
@@ -162,7 +164,7 @@
 </script>
 
 <!--设置用户通道费率的弹层-->
-<script type="text/html" id="laytpl-user-channel">
+<script id="laytpl-user-channel" type="text/html">
     <form class="layui-form" onsubmit="return false;">
         <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
             <label class="layui-form-label">用户账号:</label>
@@ -181,14 +183,16 @@
         {{# if(item.is_open==1){}}
         <div class="layui-form-item">
             <div class="layui-input-inline" style="width:100px; text-align: right; margin-top: -2px">
-                <input type="checkbox" lay-skin="switch" channel-index="{{index}}" channel-name="{{item.name}}" lay-text="开|关" class="user-channel-switch"
-                       {{#if (d.data.td_switch[index]) {}} checked="true" {{#}}} />
+                <input type="checkbox" lay-skin="switch" channel-index="{{index}}" channel-name="{{item.name}}"
+                       lay-text="开|关" class="user-channel-switch"
+                       {{#if (d.data.td_switch[index]) {}} checked="true" {{#}}}/>
             </div>
             <div class="layui-inline">
-                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input user-channel-rate" style="width:120px;"
+                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input user-channel-rate"
+                       style="width:120px;"
                        channel-index="{{index}}" channel-name="{{item.name}}" data-paccount="{{d.data.paccount||''}}"
                        channel-prate="{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"
-                       value="{{#if(d.data.fy_rate[index]){}}{{(d.data.fy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}" />
+                       value="{{#if(d.data.fy_rate[index]){}}{{(d.data.fy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"/>
                 <span style="position:absolute;left:100px;top:10px;">%</span>
             </div>
             <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
@@ -470,8 +474,8 @@
                         $('.user-channel-rate').each(function (key, obj) {
                             var othis = $(obj);
                             var obj_index = othis.attr('channel-index');
-                            var obj_rate = (($.trim(othis.val())*1)/100).toFixed(4);
-                            var obj_prate = (($.trim(othis.attr('channel-prate'))*1)/100).toFixed(4);
+                            var obj_rate = (($.trim(othis.val()) * 1) / 100).toFixed(4);
+                            var obj_prate = (($.trim(othis.attr('channel-prate')) * 1) / 100).toFixed(4);
                             if (pgroup != 1 && obj_rate > obj_prate) {
                                 msg = '用户的分成比例超过了上级';
                                 return false;
@@ -486,7 +490,7 @@
 
                         ajax({
                             url: '[[$Think.ADMIN_URL]]/user/channelrate',
-                            //data: item,
+                            data: {id: row.data.id, channel_switch: channel_switch, channel_rate: channel_rate},
                             success: function (res) {
                                 if (res.code !== '0') {
                                     alertError(res.msg);
@@ -509,20 +513,20 @@
             layer.confirm('确定删除用户及其名下所有收款码？',
                 {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
                 function (index) {
-                ajax({
-                    url: '[[$Think.ADMIN_URL]]/user/deleteuser',
-                    data: {id: row.data.id},
-                    success: function (res) {
-                        if (res.code !== '0') {
-                            alertError(res.msg);
-                        } else {
-                            row.del();
-                            layer.close(index);
-                            alertSuccess(res.msg);
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/user/deleteuser',
+                        data: {id: row.data.id},
+                        success: function (res) {
+                            if (res.code !== '0') {
+                                alertError(res.msg);
+                            } else {
+                                row.del();
+                                layer.close(index);
+                                alertSuccess(res.msg);
+                            }
                         }
-                    }
+                    });
                 });
-            });
         }
 
 

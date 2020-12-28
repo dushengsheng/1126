@@ -109,7 +109,7 @@ class Login extends Base
             if($f&&$params['smscode']!='111222'){
                 $checkSms=checkPhoneCode(['stype'=>2,'phone'=>$params['acname'],'code'=>$params['smscode']]);
                 if($checkSms['code']!=1){
-                    exit(json_encode($checkSms));
+                    exit(json_encode($checkSms, JSON_UNESCAPED_UNICODE));
                 }
             }*/
 
@@ -140,7 +140,7 @@ class Login extends Base
             ];
 
             //保存cookie
-            $cookie_json = json_encode($return_data, 256);
+            $cookie_json = json_encode($return_data, JSON_UNESCAPED_UNICODE);
             setUserCookie($cookie_json);
 
             actionLog(['opt_name' => '登录', 'sql_str' => "{$user['account']}[{$user["nickname"]}] login", 'logUid' => $user['id']], $this->mysql);

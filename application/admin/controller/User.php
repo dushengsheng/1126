@@ -239,9 +239,9 @@ class User extends Base
                 $td_rate_arr[$key] = 0;
                 $fy_rate_arr[$key] = 0;
             }
-            $data['td_switch'] = json_encode($td_switch_arr, 256);
-            $data['td_rate'] = json_encode($td_rate_arr, 256);
-            $data['fy_rate'] = json_encode($fy_rate_arr, 256);
+            $data['td_switch'] = json_encode($td_switch_arr, JSON_UNESCAPED_UNICODE);
+            $data['td_rate'] = json_encode($td_rate_arr, JSON_UNESCAPED_UNICODE);
+            $data['fy_rate'] = json_encode($fy_rate_arr, JSON_UNESCAPED_UNICODE);
         }
 
         $data['gid'] = intval($params['gid']);
@@ -385,6 +385,39 @@ class User extends Base
 
     public function channelRate()
     {
+        $pageuser = checkPower();
+        $params = $this->params;
+        $uid = $params['id'];
+        $fy_rate = $params['channel_rate'];
+        $td_switch = $params['channel_switch'];
+
+        if ($pageuser['gid'] > 41) {
+            $uid_arr = getDownUser($pageuser['id']);
+            if (!in_array($uid, $uid_arr)) {
+                jReturn('-1', '操作失败! 该用户不是您的下级');
+            }
+        }
+
+        foreach ($fy_rate as $key => $val) {
+            $fy_rate[$key] = floatval($val);
+        }
+        foreach ($td_switch as $key => $val) {
+            $td_switch[$key] = intval($val);
+        }
+
+        $fy_rate_json = json_encode($fy_rate, JSON_UNESCAPED_UNICODE);
+        $td_switch_json = json_encode($td_switch, JSON_UNESCAPED_UNICODE);
+        $data = [
+            'fy_rate' => $fy_rate_json,
+            'td_switch' => $td_switch_json
+        ];
+
+        debugLog('channelRate: $data = ' . var_export($data, true));
+
+        $res = $this->mysql->update($data, "id={$uid}", 'sys_user');
+        if (!$res) {
+            jReturn('-1', '系统繁忙, 请稍后再试');
+        }
         jReturn('0', '通道费率更新成功');
     }
 
@@ -459,9 +492,9 @@ class User extends Base
         $pfy_rate = array();
         $paccount = null;
         if ($puser) {
-            $ptd_switch = json_decode($puser['td_switch'], 256);
-            $ptd_rate = json_decode($puser['td_rate'], 256);
-            $pfy_rate = json_decode($puser['fy_rate'], 256);
+            $ptd_switch = json_decode($puser['td_switch'], true);
+            $ptd_rate = json_decode($puser['td_rate'], true);
+            $pfy_rate = json_decode($puser['fy_rate'], true);
             $paccount = $puser['account'];
         }
 
@@ -474,9 +507,9 @@ class User extends Base
             'account' => $user['account'],
             'paccount' => $paccount,
             'sys_channel' => $channel_arr,
-            'td_switch' => json_decode($user['td_switch'], 256),
-            'td_rate' => json_decode($user['td_rate'], 256),
-            'fy_rate' => json_decode($user['fy_rate'], 256),
+            'td_switch' => json_decode($user['td_switch'], true),
+            'td_rate' => json_decode($user['td_rate'], true),
+            'fy_rate' => json_decode($user['fy_rate'], true),
             'ptd_switch' => $ptd_switch,
             'ptd_rate' => $ptd_rate,
             'pfy_rate' => $pfy_rate,

@@ -166,7 +166,7 @@ function jReturn($code, $msg = '', $data = array())
         }
     }
 
-    echo json_encode($arr, 256);
+    echo json_encode($arr, JSON_UNESCAPED_UNICODE);
     exit();
 }
 
@@ -365,15 +365,15 @@ function encryptRsa($base64_src, $rsa_public_key)
 function generateToken($param_arr)
 {
     if (!$param_arr || !is_array($param_arr)) {
-        return ['code'=>'-1', 'msg'=>'请输入正确的明文数组'];
+        return ['code' => '-1', 'msg' => '请输入正确的明文数组'];
     }
     $rsa_public_key = getConfig('rsa_pt_public');
     if (!$rsa_public_key) {
-        return ['code'=>'-1', 'msg'=>'请配置平台rsa公钥'];
+        return ['code' => '-1', 'msg' => '请配置平台rsa公钥'];
     }
     $sign = md5Sign($param_arr);
     $param_arr['sign'] = $sign;
-    $param_text = json_encode($param_arr,256);
+    $param_text = json_encode($param_arr, JSON_UNESCAPED_UNICODE);
     $base64_str = base64_encode($param_text);
     return encryptRsa($base64_str, $rsa_public_key);
 }
@@ -386,11 +386,11 @@ function generateToken($param_arr)
 function checkTokenValid($ciphertext)
 {
     if (!$ciphertext || !is_string($ciphertext)) {
-        return ['code'=>'-1', 'msg'=>'请输入正确的密文字符串'];
+        return ['code' => '-1', 'msg' => '请输入正确的密文字符串'];
     }
     $rsa_private_key = getConfig('rsa_pt_private');
     if (!$rsa_private_key) {
-        return ['code'=>'-1', 'msg'=>'请配置平台rsa私钥'];
+        return ['code' => '-1', 'msg' => '请配置平台rsa私钥'];
     }
     $decrypt_arr = decryptRsa($ciphertext, $rsa_private_key);
     if ($decrypt_arr['code'] != '0') {
@@ -401,9 +401,9 @@ function checkTokenValid($ciphertext)
     $param_arr = json_decode($param_text, true);
     $sign = md5Sign($param_arr);
     if ($sign != $param_arr['sign']) {
-        return ['code'=>'-1', 'msg'=>'token验证失败'];
+        return ['code' => '-1', 'msg' => 'token验证失败'];
     }
-    return ['code'=>'0', 'msg'=>'验证成功', 'data'=>$param_arr];
+    return ['code' => '0', 'msg' => '验证成功', 'data' => $param_arr];
 }
 
 /**
