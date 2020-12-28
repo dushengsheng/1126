@@ -213,15 +213,12 @@
 
 
 <script>
-    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl', 'element'], function () {
+    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl'], function () {
         var $ = layui.jquery;
         var table = layui.table;
         var form = layui.form;
         var layer = layui.layer;
         var laytpl = layui.laytpl;
-        var element = layui.element;
-
-        element.init();
 
         <!--获取用户列表-->
         function onSearchBtn() {
