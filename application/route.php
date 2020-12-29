@@ -31,6 +31,7 @@ Route::rule('admin/user/channelrate',      'admin/User/channelRate');
 
 Route::rule('admin/user/channelquery',      'admin/User/channelQuery');
 Route::rule('admin/user/agentquery',        'admin/User/agentQuery');
+Route::rule('admin/user/merchantquery',     'admin/User/merchantQuery');
 
 Route::rule('admin/user/merchant',          'admin/User/merchant');
 Route::rule('admin/user/merchantlist',      'admin/User/merchantList');

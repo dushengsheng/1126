@@ -15,8 +15,10 @@
     <div class="layui-card">
         <div class="layui-card-header">
             <span>商户列表</span>
+            [[if $sys_user.pid <= 1]]
             <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
                   style="margin-top: 4px"> 新增</span>
+            [[/if]]
         </div>
         <div class="layui-card-body">
             <form action="" class="layui-form" id="searchForm">
@@ -371,8 +373,7 @@
             }
 
             laytplAfterAjax({
-                    url: '[[$Think.ADMIN_URL]]/user/agentquery',
-                    data: {group: 81}
+                    url: '[[$Think.ADMIN_URL]]/user/merchantquery'
                 },
                 {
                     title: title,

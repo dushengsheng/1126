@@ -15,8 +15,10 @@
     <div class="layui-card">
         <div class="layui-card-header">
             <span>代理列表</span>
+            [[if $sys_user.gid <= 61]]
             <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
                   style="margin-top: 4px"> 新增</span>
+            [[/if]]
         </div>
         <div class="layui-card-body">
             <form action="" class="layui-form" id="searchForm">
@@ -372,8 +374,7 @@
             }
 
             laytplAfterAjax({
-                    url: '[[$Think.ADMIN_URL]]/user/agentquery',
-                    data: {group: 61}
+                    url: '[[$Think.ADMIN_URL]]/user/agentquery'
                 },
                 {
                     title: title,
@@ -389,6 +390,9 @@
                             // 新增用户时，默认将上级设置为自己
                             $('#add-user-pid').val([[$sys_user.id]]);
                         }
+                        [[if ($sys_user.gid >= 61)]]
+                        $('#add-user-pid').prop('disabled', true);
+                        [[/if]]
                         form.render();
                     },
                     yes: function (index, layero) {

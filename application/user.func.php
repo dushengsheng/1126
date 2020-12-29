@@ -191,29 +191,24 @@ function getUpUser($uid, $return_user_array = false, $level = 1, $level_limit = 
 
 /**
  * 获取旗下所有代理人，包括管理员
- * @param $uid
+ * @param $user
  * @return array|false
  */
-function getDownAgent($uid)
+function getDownAgent($user)
 {
-    $myself = getUserinfo($uid, true);
-    if (!$myself) {
-        return false;
-    }
     $children = [];
-    if ($myself['gid'] < 41) {
+    if ($user['gid'] < 41) {
         $mysql = new Mysql(0);
         $children = $mysql->fetchRows("select * from sys_user where gid in (1, 61, 81) and status < 99");
         $mysql->close();
         unset($mysql);
     } else {
-        $temp_children = getDownUser($uid, true);
+        $temp_children = getDownUser($user['id'], true);
         foreach ($temp_children as $child) {
             if ($child['status'] < 99 && in_array($child['gid'], [61, 81])) {
                 $children[] = $child;
             }
         }
-        $children[] = $myself;
     }
 
     return $children;
