@@ -224,6 +224,7 @@ class UserAgent extends Base
             $data['password2'] = getPassword(md5('123456'));
             $data['reg_time'] = NOW_TIME;
             $data['reg_ip'] = getClientIp();
+            $data['apikey'] = getPassword($params[account] . '_' . getSerialNumber() . SYS_KEY, true);
 
             // 初始化通道费率
             $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
