@@ -197,7 +197,7 @@ function getUpUser($uid, $return_user_array = false, $level = 1, $level_limit = 
 function getDownAgent($user)
 {
     $children = [];
-    if ($user['gid'] < 41) {
+    if ($user['gid'] < 61) {
         $mysql = new Mysql(0);
         $children = $mysql->fetchRows("select * from sys_user where gid in (1, 61, 81) and status < 99");
         $mysql->close();

@@ -141,10 +141,10 @@
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">上级:</label>
+            <label class="layui-form-label">码商代理:</label>
             <div class="layui-input-block" style="width:220px;">
-                <select id="add-user-pid" name="pid">
-                    <option value="0">请选择上级代理</option>
+                <select id="add-user-msagent" name="appoint_agent">
+                    <option value="0">请指定码商代理</option>
                     {{# layui.each(d.data.sys_agent, function(index, item){}}
                     <option value="{{item.id}}">{{item.account}}</option>
                     {{#});}}
@@ -248,13 +248,13 @@
                         }
                     },
                     {
-                        field: 'paccount', title: '上级', templet: function (d) {
-                            if (d.paccount) {
-                                var status = d.pstatus_flag;
-                                if (d.pstatus === '99') {
-                                    status = '<del style="color:red">' + d.pstatus_flag + '</del>';
+                        field: 'ms_account', title: '码商代理', templet: function (d) {
+                            if (d.ms_account) {
+                                var status = d.ms_status_flag;
+                                if (d.ms_status === '99') {
+                                    status = '<del style="color:red">' + d.ms_status_flag + '</del>';
                                 }
-                                return d.paccount + '<br/>' + status;
+                                return d.ms_account + '<br/>' + status;
                             } else {
                                 return '/';
                             }
@@ -263,8 +263,8 @@
                     {field: 'balance', title: '可提余额', width: 120},
                     {field: 'fz_balance', title: '冻结中', width: 120},
                     {
-                        field: 'td_money', title: '今日收款', templet: function (d) {
-                            if (d.gid != 61 && d.gid != 71) {
+                        field: 'td_money', title: '今日订单', templet: function (d) {
+                            if (d.gid != 81 && d.gid != 91) {
                                 return '/';
                             }
                             var html = '<div style="text-align:left;">';
@@ -276,8 +276,8 @@
                         }
                     },
                     {
-                        field: 'all_money', title: '累计收款', templet: function (d) {
-                            if (d.gid != 61 && d.gid != 71) {
+                        field: 'all_money', title: '累计订单', templet: function (d) {
+                            if (d.gid != 81 && d.gid != 91) {
                                 return '/';
                             }
                             var html = '<div style="text-align:left;">';
@@ -288,8 +288,9 @@
                             return html;
                         }
                     },
-                    {field: 'status_flag', title: '状态', width: 100, templet: "#laytpl-forbidden-switch"},
-                    {field: 'status_flag', title: '接单', width: 100, templet: "#laytpl-online-switch"},
+                    //{field: 'status_flag', title: '状态', width: 100, templet: "#laytpl-forbidden-switch"},
+                    //{field: 'status_flag', title: '接单', width: 100, templet: "#laytpl-online-switch"},
+                    {field: 'apikey', title: '密钥', width: 120},
                     {field: '', title: '操作', width: 240, toolbar: '#laytpl-table-item'}
                 ]],
                 done: function (res, curr, count) {
@@ -297,7 +298,6 @@
                         var html = '<div class="sumLine">';
                         html += '<span>用户数：' + res.count + '</span>';
                         html += '<span>可提余额：' + res.odata.balance + '</span>';
-                        html += '<span>接单余额：' + res.odata.sx_balance + '</span>';
                         html += '<span>冻结中：' + res.odata.fz_balance + '</span>';
                         html += '</div>';
                         $('.layui-table-header').before(html);
@@ -322,9 +322,10 @@
         function addOrUpdateUser(row, index) {
             var item = {};
             var jq_gid = $('#add-user-gid');
-            var jq_pid = $('#add-user-pid');
+            var jq_agent = $('#add-user-msagent');
+            item.pid = 1;
             item.gid = $.trim(jq_gid.val());
-            item.pid = $.trim(jq_pid.val());
+            item.appoint_agent = $.trim(jq_agent.val());
             item.nickname = $.trim($('#add-user-nickname').val());
             item.password = md5($.trim($('#add-user-passwd').val()));
             item.account = $.trim($('#add-user-account').val());
@@ -335,8 +336,8 @@
             if (item.gid !== '0') {
                 item.gname = jq_gid.find('option[value="' + item.gid + '"]').text();
             }
-            if (item.pid !== '0') {
-                item.paccount = jq_pid.find('option[value="' + item.pid + '"]').text();
+            if (item.appoint_agent !== '0') {
+                item.ms_account = jq_agent.find('option[value="' + item.appoint_agent + '"]').text();
             }
 
             ajax({
@@ -387,13 +388,16 @@
                             form.val('form-add-user', item);
                         } else {
                             // 新增用户时，默认将上级设置为自己
-                            $('#add-user-pid').val([[$sys_user.id]]);
+                            $('#add-user-msagent').val([[$sys_user.id]]);
                         }
+                        [[if ($sys_user.gid >= 61)]]
+                        $('#add-user-msagent').prop('disabled', true);
+                        [[/if]]
                         form.render();
                     },
                     yes: function (index, layero) {
                         var gid = $('#add-user-gid').val();
-                        var pid = $('#add-user-pid').val();
+                        var agent = $('#add-user-msagent').val();
                         var nick = $.trim($('#add-user-nickname').val());
                         var account = $.trim($('#add-user-account').val());
                         var password = md5($.trim($('#add-user-passwd').val()));
@@ -413,19 +417,15 @@
                             alertWarning('请选择分组');
                             return;
                         }
-                        if (pid === '0') {
-                            alertWarning('请选择上级代理');
-                            return;
-                        }
-                        if (item && pid === item.id) {
-                            alertWarning('自己不能作为自己的上级');
+                        if (agent === '0') {
+                            alertWarning('请指定码商代理');
                             return;
                         }
                         if (row &&
                             item.gid === gid &&
                             item.nickname === nick &&
                             password === md5('') &&
-                            (item.pid === pid || pid === null)) {
+                            (item.appoint_agent === agent || agent === null)) {
                             layer.close(index);
                             alertWarning('没有任何改变');
                             return true;
@@ -475,7 +475,7 @@
                             var obj_rate = (($.trim(othis.val()) * 1) / 100).toFixed(4);
                             var obj_prate = (($.trim(othis.attr('channel-prate')) * 1) / 100).toFixed(4);
                             if (pgroup != 1 && obj_rate < obj_prate) {
-                                msg = '用户的费率比例低于上级';
+                                msg = '商户的通道费率低于上级';
                                 return false;
                             }
                             channel_rate[obj_index] = obj_rate;
