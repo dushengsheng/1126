@@ -451,7 +451,7 @@ class UserAgent extends Base
 
         foreach ($channel_rate as $key => $val) {
             $rate = floatval($val);
-            if ($prate_arr) {
+            if ($prate_arr && isset($prate_arr[$key])) {
                 $prate = floatval($prate_arr[$key]);
                 if ($prate < $rate) {
                     jReturn('-1', '下级码商通道费率不能高于上级');

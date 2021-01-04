@@ -249,12 +249,9 @@ class UserMerchant extends Base
             }
         }
 
-        $puser = null;
+        $puser = getUserinfo($user['pid'], true, $this->mysql);
         $prate_arr = null;
-        if ($user['appoint_agent']) {
-            $puser = getUserinfo($user['appoint_agent'], true, $this->mysql);
-        }
-        if ($puser) {
+        if ($puser['gid'] >= 61) {
             $prate_json = $puser['td_rate'];
             $prate_arr = json_decode($prate_json, JSON_UNESCAPED_UNICODE);
         }
@@ -263,7 +260,7 @@ class UserMerchant extends Base
         $channel_switch = $params['channel_switch'];
         foreach ($channel_rate as $key => $val) {
             $rate = floatval($val);
-            if ($prate_arr) {
+            if ($prate_arr && isset($prate_arr[$key])) {
                 $prate = floatval($prate_arr[$key]);
                 if ($prate > $rate) {
                     jReturn('-1', '下级商户通道费率不能低于上级');

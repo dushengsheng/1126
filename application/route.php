@@ -41,6 +41,9 @@ Route::rule('admin/user/merchantlist',      'admin/User/merchantList');
 // 订单管理
 Route::rule('admin/pay/skma',               'admin/Pay/skma');
 Route::rule('admin/pay/skmalist',           'admin/Pay/skmaList');
+Route::rule('admin/pay/skmaupdate',         'admin/pay/skmaUpdate');
+Route::rule('admin/pay/skmadelete',         'admin/pay/skmaDelete');
+Route::rule('admin/pay/skmatest',           'admin/pay/skmaTest');
 
 Route::rule('admin/pay/xianyu',             'admin/Pay/xianyu');
 Route::rule('admin/pay/xianyulist',         'admin/Pay/xianyuList');
