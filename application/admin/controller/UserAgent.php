@@ -173,7 +173,7 @@ class UserAgent extends Base
     /*
      * 增加或更新用户
      */
-    public function updateUser()
+    public function userUpdate()
     {
         $pageuser = checkPower();
         $params = $this->params;
@@ -287,7 +287,7 @@ class UserAgent extends Base
     /**
      * 删除用户及其名下收款码
      */
-    public function deleteUser()
+    public function userDelete()
     {
         $pageuser = checkPower();
         $params = $this->params;

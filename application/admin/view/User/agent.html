@@ -341,7 +341,7 @@
             }
 
             ajax({
-                url: '[[$Think.ADMIN_URL]]/user/updateuser',
+                url: '[[$Think.ADMIN_URL]]/user/userupdate',
                 data: item,
                 success: function (res) {
                     if (res.code !== '0') {
@@ -516,7 +516,7 @@
                 {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
                 function (index) {
                     ajax({
-                        url: '[[$Think.ADMIN_URL]]/user/deleteuser',
+                        url: '[[$Think.ADMIN_URL]]/user/userdelete',
                         data: {id: row.data.id},
                         success: function (res) {
                             if (res.code !== '0') {

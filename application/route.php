@@ -25,8 +25,8 @@ Route::rule('admin/login/logoutact',       'admin/Login/logoutAct');
 Route::rule('admin/user/agent',            'admin/User/agent');
 Route::rule('admin/user/agentlist',        'admin/User/agentList');
 
-Route::rule('admin/user/updateuser',       'admin/User/updateUser');
-Route::rule('admin/user/deleteuser',       'admin/User/deleteUser');
+Route::rule('admin/user/userupdate',       'admin/User/userUpdate');
+Route::rule('admin/user/userdelete',       'admin/User/userDelete');
 Route::rule('admin/user/onlinestatus',     'admin/User/onlineStatus');
 Route::rule('admin/user/forbiddenstatus',  'admin/User/forbiddenStatus');
 Route::rule('admin/user/channelrate',      'admin/User/channelRate');

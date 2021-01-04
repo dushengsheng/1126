@@ -66,17 +66,17 @@ class User extends Base
     /*
      * 增加或更新用户
      */
-    public function updateUser()
+    public function userUpdate()
     {
-        return $this->user_agent->updateUser();
+        return $this->user_agent->userUpdate();
     }
 
     /**
      * 删除用户及其名下收款码
      */
-    public function deleteUser()
+    public function userDelete()
     {
-        return $this->user_agent->deleteUser();
+        return $this->user_agent->userDelete();
     }
 
     /**
