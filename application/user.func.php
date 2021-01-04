@@ -326,4 +326,36 @@ function setUserOnline($uid, $is_online = true, $mysql = null)
     return true;
 }
 
+/**
+ * 获取用户可用通道列表
+ * @param $user
+ * @return array
+ */
+function getUserMtype($user, $mysql = null)
+{
+    $td_switch = json_decode($user['td_switch'], true);
+    $td_switch_arr = [];
+    foreach ($td_switch as $key => $val) {
+        if ($val < 1) {
+            continue;
+        }
+        $td_switch_arr[] = $key;
+    }
+    $td_switch_str = implode(',', $td_switch_arr);
+    $where = "where is_open=1";
+    if ($user['gid'] >= 61) {
+        $where .= " and id in ({$td_switch_str})";
+    }
+    $to_free_mysql = false;
+    if (!$mysql) {
+        $mysql = new Mysql(0);
+        $to_free_mysql = true;
+    }
+    $result =  rows2arr($mysql->fetchRows("select * from sk_mtype {$where}"));
+    if ($to_free_mysql) {
+        $mysql->close();
+        unset($mysql);
+    }
+    return $result;
+}
 

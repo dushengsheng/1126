@@ -17,8 +17,8 @@ class Base extends Controller
 {
     protected $mysql;
     protected $params;
-    protected $memcache;
-    protected $pageSize = 20;
+    //protected $memcache;
+    //protected $pageSize = 20;
 
     public function __construct(Request $request = null)
     {
@@ -28,8 +28,8 @@ class Base extends Controller
     public function _initialize()
     {
         $this->mysql = new Mysql(0);
-        $this->memcache = new MyMemcache(0);
         $this->params = $this->param();
+        //$this->memcache = new MyMemcache(0);
     }
 
     protected function param($key = '')

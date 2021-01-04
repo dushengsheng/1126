@@ -15,11 +15,13 @@ use think\Route;
 Route::rule('admin/index',                 'admin/Index/index');
 Route::rule('admin/index/console',         'admin/Index/console');
 
+// 登录
 Route::rule('admin/login',                 'admin/Login/index');
 Route::rule('admin/login/captcha',         'admin/Login/captcha');
 Route::rule('admin/login/loginact',        'admin/Login/loginAct');
 Route::rule('admin/login/logoutact',       'admin/Login/logoutAct');
 
+// 用户管理
 Route::rule('admin/user/agent',            'admin/User/agent');
 Route::rule('admin/user/agentlist',        'admin/User/agentList');
 
@@ -36,4 +38,10 @@ Route::rule('admin/user/merchantquery',     'admin/User/merchantQuery');
 Route::rule('admin/user/merchant',          'admin/User/merchant');
 Route::rule('admin/user/merchantlist',      'admin/User/merchantList');
 
+// 订单管理
+Route::rule('admin/pay/skma',               'admin/Pay/skma');
+Route::rule('admin/pay/skmalist',           'admin/Pay/skmaList');
+
+Route::rule('admin/pay/xianyu',             'admin/Pay/xianyu');
+Route::rule('admin/pay/xianyulist',         'admin/Pay/xianyuList');
 

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>收款码管理</title>
+    <title>咸鱼收款码</title>
     <meta content="webkit" name="renderer">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
@@ -14,7 +14,7 @@
 <div style="padding: 18px; background-color: #F2F2F2;">
     <div class="layui-card">
         <div class="layui-card-header">
-            <span>收款码管理</span>
+            <span>咸鱼收款码</span>
             <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
                   style="margin-top: 4px"> 新增</span>
         </div>
@@ -62,7 +62,7 @@
                 </div>
             </form>
 
-            <table class="layui-hide" id="paySkmaList" lay-filter="paySkmaList"></table>
+            <table class="layui-hide" id="payXianyuList" lay-filter="payXianyuList"></table>
         </div>
     </div>
 </div>
@@ -105,8 +105,8 @@
 <!--用户上下线工具条-->
 <script id="laytpl-online-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|下线" lay-filter="yy-ma-online-switch"
-               name="yy-ma-online-switch"
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|下线" lay-filter="xianyu-ma-online-switch"
+               name="xianyu-ma-online-switch"
                {{#if (d.status== '2') {}}
         checked=""
         {{#}}}
@@ -234,13 +234,12 @@
             };
 
             dataPage({
-                elem: '#paySkmaList',
-                url: '[[$Think.ADMIN_URL]]/pay/skmalist',
+                elem: '#payXianyuList',
+                url: '[[$Think.ADMIN_URL]]/pay/xianyulist',
                 where: params,
                 page: true,
                 cols: [[
                     {field: 'id', title: 'ID', width: 100},
-                    {field: 'mtype_name', title: '类型', width: 120},
                     {
                         field: 'gname', title: '账号/昵称', templet: function (d) {
                             var html = '<div style="text-align: center">';
@@ -250,27 +249,12 @@
                             return html;
                         }
                     },
-                    {field: 'ma_account', title: '通道账号'},
-                    {
-                        field: 'td_money', title: '今日收款', templet: function (d) {
-                            var html = '<div style="text-align:left;">';
-                            html += '<div>订单：<b>' + d.jt_cnt + '</b>/<b>' + d.jt_cnt2 + '</b></div>';
-                            html += '<div>金额：<b>' + d.jt_money + '</b>/<b>' + d.jt_money2 + '</b></div>';
-                            html += '<div>成功：<b>' + d.jt_percent + '<b></div>';
-                            html += '</div>';
-                            return html;
-                        }
-                    },
-                    {
-                        field: 'all_money', title: '累计收款', templet: function (d) {
-                            var html = '<div style="text-align:left;">';
-                            html += '<div>订单：<b>' + d.all_cnt + '</b>/<b>' + d.all_cnt2 + '</b></div>';
-                            html += '<div>金额：<b>' + d.all_money + '</b>/<b>' + d.all_money2 + '</b></div>';
-                            html += '<div>成功：<b>' + d.all_percent + '<b></div>';
-                            html += '</div>';
-                            return html;
-                        }
-                    },
+                    {field: 'mtype_name', title: '类型', width: 120},
+                    {field: 'ma_qrcode', title: '收款码', width: 90, templet: function (d) {
+                            return '<img style="height:40px;" src="' + d.ma_qrcode + '"/ onclick="showImg(this);" >';
+                        }},
+                    {field: 'ma_xianyu_link', title: '商品链接'},
+                    {field: 'max_money', title: '金额', width: 120},
                     {field: 'create_time', title: '创建时间', width: 130},
                     {field: 'status_flag', title: '状态', width: 100, templet: "#laytpl-online-switch"},
                     {field: '', title: '操作', width: 240, toolbar: '#laytpl-table-item'}
@@ -279,6 +263,7 @@
                     if ($('.sumLine').length < 1) {
                         var html = '<div class="sumLine">';
                         html += '<span>数量：' + res.count + '</span>';
+                        html += '<span>总金额：' + res.odata.money + '</span>';
                         html += '</div>';
                         $('.layui-table-header').before(html);
                     }
@@ -291,11 +276,11 @@
 
         <!--触发搜索按钮-->
         $('#searchBtn').on('click', function () {
-            onSearchBtn();
-            //testNewWindow();
+            //onSearchBtn();
+            testNewWindow();
         });
 
-        onSearchBtn();
+        //onSearchBtn();
 
 
         <!--新增或者更新用户-->
@@ -539,7 +524,7 @@
                         $(obj.elem).attr('checked', back);
                     } else {
                         alertSuccess(res.msg);
-                        var onlineSwitch = $('input[name="yy-ma-online-switch"][value="' + obj.value + '"]');
+                        var onlineSwitch = $('input[name="xianyu-ma-online-switch"][value="' + obj.value + '"]');
                         var isOnlie = onlineSwitch.attr('checked');
                         if (available === 0 && isOnlie) {
                             onlineSwitch.attr('checked', false);
@@ -551,7 +536,7 @@
         });
 
         <!--监听上下线按钮-->
-        form.on('switch(yy-ma-online-switch)', function (obj) {
+        form.on('switch(xianyu-ma-online-switch)', function (obj) {
             var online = obj.elem.checked ? 1 : 0;
             var back = obj.elem.checked !== true;
 

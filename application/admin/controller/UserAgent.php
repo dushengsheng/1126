@@ -31,9 +31,20 @@ class UserAgent extends Base
             }
             $sys_group_arr[$key] = $value;
         }
+
+        // 检查权限
+        $sys_power = [];
+        $sys_power['add'] = hasPower($pageuser, 'User_UserAdd') ? 1 : 0;
+        $sys_power['del'] = hasPower($pageuser, 'User_UserDelete') ? 1 : 0;
+        $sys_power['edit'] = hasPower($pageuser, 'User_UserUpdate') ? 1 : 0;
+        $sys_power['channel'] = hasPower($pageuser, 'User_ChannelRate') ? 1 : 0;
+        //$sys_power['kick'] = hasPower($pageuser, 'User_OnlineStatus') ? 1 : 0;
+        //$sys_power['recharge'] = hasPower($pageuser, 'Finance_Recharge') ? 1 : 0;
+
         $data = [
             'sys_user' => $pageuser,
-            'sys_group' => $sys_group_arr
+            'sys_group' => $sys_group_arr,
+            'sys_power' => $sys_power
         ];
 
         return $this->fetch("User/agent", $data);
@@ -85,8 +96,6 @@ class UserAgent extends Base
         $account_status = getConfig('account_status');
         $yes_or_no = getConfig('yes_or_no');
         $now_day = date('Ymd');
-        $has_power_checked = false;
-        $power_arr = [];
 
         foreach ($list as &$item) {
             unset($item['password'], $item['password2']);
@@ -149,21 +158,6 @@ class UserAgent extends Base
                 $item['all_percent'] = $all_percent;
                 $item['td_percent'] = $td_percent;
             }
-
-            // 只检查一次权限
-            if (!$has_power_checked) {
-                $has_power_checked = true;
-                $power_arr['del'] = hasPower($pageuser, 'User_DeleteUser') ? 1 : 0;
-                $power_arr['kick'] = hasPower($pageuser, 'User_OnlineStatus') ? 1 : 0;
-                $power_arr['edit'] = hasPower($pageuser, 'User_UpdateUser') ? 1 : 0;
-                $power_arr['channel'] = hasPower($pageuser, 'User_ChannelRate') ? 1 : 0;
-                $power_arr['recharge'] = hasPower($pageuser, 'Finance_Recharge') ? 1 : 0;
-            }
-            $item['power_del'] = $power_arr['del'];
-            $item['power_kick'] = $power_arr['kick'];
-            $item['power_edit'] = $power_arr['edit'];
-            $item['power_channel'] = $power_arr['channel'];
-            $item['power_recharge'] = $power_arr['recharge'];
         }
 
         $data = array(
@@ -171,8 +165,7 @@ class UserAgent extends Base
             'count' => intval($count_item['cnt']),
             'balance' => (float)$count_item['balance'],
             'sx_balance' => (float)$count_item['sx_balance'],
-            'fz_balance' => (float)$count_item['fz_balance'],
-            'kb_balance' => (float)$count_item['kb_balance']
+            'fz_balance' => (float)$count_item['fz_balance']
         );
         jReturn('0', 'ok', $data);
     }

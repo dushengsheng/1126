@@ -15,7 +15,7 @@
     <div class="layui-card">
         <div class="layui-card-header">
             <span>商户列表</span>
-            [[if $sys_user.pid <= 1]]
+            [[if ($sys_power.add == 1)]]
             <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
                   style="margin-top: 4px"> 新增</span>
             [[/if]]
@@ -72,15 +72,15 @@
 
 <!--item操作工具条-->
 <script id="laytpl-table-item" type="text/html">
-    {{#if(d.power_del==1){}}
+    [[if ($sys_power.del == 1)]]
     <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="del">删除</a>
-    {{#}}}
-    {{#if(d.power_edit==1){}}
+    [[/if]]
+    [[if ($sys_power.edit == 1)]]
     <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
-    {{#}}}
-    {{#if(d.power_channel==1){}}
+    [[/if]]
+    [[if ($sys_power.channel == 1)]]
     <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="channel">通道</a>
-    {{#}}}
+    [[/if]]
     <!--
     {{#if(d.kick==1){}}
     <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="kick">踢掉</a>
