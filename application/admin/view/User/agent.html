@@ -122,27 +122,27 @@
     <form class="layui-form" lay-filter="form-add-user">
         <div class="layui-form-item">
             <label class="layui-form-label">账号:</label>
-            <div class="layui-input-inline" style="width:220px;">
+            <div class="layui-input-block">
                 <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text"
                        name="account">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">密码:</label>
-            <div class="layui-input-inline" style="width:220px;">
+            <div class="layui-input-block">
                 <input autocomplete="off" class="layui-input" id="add-user-passwd" placeholder="密码" type="password">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">昵称:</label>
-            <div class="layui-input-inline" style="width:220px;">
+            <div class="layui-input-block">
                 <input autocomplete="off" class="layui-input" id="add-user-nickname" placeholder="昵称" type="text"
                        name="nickname">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">上级:</label>
-            <div class="layui-input-block" style="width:220px;">
+            <div class="layui-input-block">
                 <select id="add-user-pid" name="pid">
                     <option value="0">请选择上级代理</option>
                     {{# layui.each(d.data.sys_agent, function(index, item){}}
@@ -153,7 +153,7 @@
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">分组:</label>
-            <div class="layui-input-block" style="width:220px;">
+            <div class="layui-input-block">
                 <select id="add-user-gid" name="gid">
                     <option value="0">请选择分组</option>
                     {{# layui.each(d.data.sys_group, function(index, item){}}
