@@ -126,7 +126,6 @@ class PayXianyu extends Base
             'money' => (float)$count_item['money']
         );
 
-        $this->testXianyu();
         jReturn('0', 'ok', $data);
     }
 

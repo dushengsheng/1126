@@ -18,20 +18,22 @@ class PaySkma extends Base
     public function skma()
     {
         $pageuser = checkPower();
-        $mtype_arr = $this->mysql->fetchRows("select * from sk_mtype where id = 204");
+        $mtype_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1 and id = 204");
         $mstatus_arr = getConfig('cnf_skma_status');
+
+        // 检查权限
+        $sys_power = [];
+        $sys_power['add'] = hasPower($pageuser, 'Pay_SkmaAdd') ? 1 : 0;
+        $sys_power['del'] = hasPower($pageuser, 'Pay_SkmaDelete') ? 1 : 0;
+        $sys_power['edit'] = hasPower($pageuser, 'Pay_SkmaUpdate') ? 1 : 0;
+        $sys_power['test'] = hasPower($pageuser, 'Pay_SkmaTest') ? 1 : 0;
 
         $data = [
             'sys_user' => $pageuser,
+            'sys_power' => $sys_power,
             'sys_ma_type' => $mtype_arr,
             'sys_ma_status' => $mstatus_arr
         ];
-
-        // 检查权限
-        $data['add'] = hasPower($pageuser, 'Pay_SkmaAdd') ? 1 : 0;
-        $data['del'] = hasPower($pageuser, 'Pay_SkmaDelete') ? 1 : 0;
-        $data['edit'] = hasPower($pageuser, 'Pay_SkmaEdit') ? 1 : 0;
-        $data['test'] = hasPower($pageuser, 'Pay_SkmaTest') ? 1 : 0;
 
         return $this->fetch("Pay/skma", $data);
     }
@@ -137,30 +139,45 @@ class PaySkma extends Base
         jReturn('0', 'ok', $data);
     }
 
-    /**
-     * @param string $host - $host of socket server
-     * @param string $message - 发送的消息
-     * @param string $address - 地址
-     * @return bool
-     */
-    protected function testXianyu()
+    public function skmaDelete()
     {
-        $url = 'https://pay.duowan.com/userDepositDWAction.action';
-        $ch  = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, false);
-        //curl_setopt($ch, CURLOPT_POSTFIELDS, $message);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        $referer = urlencode($url);
-        $headers = [
-            "Content-Type: application/json;charset=UTF-8",
-            'user-agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36',
-        ];
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); //设置header
-        $result = curl_exec($ch);
-        debugLog('testXianyu: result =' . $result);
-        return $result;
+        $pageuser = checkPower();
+        $params = $this->params;
+        $id = intval($params['id']);
+        $uid = intval($params['uid']);
+        if (!$id || !$uid) {
+            jReturn('-1', '缺少参数');
+        }
+        if ($pageuser['gid'] >= 61) {
+            $uid_arr = getDownUser($pageuser['id']);
+            $uid_arr[] = $pageuser['id'];
+            if (!in_array($uid, $uid_arr)) {
+                jReturn('-1', '操作失败! 该用户不是您的下级');
+            }
+        }
+
+        $data = ['status' => 99];
+        $res = $this->mysql->update($data, "id={$id}", 'sk_ma');
+        if (!$res) {
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+
+        actionLog(['opt_name' => '删除收款码', 'sql_str' => $this->mysql->lastSql], $this->mysql);
+        jReturn('0', '操作成功');
+    }
+
+    public function skmaUpdate()
+    {
+        jReturn('-1', 'skmaUpdate');
+    }
+
+    public function skmaOnline()
+    {
+        jReturn('-1', 'skmaOnline');
+    }
+
+    public function skmaTest()
+    {
+        jReturn('-1', 'skmaTest');
     }
 }

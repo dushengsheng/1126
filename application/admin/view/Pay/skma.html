@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>收款码管理</title>
+    <title>收款码</title>
     <meta content="webkit" name="renderer">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
@@ -14,7 +14,7 @@
 <div style="padding: 18px; background-color: #F2F2F2;">
     <div class="layui-card">
         <div class="layui-card-header">
-            <span>收款码管理</span>
+            <span>收款码</span>
             <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
                   style="margin-top: 4px"> 新增</span>
         </div>
@@ -70,15 +70,15 @@
 
 <!--item操作工具条-->
 <script id="laytpl-table-item" type="text/html">
-    {{#if(d.power_del==1){}}
+    [[if ($sys_power.del == 1)]]
     <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="del">删除</a>
-    {{#}}}
-    {{#if(d.power_edit==1){}}
+    [[/if]]
+    [[if ($sys_power.edit == 1)]]
     <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
-    {{#}}}
-    {{#if(d.power_channel==1){}}
-    <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="channel">通道</a>
-    {{#}}}
+    [[/if]]
+    [[if ($sys_power.test == 1)]]
+    <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="channel">测试</a>
+    [[/if]]
     <!--
     {{#if(d.kick==1){}}
     <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="kick">踢掉</a>
@@ -93,9 +93,9 @@
 <!--用户禁用状态工具条-->
 <script id="laytpl-forbidden-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="user-forbidden-switch"
-               name="user-forbidden-switch"
-               {{#if (d.status== '2') {}}
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="ma-forbidden-switch"
+               name="ma-forbidden-switch"
+        {{#if (d.status== '2') {}}
         checked="true"
         {{#}}}
         />
@@ -105,9 +105,9 @@
 <!--用户上下线工具条-->
 <script id="laytpl-online-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|下线" lay-filter="yy-ma-online-switch"
-               name="yy-ma-online-switch"
-               {{#if (d.status== '2') {}}
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|下线" lay-filter="ma-online-switch"
+               name="ma-online-switch"
+        {{#if (d.status== '2') {}}
         checked=""
         {{#}}}
         />
@@ -292,7 +292,6 @@
         <!--触发搜索按钮-->
         $('#searchBtn').on('click', function () {
             onSearchBtn();
-            //testNewWindow();
         });
 
         onSearchBtn();
@@ -320,7 +319,7 @@
             }
 
             ajax({
-                url: '[[$Think.ADMIN_URL]]/user/updateuser',
+                url: '[[$Think.ADMIN_URL]]/pay/skmaupdate',
                 data: item,
                 success: function (res) {
                     if (res.code !== '0') {
@@ -353,7 +352,7 @@
             }
 
             laytplAfterAjax({
-                    url: '[[$Think.ADMIN_URL]]/user/agentquery'
+                    url: '[[$Think.ADMIN_URL]]/pay/agentquery'
                 },
                 {
                     title: title,
@@ -429,9 +428,9 @@
 
 
         <!--用户通道费率-->
-        function userChannel(row) {
+        function skmaTest(row) {
             laytplAfterAjax({
-                    url: '[[$Think.ADMIN_URL]]/user/channelquery',
+                    url: '[[$Think.ADMIN_URL]]/pay/skmatest',
                     data: {id: row.data.id}
                 },
                 {
@@ -470,7 +469,7 @@
                         }
 
                         ajax({
-                            url: '[[$Think.ADMIN_URL]]/user/channelrate',
+                            url: '[[$Think.ADMIN_URL]]/pay/channelrate',
                             data: {id: row.data.id, channel_switch: channel_switch, channel_rate: channel_rate},
                             success: function (res) {
                                 if (res.code !== '0') {
@@ -490,13 +489,13 @@
 
 
         <!--删除用户-->
-        function deleteUser(row) {
-            layer.confirm('确定删除用户及其名下所有收款码？',
+        function skmaDelete(row) {
+            layer.confirm('确定删除该收款码？',
                 {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
                 function (index) {
                     ajax({
-                        url: '[[$Think.ADMIN_URL]]/user/deleteuser',
-                        data: {id: row.data.id},
+                        url: '[[$Think.ADMIN_URL]]/pay/skmadelete',
+                        data: {id: row.data.id, uid: row.data.uid},
                         success: function (res) {
                             if (res.code !== '0') {
                                 alertError(res.msg);
@@ -512,26 +511,26 @@
 
 
         <!--监听行按钮-->
-        table.on('tool(userAgent)', function (obj) {
+        table.on('tool(paySkmaList)', function (obj) {
             var lay_event = obj.event;
 
             if (lay_event === 'edit') {
                 onAddOrEditBtn(obj);
             } else if (lay_event === 'del') {
-                deleteUser(obj);
-            } else if (lay_event === 'channel') {
-                userChannel(obj);
+                skmaDelete(obj);
+            } else if (lay_event === 'test') {
+                skmaTest(obj);
             }
         });
 
 
         <!--监听禁用用户按钮-->
-        form.on('switch(user-forbidden-switch)', function (obj) {
+        form.on('switch(ma-forbidden-switch)', function (obj) {
             var available = obj.elem.checked ? 1 : 0;
             var back = obj.elem.checked !== true;
 
             ajax({
-                url: '[[$Think.ADMIN_URL]]/user/forbiddenstatus',
+                url: '[[$Think.ADMIN_URL]]/pay/forbiddenstatus',
                 data: {id: obj.value, status: available},
                 success: function (res) {
                     if (res.code !== '0') {
@@ -539,7 +538,7 @@
                         $(obj.elem).attr('checked', back);
                     } else {
                         alertSuccess(res.msg);
-                        var onlineSwitch = $('input[name="yy-ma-online-switch"][value="' + obj.value + '"]');
+                        var onlineSwitch = $('input[name="ma-online-switch"][value="' + obj.value + '"]');
                         var isOnlie = onlineSwitch.attr('checked');
                         if (available === 0 && isOnlie) {
                             onlineSwitch.attr('checked', false);
@@ -551,17 +550,21 @@
         });
 
         <!--监听上下线按钮-->
-        form.on('switch(yy-ma-online-switch)', function (obj) {
+        form.on('switch(ma-online-switch)', function (obj) {
             var online = obj.elem.checked ? 1 : 0;
             var back = obj.elem.checked !== true;
 
             ajax({
-                url: '[[$Think.ADMIN_URL]]/user/onlinestatus',
+                url: '[[$Think.ADMIN_URL]]/pay/skmaonline',
                 data: {id: obj.value, status: online},
                 success: function (res) {
                     if (res.code !== '0') {
                         alertError(res.msg);
-                        $(obj.elem).attr('checked', back);
+                        if (online === 0) {
+                            $(obj.elem).attr('checked', '');
+                        } else {
+                            $(obj.elem).removeAttr('checked');
+                        }
                         form.render();
                     } else {
                         alertSuccess(res.msg);

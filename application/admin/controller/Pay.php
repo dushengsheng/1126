@@ -30,4 +30,24 @@ class Pay extends Base
         return $this->pay_skma->skmaList();
     }
 
+    public function skmaDelete()
+    {
+        return $this->pay_skma->skmaDelete();
+    }
+
+    public function skmaUpdate()
+    {
+        return $this->pay_skma->skmaUpdate();
+    }
+
+    public function skmaOnline()
+    {
+        return $this->pay_skma->skmaOnline();
+    }
+
+    public function skmaTest()
+    {
+        return $this->pay_skma->skmaTest();
+    }
+
 }

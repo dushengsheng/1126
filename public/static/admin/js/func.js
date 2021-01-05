@@ -89,7 +89,7 @@ function dataPage(opt) {
             if (res.code !== '0') {
                 if (res.code === '-98') {
                     alertError(res.msg, function () {
-                        location.href = 'admin';
+                        location.href = global.admin_url;
                     });
                 } else {
                     alertError(res.msg);
