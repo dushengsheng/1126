@@ -26,7 +26,7 @@ function doLogout()
 
 /**
  * 从缓存或数据库中获取用户信息
- * @param $uid 用户id
+ * @param $uid int 用户id
  * @param false $fresh 是否刷新(从数据库中获取)
  * @param null $mysql
  * @return array|false

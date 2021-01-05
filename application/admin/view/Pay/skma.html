@@ -105,7 +105,7 @@
 <!--用户上下线工具条-->
 <script id="laytpl-online-switch" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="在线|下线" lay-filter="ma-online-switch"
+        <input type="checkbox" lay-skin="switch" value="{{d.id}}" uid="{{d.uid}}" lay-text="在线|下线" lay-filter="ma-online-switch"
                name="ma-online-switch"
         {{#if (d.status== '2') {}}
         checked=""
@@ -116,48 +116,44 @@
 
 
 <!--添加或编辑用户信息的弹层-->
-<script id="laytpl-add-user" type="text/html">
-    <form class="layui-form" lay-filter="form-add-user">
+<script id="laytpl-add-skma" type="text/html">
+    <form lay-filter="form-add-skma" class="layui-form model-form no-padding">
+        <input name="id" type="hidden"/>
+        <input name="uid" id="skma-user-id" type="hidden"/>
+        <input name="account" id="skma-user-account" type="hidden"/>
         <div class="layui-form-item">
-            <label class="layui-form-label">账号:</label>
-            <div class="layui-input-inline" style="width:220px;">
-                <input autocomplete="off" class="layui-input" id="add-user-account" placeholder="账号" type="text"
-                       name="account">
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">密码:</label>
-            <div class="layui-input-inline" style="width:220px;">
-                <input autocomplete="off" class="layui-input" id="add-user-passwd" placeholder="密码" type="password">
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">昵称:</label>
-            <div class="layui-input-inline" style="width:220px;">
-                <input autocomplete="off" class="layui-input" id="add-user-nickname" placeholder="昵称" type="text"
-                       name="nickname">
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">上级:</label>
-            <div class="layui-input-block" style="width:220px;">
-                <select id="add-user-pid" name="pid">
-                    <option value="0">请选择上级代理</option>
-                    {{# layui.each(d.data.sys_agent, function(index, item){}}
-                    <option value="{{item.id}}">{{item.account}}</option>
-                    {{#});}}
+            <label class="layui-form-label layui-form-required">通道选择:</label>
+            <div class="layui-input-block">
+                <select name="mtype_id" id="skma-channel">
+                    <option value="0">全部</option>
+                    [[foreach name="sys_ma_type" item="vo"]]
+                    <option value="[[$vo.id]]">[[$vo.name]]</option>
+                    [[/foreach]]
                 </select>
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">分组:</label>
-            <div class="layui-input-block" style="width:220px;">
-                <select id="add-user-gid" name="gid">
-                    <option value="0">请选择分组</option>
-                    {{# layui.each(d.data.sys_group, function(index, item){}}
-                    <option value="{{index}}">{{item}}</option>
-                    {{#});}}
-                </select>
+            <label class="layui-form-label layui-form-required">通道账号:</label>
+            <div class="layui-input-block">
+                <input name="ma_account" id="skma-channel-account" placeholder="请输入通道账号" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">所属码商:</label>
+            <div class="layui-input-block">
+                <input name="nickname" id="skma-user-nickname" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">每日限额:</label>
+            <div class="layui-input-block">
+                <input name="mt_money" id="skma-mt-money" placeholder="请输入日限额" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">COOKIE:</label>
+            <div class="layui-input-block">
+                <textarea name="ma_cookie" id="skma-cookie" placeholder="请输入COOKIE" class="layui-textarea" ></textarea>
             </div>
         </div>
     </form>
@@ -251,6 +247,7 @@
                         }
                     },
                     {field: 'ma_account', title: '通道账号'},
+                    {field: 'mt_money', title: '日限额', width: 120},
                     {
                         field: 'td_money', title: '今日收款', templet: function (d) {
                             var html = '<div style="text-align:left;">';
@@ -298,24 +295,18 @@
 
 
         <!--新增或者更新用户-->
-        function addOrUpdateUser(row, index) {
+        function addOrUpdateSkma(row, index) {
             var item = {};
-            var jq_gid = $('#add-user-gid');
-            var jq_pid = $('#add-user-pid');
-            item.gid = $.trim(jq_gid.val());
-            item.pid = $.trim(jq_pid.val());
-            item.nickname = $.trim($('#add-user-nickname').val());
-            item.password = md5($.trim($('#add-user-passwd').val()));
-            item.account = $.trim($('#add-user-account').val());
+            item.mtype_id = $('#skma-channel').val();
+            item.ma_cookie = $.trim($('#skma-cookie').val());
+            item.mt_money = $.trim($('#skma-mt-money').val());
+            item.ma_account = $.trim($('#skma-channel-account').val());
+            item.nickname = $.trim($('#skma-user-nickname').val());
+            item.account = $.trim($('#skma-user-account').val());
+            item.uid = $.trim($('#skma-user-id').val());
 
             if (row) {
                 item.id = row.data.id;
-            }
-            if (item.gid !== '0') {
-                item.gname = jq_gid.find('option[value="' + item.gid + '"]').text();
-            }
-            if (item.pid !== '0') {
-                item.paccount = jq_pid.find('option[value="' + item.pid + '"]').text();
             }
 
             ajax({
@@ -343,14 +334,75 @@
         <!--添加或编辑用户-->
         function onAddOrEditBtn(row) {
             var item = {};
-            var title = '添加用户';
+            var title = '添加收款码';
 
             // row 表示更新
             if (row) {
                 item = row.data;
-                title = '编辑用户';
+                title = '编辑收款码';
             }
 
+            layer.open({
+                title: title,
+                area: ['640px', '480px'],
+                type: 1,
+                shadeClose: true,
+                btn: ['确定', '取消'],
+                content: $('#laytpl-add-skma').html(),
+                success: function (index, layero) {
+                    if (row) {
+                        form.val('form-add-skma', item);
+                    } else {
+                        $('#skma-user-id').val("[[$sys_user.id]]");
+                        $('#skma-user-account').val("[[$sys_user.account]]");
+                        $('#skma-user-nickname').val("[[$sys_user.nickname]]");
+                    }
+                    $('#skma-user-nickname').prop('disabled', true);
+                    form.render();
+                },
+                yes: function (index, layero) {
+                    var channel = $('#skma-channel').val();
+                    var cookie = $.trim($('#skma-cookie').val());
+                    var mt_money = $.trim($('#skma-mt-money').val());
+                    var ma_account = $.trim($('#skma-channel-account').val());
+
+                    if (channel === '0') {
+                        alertWarning('请选择通道');
+                        return;
+                    }
+                    if (ma_account === '') {
+                        alertWarning('请输入通道账号');
+                        return;
+                    }
+                    if (cookie === '') {
+                        alertWarning('cookie不能为空');
+                        return;
+                    }
+                    if (mt_money < 0) {
+                        alertWarning('请输入正确的额度');
+                        return;
+                    }
+                    if (mt_money === '') {
+                        mt_money = 0;
+                    }
+                    if (row &&
+                        item.mtype_id === channel &&
+                        item.ma_account === ma_account &&
+                        item.ma_cookie === cookie &&
+                        item.mt_money === mt_money) {
+                        layer.close(index);
+                        alertWarning('没有任何改变');
+                        return true;
+                    }
+
+                    addOrUpdateSkma(row, index);
+                },
+                btn2: function (index, layero) {
+                    return true;
+                }
+            });
+
+            /*
             laytplAfterAjax({
                     url: '[[$Think.ADMIN_URL]]/pay/agentquery'
                 },
@@ -418,7 +470,7 @@
                     btn2: function (index, layero) {
                         return true;
                     }
-                });
+                });*/
         }
 
         <!--新增用户-->
@@ -552,18 +604,16 @@
         <!--监听上下线按钮-->
         form.on('switch(ma-online-switch)', function (obj) {
             var online = obj.elem.checked ? 1 : 0;
-            var back = obj.elem.checked !== true;
-
             ajax({
                 url: '[[$Think.ADMIN_URL]]/pay/skmaonline',
-                data: {id: obj.value, status: online},
+                data: {id: obj.value, uid: $(obj.elem).attr('uid'), status: online},
                 success: function (res) {
                     if (res.code !== '0') {
                         alertError(res.msg);
-                        if (online === 0) {
-                            $(obj.elem).attr('checked', '');
-                        } else {
+                        if (online) {
                             $(obj.elem).removeAttr('checked');
+                        } else {
+                            $(obj.elem).attr('checked', '');
                         }
                         form.render();
                     } else {
