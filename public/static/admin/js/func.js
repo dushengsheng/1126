@@ -37,7 +37,7 @@ function alertSuccess(msg, callback = null) {
 
 function alertError(msg, callback = null) {
     var p1 = callback ? callback : function () {};
-    layui.layer.msg(msg, {icon: 2, time:1500}, p1);
+    layui.layer.msg(msg, {icon: 2, time:2000}, p1);
 }
 
 function jResult(code, msg, data = null) {
@@ -89,7 +89,9 @@ function dataPage(opt) {
             if (res.code !== '0') {
                 if (res.code === '-98') {
                     alertError(res.msg, function () {
-                        location.href = global.admin_url;
+                        //location.href = global.admin_url;
+                        //window.open("https://pay.duowan.com/userDepositDWAction.action", "newwindow");
+                        window.open(global.admin_url, "newwindow");
                     });
                 } else {
                     alertError(res.msg);
