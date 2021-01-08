@@ -6,6 +6,7 @@ use think\Request;
 class Pay extends Base
 {
     protected $pay_skma = null;
+    protected $pay_order = null;
 
     public function __construct(Request $request = null)
     {
@@ -15,6 +16,7 @@ class Pay extends Base
     public function _initialize()
     {
         $this->pay_skma = new PaySkma();
+        $this->pay_order = new PayOrder();
 
         parent::_initialize();
         debugLog('params = ' . var_export($this->params, true));
@@ -48,6 +50,20 @@ class Pay extends Base
     public function skmaTest()
     {
         return $this->pay_skma->skmaTest();
+    }
+
+
+    /**
+     ********************************
+     */
+    public function order()
+    {
+        return $this->pay_order->order();
+    }
+
+    public function orderList()
+    {
+        return $this->pay_order->orderList();
     }
 
 }

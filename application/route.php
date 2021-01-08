@@ -49,6 +49,8 @@ Route::rule('admin/pay/skmatest',           'admin/pay/skmaTest');
 Route::rule('admin/pay/xianyu',             'admin/Pay/xianyu');
 Route::rule('admin/pay/xianyulist',         'admin/Pay/xianyuList');
 
+Route::rule('admin/pay/order',              'admin/Pay/order');
+Route::rule('admin/pay/orderlist',          'admin/Pay/orderList');
 
 Route::rule('admin/sys/userinfo',           'admin/Sys/userinfo');
 Route::rule('admin/sys/password',           'admin/Sys/password');

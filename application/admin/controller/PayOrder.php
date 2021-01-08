@@ -3,134 +3,143 @@ namespace app\admin\controller;
 
 use think\Request;
 
-class PaySkma extends Base
+class PayOrder extends Base
 {
     public function __construct(Request $request = null)
     {
         parent::__construct($request);
     }
 
-    public function skma()
+    public function order()
     {
         $pageuser = checkPower();
-        $mtype_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1 and id = 204");
-        $mstatus_arr = getConfig('cnf_skma_status');
+        $channel_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1 and id = 204");
+        $pay_status_arr = getConfig('cnf_pay_status');
 
         // 检查权限
         $sys_power = [];
-        $sys_power['add'] = hasPower($pageuser, 'Pay_SkmaAdd') ? 1 : 0;
-        $sys_power['del'] = hasPower($pageuser, 'Pay_SkmaDelete') ? 1 : 0;
-        $sys_power['edit'] = hasPower($pageuser, 'Pay_SkmaUpdate') ? 1 : 0;
-        $sys_power['test'] = hasPower($pageuser, 'Pay_SkmaTest') ? 1 : 0;
+        $sys_power['add'] = hasPower($pageuser, 'Pay_OrderAdd') ? 1 : 0;
+        $sys_power['patch'] = hasPower($pageuser, 'Pay_OrderPatch') ? 1 : 0;
+        $sys_power['callback'] = hasPower($pageuser, 'Pay_OrderCallback') ? 1 : 0;
 
         $data = [
             'sys_user' => $pageuser,
             'sys_power' => $sys_power,
-            'sys_ma_type' => $mtype_arr,
-            'sys_ma_status' => $mstatus_arr
+            'sys_channel' => $channel_arr,
+            'sys_pay_status' => $pay_status_arr
         ];
 
-        return $this->fetch("Pay/skma", $data);
+        return $this->fetch("Pay/order", $data);
     }
 
-    public function skmaList()
+    public function orderList()
     {
         $pageuser = checkLogin();
         $params = $this->params;
-        $where = "where log.status<99";
+
+        $where = "where log.pay_status<99";
+        if ($params['s_start_date'] && $params['s_end_date'] && $params['s_start_date'] <= $params['s_end_date']) {
+            $s_start_date = strtotime($params['s_start_date'] . ' 00:00:00');
+            $s_end_date = strtotime($params['s_end_date'] . ' 23:59:59');
+            $where .= " and log.create_time between {$s_start_date} and {$s_end_date}";
+        }
         if ($pageuser['gid'] >= 61) {
             $uid_arr = getDownUser($pageuser['id']);
             $uid_arr[] = $pageuser['id'];
             $uid_str = implode(',', $uid_arr);
-            $where .= " and log.uid in({$uid_str})";
+            $where .= " and (log.suid in({$uid_str}) or log.muid in({$uid_str}))";
         }
-        if (isset($params['s_ma_type']) && $params['s_ma_type']) {
-            $params['s_ma_type'] = intval($params['s_ma_type']);
-            if (in_array($params['s_ma_type'], [204,205])) {
-                $where .= " and log.mtype_id in (204,205)";
+        $s_keyword = $params['s_keyword'];
+        $s_channel = intval($params['s_channel']);
+        $s_pay_status = intval($params['s_pay_status']);
+        if ($s_channel) {
+            if (in_array($s_channel, [204, 205])) {
+                $where .= " and log.ptype in (204,205)";
             } else {
-                $where .= " and log.mtype_id={$params['s_ma_type']}";
+                $where .= " and log.ptype={$s_channel}";
             }
         }
-        if (isset($params['s_ma_status']) && $params['s_ma_status'] != 'all') {
-            $params['s_ma_status'] = intval($params['s_ma_status']);
-            $where .= " and log.status={$params['s_ma_status']}";
+        if ($s_pay_status) {
+            $where .= " and log.pay_status={$s_pay_status}";
         }
-        if (isset($params['s_keyword']) && $params['s_keyword']) {
-            $where .= " and (log.ma_account like '%{$params['s_keyword']}%' or u.account like '%{$params['s_keyword']}%' or u.nickname like '%{$params['s_keyword']}%')";
+        if ($s_keyword) {
+            $where .= " and (log.order_sn like '%{$s_keyword}%' or log.out_order_sn like '%{$s_keyword}%' or su.account like '%{$s_keyword}%' or su.nickname like '%{$s_keyword}%' or mu.account like '%{$s_keyword}%' or mu.nickname like '%{$s_keyword}%')";
         }
+        debugLog('orderList: where = ' . var_export($where, true));
 
-        $sql_cnt = "select count(1) as cnt 
-		from sk_ma log 
-		left join sk_mtype mt on log.mtype_id=mt.id 
-		left join sys_user u on log.uid=u.id {$where}";
+        $sql_cnt = "select count(1) as cnt,sum(log.money) as sum_money,sum(log.fee) as sum_fee,sum(real_money) as sum_real_money  
+		from sk_order log 
+		left join sys_user su on log.suid=su.id 
+		left join sk_mtype mt on log.ptype=mt.id
+		left join sys_user mu on log.muid=mu.id {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
 
-        $sql = "select log.*,
-		mt.name as mtype_name,mt.type as mtype_type,
-		u.account,u.nickname 
-		from sk_ma log 
-		left join sk_mtype mt on log.mtype_id=mt.id 
-		left join sys_user u on log.uid=u.id 
+        $sql_cnt_succeed = $sql_cnt . " and log.pay_status = 9";
+        $count_item_succeed = $this->mysql->fetchRow($sql_cnt_succeed);
+        $count_percent = '0%';
+        if ($count_item['cnt'] > 0) {
+            $count_percent = round(($count_item_succeed['cnt'] / $count_item['cnt']) * 100, 2) . '%';
+        }
+
+        $sql = "select log.*,su.account as su_account,su.nickname as su_nickname,
+		mu.account as mu_account,mu.nickname as mu_nickname,mt.name as mtype_name
+		from sk_order log 
+		left join sys_user su on log.suid=su.id 
+		left join sk_mtype mt on log.ptype=mt.id 
+		left join sys_user mu on log.muid=mu.id 
 		{$where} order by log.id desc";
+
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
-
-        $cnf_skma_status = getConfig('cnf_skma_status');
-        $today = date('Ymd', NOW_TIME);
-        $yestoday = date("Ymd", strtotime("-1 day"));
-        //$weekday = date("Ymd", strtotime("-7 day"));
-
+        $cnf_pay_status = getConfig('cnf_pay_status');
+        $cnf_notice_status = getConfig('cnf_notice_status');
         foreach ($list as &$item) {
             $item['create_time'] = date('m-d H:i:s', $item['create_time']);
-            $item['status_flag'] = $cnf_skma_status[$item['status']];
-            /*
-            $oitem=$this->mysql->fetchRow("select count(1)as cnt from sk_order where ma_id={$item['id']}");
-            $oitem2=$this->mysql->fetchRow("select count(1)as cnt from sk_order where ma_id={$item['id']} and pay_status=9");
-            $item['order_num']=intval($oitem['cnt']);
-            $item['order_num2']=intval($oitem2['cnt']);
-            */
-            $jt_item   = $this->mysql->fetchRow("select count(1)as cnt,sum(money) as money from sk_order where ma_id={$item['id']} and create_day={$today} and pay_status=9");
-            $jt_item2  = $this->mysql->fetchRow("select count(1)as cnt,sum(money) as money from sk_order where ma_id={$item['id']} and create_day={$today}");
-            $zt_item   = $this->mysql->fetchRow("select count(1)as cnt,sum(money) as money from sk_order where ma_id={$item['id']} and create_day={$yestoday} and pay_status=9");
-            $zt_item2  = $this->mysql->fetchRow("select count(1)as cnt,sum(money) as money from sk_order where ma_id={$item['id']} and create_day={$yestoday}");
-            $all_item  = $this->mysql->fetchRow("select count(1)as cnt,sum(money) as money from sk_order where ma_id={$item['id']} and pay_status=9");
-            $all_item2 = $this->mysql->fetchRow("select count(1)as cnt,sum(money) as money from sk_order where ma_id={$item['id']}");
-
-            $item['jt_cnt'] = intval($jt_item['cnt']);
-            $item['jt_cnt2'] = intval($jt_item2['cnt']);
-            $item['jt_money'] = floatval($jt_item['money']);
-            $item['jt_money2'] = floatval($jt_item2['money']);
-            if ($item['jt_cnt2'] > 0) {
-                $item['jt_percent'] = round(($item['jt_cnt'] / $item['jt_cnt2']) * 100, 2) . '%';
+            if ($item['pay_time']) {
+                $item['pay_time'] = date('m-d H:i:s', $item['pay_time']);
             } else {
-                $item['jt_percent'] = '0%';
+                $item['pay_time'] = '';
             }
-
-            $item['zt_cnt'] = intval($zt_item['cnt']);
-            $item['zt_cnt2'] = intval($zt_item2['cnt']);
-            $item['zt_money'] = floatval($zt_item['money']);
-            $item['zt_money2'] = floatval($zt_item2['money']);
-            if ($item['zt_cnt2'] > 0) {
-                $item['zt_percent'] = round(($item['zt_cnt'] / $item['zt_cnt2']) * 100, 2) . '%';
+            if ($item['js_time']) {
+                $item['js_time'] = date('m-d H:i:s', $item['js_time']);
             } else {
-                $item['zt_percent'] = '0%';
+                $item['js_time'] = '';
             }
+            if ($item['pay_status']) {
+                $item['pay_status_flag'] = $cnf_pay_status[$item['pay_status']];
+            }
+            if ($item['notice_status']) {
+                $item['notice_status_flag'] = $cnf_notice_status[$item['notice_status']];
+            }
+            $item['fee'] = floatval($item['fee']);
+            $item['money'] = floatval($item['money']);
+            $item['real_money'] = floatval($item['real_money']);
 
-            $item['all_cnt'] = intval($all_item['cnt']);
-            $item['all_cnt2'] = intval($all_item2['cnt']);
-            $item['all_money'] = floatval($all_item['money']);
-            $item['all_money2'] = floatval($all_item2['money']);
-            if ($item['all_cnt2'] > 0) {
-                $item['all_percent'] = round(($item['all_cnt'] / $item['all_cnt2']) * 100, 2) . '%';
-            } else {
-                $item['all_percent'] = '0%';
+            $up_user = getUpUser($item['muid'], true);
+            $up_arr = [];
+            foreach ($up_user as $uuv) {
+                if ($uuv['gid'] == 61) {
+                    $up_arr[] = [
+                        'account' => $uuv['account'],
+                        'nickname' => $uuv['nickname']
+                    ];
+                }
             }
+            $item['up_arr'] = $up_arr;
+
+            $item['callback'] = hasPower($pageuser, 'Pay_OrderCallback') ? 1 : 0;
+            $item['patch'] = hasPower($pageuser, 'Pay_OrderPatch') ? 1 : 0;
         }
-        $data = array(
-            'list' => $list,
-            'count' => $count_item['cnt']
-        );
 
+        $data = [
+            'list' => $list,
+            'count' => $count_item['cnt'],
+            'count_succeed' => $count_item_succeed['cnt'],
+            'count_percent' => $count_percent,
+            'sum_money' => floatval($count_item['sum_money']),
+            'sum_money_succeed' => floatval($count_item_succeed['sum_money']),
+            'sum_fee' => floatval($count_item['sum_fee']),
+            'sum_real_money' => floatval($count_item['sum_real_money'])
+        ];
         jReturn('0', 'ok', $data);
     }
 
