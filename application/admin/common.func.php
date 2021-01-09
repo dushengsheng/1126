@@ -237,3 +237,63 @@ function memcacheDelete($key, $memcache = null)
     $memcache->delete($mem_key);
 }
 
+/**
+ * @param array $user 充值用户
+ * @param int $balanceType 1=可提余额,2=冻结中,3=接单余额,4=可拨款额度
+ * @param int $subType 详见 cnf_balance_type
+ * @param float $money 充值额度
+ * @param string $fkey
+ * @param string $remark
+ * @param null $mysql
+ * @return array|false
+ */
+function balanceLog($user, $balanceType, $subType, $money, $fkey = '', $remark = '', $mysql = null)
+{
+    $cnf_balance_type = getConfig('cnf_balance_type');
+    $subType = intval($subType);
+    if (!array_key_exists($subType, $cnf_balance_type)) {
+        return false;
+    }
+    $pageuser = checkLogin();
+    $cnf_balance_log = [
+        'uid' => intval($user['id']),
+        'type' => $subType,
+        'fkey' => $fkey,
+        'money' => $money,
+        'create_time' => time(),
+        'create_day' => date('Ymd'),
+        'create_id' => intval($pageuser['id']),
+        'remark' => $remark
+    ];
+    if ($balanceType == 1) {
+        $cnf_balance_log['ori_balance'] = $user['balance'];
+        $cnf_balance_log['new_balance'] = $user['balance'] + $money;
+    } elseif ($balanceType == 2) {
+        $cnf_balance_log['ori_balance'] = $user['fz_balance'];
+        $cnf_balance_log['new_balance'] = $user['fz_balance'] + $money;
+    } elseif ($balanceType == 3) {
+        $cnf_balance_log['ori_balance'] = $user['sx_balance'];
+        $cnf_balance_log['new_balance'] = $user['sx_balance'] + $money;
+    } elseif ($balanceType == 4) {
+        $cnf_balance_log['ori_balance'] = $user['kb_balance'];
+        $cnf_balance_log['new_balance'] = $user['kb_balance'] + $money;
+    } else {
+        return false;
+    }
+    $to_free_mysql = false;
+    if (!$mysql) {
+        $mysql = new Mysql(0);
+        $to_free_mysql = true;
+    }
+    $res = $mysql->insert($cnf_balance_log, 'cnf_balance_log');
+    if ($to_free_mysql) {
+        $mysql->close();
+        unset($mysql);
+    }
+    if (!$res) {
+        return false;
+    }
+    $cnf_balance_log['id'] = $res;
+    return $cnf_balance_log;
+}
+

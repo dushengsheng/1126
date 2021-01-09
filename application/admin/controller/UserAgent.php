@@ -62,16 +62,6 @@ class UserAgent extends Base
             if ($uid_arr) {
                 $uid_str = implode(',', $uid_arr);
                 $where .= " and log.id in ({$uid_str})";
-            } else {
-                $empty_data = [
-                    'list' => [],
-                    'count' => 0,
-                    'balance' => 0,
-                    'sx_balance' => 0,
-                    'fz_balance' => 0,
-                    'kb_balance' => 0
-                ];
-                jReturn('0', '您还没有下级, 赶快来创建吧', $empty_data);
             }
         }
 
@@ -89,12 +79,13 @@ class UserAgent extends Base
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
 		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user log {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
+
         $sql = "select log.*,p.account as paccount,p.nickname as pnickname,p.status as pstatus,p.td_switch as ptd_switch,p.td_rate as ptd_rate,p.fy_rate as pfy_rate 
                 from sys_user log left join sys_user p on log.pid=p.id {$where} order by log.id";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
         $sys_group = getConfig('sys_group');
-        $account_status = getConfig('account_status');
         $yes_or_no = getConfig('yes_or_no');
+        $account_status = getConfig('account_status');
         $now_day = date('Ymd');
 
         foreach ($list as &$item) {

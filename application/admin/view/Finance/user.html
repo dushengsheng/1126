@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>旗下用户</title>
+    <meta content="webkit" name="renderer">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+    <link href="/dist/layuiadmin/layui/css/layui.css" media="all" rel="stylesheet">
+    <link href="/static/admin/css/admin.css" rel="stylesheet">
+</head>
+<body>
+
+<div style="padding: 18px; background-color: #F2F2F2;">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span>旗下用户</span>
+        </div>
+        <div class="layui-card-body">
+            <form action="" class="layui-form" id="searchForm">
+                <div class="layui-form-item" style="text-align: center">
+                    <div style="float: right">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">分组</label>
+                            <div class="layui-input-inline" style="width:100px;">
+                                <select id="s_gid" name="s_gid">
+                                    <option value="0">全部</option>
+                                    [[foreach name="$sys_group" item="vo" key="skey"]]
+                                    <option value="[[$skey]]">[[$vo]]</option>
+                                    [[/foreach]]
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">关键字</label>
+                            <div class="layui-input-inline">
+                                <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字"
+                                       type="text">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search"
+                                      id="searchBtn"> 查询</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+
+            <table class="layui-hide" id="financeUserList" lay-filter="financeUserList"></table>
+        </div>
+    </div>
+</div>
+
+
+<!--item操作工具条-->
+<script id="laytpl-table-item" type="text/html">
+    [[if ($sys_power.recharge == 1)]]
+        <a class="layui-btn layui-btn-sm" lay-event="recharge">充值</a>
+    [[/if]]
+</script>
+
+
+<!--充值弹层-->
+<script id="laytpl-user-recharge" type="text/html">
+    <form class="layui-form" lay-filter="form-user-recharge">
+        <div class="layui-form-item">
+            <label class="layui-form-label">账号:</label>
+            <div class="layui-input-block">
+                <input class="layui-input" id="recharge-user-account" readonly type="text" name="account">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">余额:</label>
+            <div class="layui-input-block">
+                <input class="layui-input" id="recharge-user-balance" readonly type="text" name="balance">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">冻结中:</label>
+            <div class="layui-input-block">
+                <input class="layui-input" id="recharge-user-fz-balance" readonly type="text" name="fz_balance">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">额度：</label>
+            <div class="layui-input-block">
+                <input type="text" id="recharge-money" placeholder="" autocomplete="off" class="layui-input"/>
+            </div>
+            <span style="color:#f60;margin-left: 110px">充值正数为增加，负数为扣除，只是单纯增减对应额度</span>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-block">
+                <textarea id="recharge-remark" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">二级密码：</label>
+            <div class="layui-input-block">
+                <input type="password" id="recharge-user-pwd2" placeholder="" autocomplete="off" class="layui-input"/>
+            </div>
+        </div>
+    </form>
+</script>
+
+
+<!--引用其他js文件-->
+<script src="/dist/layuiadmin/layui/layui.js"></script>
+<script src="/static/admin/js/func.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/func.js"></script>
+<script src="/js/md5.js"></script>
+
+
+<script>
+    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl'], function () {
+        var $ = layui.jquery;
+        var table = layui.table;
+        var form = layui.form;
+        var layer = layui.layer;
+        var laytpl = layui.laytpl;
+
+        <!--获取用户列表-->
+        function onSearchBtn() {
+            var params = {
+                s_gid: $('#s_gid').val(),
+                s_keyword: $.trim($('#s_keyword').val())
+            };
+
+            dataPage({
+                elem: '#financeUserList',
+                url: '[[$Think.ADMIN_URL]]/finance/userlist',
+                where: params,
+                page: true,
+                cols: [[
+                    {field: 'id', title: 'ID', width: 100},
+                    {field: 'gname', title: '分组', width: 120},
+                    {field: '', title: '账号/昵称', templet: function (d) {
+                            var html = '<div style="text-align: center">';
+                            html += '<div>' + d.account + '</div>';
+                            html += '<div>' + d.nickname + '</div>';
+                            html += '</div>';
+                            return html;
+                        }},
+                    {field: 'balance', title: '余额'},
+                    {field: 'fz_balance', title: '冻结中'},
+                    {field: '', title: '操作', width: 240, toolbar: '#laytpl-table-item'}
+                ]],
+                done: function (res, curr, count) {
+                    if ($('.sumLine').length < 1) {
+                        var html = '<div class="sumLine">';
+                        html += '<span>用户数：' + res.count + '</span>';
+                        html += '<span>可提余额：' + res.odata.balance + '</span>';
+                        html += '<span>冻结中：' + res.odata.fz_balance + '</span>';
+                        html += '</div>';
+                        $('.layui-table-header').before(html);
+                    }
+                    if (res.code === '0') {
+                        alertSuccess(res.msg);
+                    }
+                }
+            });
+        }
+
+
+        <!--触发搜索按钮-->
+        $('#searchBtn').on('click', function () {
+            onSearchBtn();
+        });
+
+        onSearchBtn();
+
+        function userRecharge(obj) {
+            var item = obj.data;
+
+            layer.open({
+                title: '用户充值',
+                area: ['640px', '520px'],
+                type: 1,
+                shadeClose: true,
+                btn: ['确定', '取消'],
+                content: $('#laytpl-user-recharge').html(),
+                success: function (index, layero) {
+                    form.val('form-user-recharge', item);
+                    form.render();
+                },
+                yes: function (index, layero) {
+                    var money = $.trim($('#recharge-money').val());
+                    var remark = $.trim($('#recharge-remark').val());
+                    var passwd2 = md5($.trim($('#recharge-user-pwd2').val()));
+
+                    if (money === '') {
+                        alertWarning('请输入正确的额度');
+                        return;
+                    }
+                    if (passwd2 === md5('')) {
+                        alertWarning('请输入二级密码');
+                        return;
+                    }
+
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/finance/userrecharge',
+                        data: {
+                            id: item.id,
+                            money: money,
+                            remark: remark,
+                            password2: passwd2
+                        },
+                        success: function (res) {
+                            if (res.code !== '0') {
+                                alertError(res.msg);
+                                return;
+                            }
+                            layer.close(index);
+                            alertSuccess(res.msg);
+
+                            onSearchBtn();
+                        }
+                    });
+                },
+                btn2: function (index, layero) {
+                    return true;
+                }
+            });
+        }
+
+        <!--监听行按钮-->
+        table.on('tool(financeUserList)', function (obj) {
+            var lay_event = obj.event;
+
+            if (lay_event === 'recharge') {
+                userRecharge(obj);
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

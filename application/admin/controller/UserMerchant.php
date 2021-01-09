@@ -68,15 +68,6 @@ class UserMerchant extends Base
                 } else if (in_array($pageuser['gid'], [81,91])) {
                     $where .= " and log.id in ({$uid_str})";
                 }
-            } else {
-                $empty_data = [
-                    'list' => [],
-                    'count' => 0,
-                    'balance' => 0,
-                    'sx_balance' => 0,
-                    'fz_balance' => 0
-                ];
-                jReturn('0', '您名下还没有商户, 赶快来创建吧', $empty_data);
             }
         }
 
@@ -94,13 +85,14 @@ class UserMerchant extends Base
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
 		sum(fz_balance) as fz_balance from sys_user log {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
+
         $sql = "select log.*,ms.account as ms_account,ms.nickname as ms_nickname,ms.status as ms_status,
                 ms.td_switch as ms_td_switch,ms.td_rate as ms_td_rate,ms.fy_rate as ms_fy_rate 
                 from sys_user log left join sys_user ms on log.appoint_agent=ms.id {$where} order by log.id";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
         $sys_group = getConfig('sys_group');
-        $account_status = getConfig('account_status');
         $yes_or_no = getConfig('yes_or_no');
+        $account_status = getConfig('account_status');
         $now_day = date('Ymd');
 
         foreach ($list as &$item) {
