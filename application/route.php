@@ -52,6 +52,12 @@ Route::rule('admin/pay/xianyulist',         'admin/Pay/xianyuList');
 Route::rule('admin/pay/order',              'admin/Pay/order');
 Route::rule('admin/pay/orderlist',          'admin/Pay/orderList');
 
+// 资金管理
+Route::rule('admin/finance/user',           'admin/Finance/user');
+Route::rule('admin/finance/userlist',       'admin/Finance/userList');
+Route::rule('admin/finance/userrecharge',   'admin/Finance/userRecharge');
+
+
 Route::rule('admin/sys/userinfo',           'admin/Sys/userinfo');
 Route::rule('admin/sys/password',           'admin/Sys/password');
 Route::rule('admin/sys/userupdate',         'admin/Sys/userUpdate');
