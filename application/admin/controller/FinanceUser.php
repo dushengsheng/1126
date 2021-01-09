@@ -75,6 +75,15 @@ class FinanceUser extends Base
             $item['gname'] = $sys_group[$item['gid']];
             $item['status_flag'] = $account_status[$item['status']];
             $item['is_online_flag'] = $yes_or_no[$item['is_online']];
+
+            $item['power_recharge'] = 0;
+            if (in_array($item['gid'], [81, 91])) {
+                if ($pageuser['pid'] <= 1) {
+                    $item['power_recharge'] = 1;
+                }
+            } else if (in_array($item['gid'], [61, 71])) {
+                $item['power_recharge'] = 1;
+            }
         }
 
         $data = array(
@@ -110,6 +119,7 @@ class FinanceUser extends Base
         }
         if ($myself['gid'] >= 61) {
             $agent_arr = getDownUser($myself['id']);
+            $appoint_arr = $agent_arr;
             $appoint_arr[] = $myself['id'];
 
             // 不是你的下级

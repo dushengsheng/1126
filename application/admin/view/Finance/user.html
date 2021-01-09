@@ -57,9 +57,9 @@
 
 <!--item操作工具条-->
 <script id="laytpl-table-item" type="text/html">
-    [[if ($sys_power.recharge == 1)]]
+    {{#if(d.power_recharge == 1){}}
         <a class="layui-btn layui-btn-sm" lay-event="recharge">充值</a>
-    [[/if]]
+    {{#}}}
 </script>
 
 
