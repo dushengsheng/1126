@@ -54,4 +54,5 @@ Route::rule('admin/pay/orderlist',          'admin/Pay/orderList');
 
 Route::rule('admin/sys/userinfo',           'admin/Sys/userinfo');
 Route::rule('admin/sys/password',           'admin/Sys/password');
+Route::rule('admin/sys/userupdate',         'admin/Sys/userUpdate');
 

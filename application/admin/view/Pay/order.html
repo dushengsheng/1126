@@ -106,14 +106,17 @@
 
 
 <!--用户禁用状态工具条-->
-<script id="laytpl-forbidden-switch" type="text/html">
+<script id="laytpl-order-status" type="text/html">
     <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" lay-text="正常|禁用" lay-filter="ma-forbidden-switch"
-               name="ma-forbidden-switch"
-               {{#if (d.status== '2') {}}
-        checked="true"
+        {{#if(d.pay_status == 9){}}
+            {{d.real_money}}
+        {{#}else if(d.pay_status == 3 && [[$sys_power.patch == 1]]){}}
+            <div class="layui-btn layui-btn-radius layui-btn-normal layui-btn-warm" id="order-patch">超时补单</div>
+        {{#}else if(d.pay_status < 3 && [[$sys_power.callback == 1]]){}}
+            <div class="layui-btn layui-btn-radius layui-btn-normal" id="order-callback">确认订单</div>
+        {{#}else{}}
+            '/'
         {{#}}}
-        />
     </div>
 </script>
 
@@ -223,12 +226,6 @@
 <script src="/js/md5.js"></script>
 
 <script>
-    function testNewWindow() {
-        window.open("https://pay.duowan.com/userDepositDWAction.action", "newwindow");
-    }
-</script>
-
-<script>
     layui.use(['table', 'jquery', 'form', 'layer', 'laytpl', 'laydate'], function () {
         var $ = layui.jquery;
         var table = layui.table;
@@ -272,8 +269,8 @@
                             html += '</div>';
                             return html;
                         } },
-                    {field: 'money', title: '订单金额', width: 120},
-                    {field: 'real_money', title: '结算金额', width: 120},
+                    {field: 'money', title: '订单金额', width: 130},
+                    {field: 'real_money', title: '结算金额', width: 130, templet: "#laytpl-order-status"},
                     {field: 'pay_status_flag', title: '支付状态'},
                     {field: 'create_time', title: '下单时间', width: 130},
                     {field: 'js_time', title: '回调时间', width: 130}
