@@ -12,14 +12,17 @@
 use think\Route;
 
 
+// 首页
 Route::rule('admin/index',                 'admin/Index/index');
 Route::rule('admin/index/console',         'admin/Index/console');
+
 
 // 登录
 Route::rule('admin/login',                 'admin/Login/index');
 Route::rule('admin/login/captcha',         'admin/Login/captcha');
 Route::rule('admin/login/loginact',        'admin/Login/loginAct');
 Route::rule('admin/login/logoutact',       'admin/Login/logoutAct');
+
 
 // 用户管理
 Route::rule('admin/user/agent',            'admin/User/agent');
@@ -38,6 +41,7 @@ Route::rule('admin/user/merchantquery',     'admin/User/merchantQuery');
 Route::rule('admin/user/merchant',          'admin/User/merchant');
 Route::rule('admin/user/merchantlist',      'admin/User/merchantList');
 
+
 // 订单管理
 Route::rule('admin/pay/skma',               'admin/Pay/skma');
 Route::rule('admin/pay/skmalist',           'admin/Pay/skmaList');
@@ -52,12 +56,20 @@ Route::rule('admin/pay/xianyulist',         'admin/Pay/xianyuList');
 Route::rule('admin/pay/order',              'admin/Pay/order');
 Route::rule('admin/pay/orderlist',          'admin/Pay/orderList');
 
+
 // 资金管理
 Route::rule('admin/finance/user',           'admin/Finance/user');
 Route::rule('admin/finance/userlist',       'admin/Finance/userList');
 Route::rule('admin/finance/userrecharge',   'admin/Finance/userRecharge');
 
+Route::rule('admin/finance/card',           'admin/Finance/card');
+Route::rule('admin/finance/cardlist',       'admin/Finance/cardList');
+Route::rule('admin/finance/cardadd',        'admin/Finance/cardAdd');
+Route::rule('admin/finance/cardupdate',     'admin/Finance/cardUpdate');
+Route::rule('admin/finance/carddelete',     'admin/Finance/cardDelete');
 
+
+//系统配置
 Route::rule('admin/sys/userinfo',           'admin/Sys/userinfo');
 Route::rule('admin/sys/password',           'admin/Sys/password');
 Route::rule('admin/sys/userupdate',         'admin/Sys/userUpdate');

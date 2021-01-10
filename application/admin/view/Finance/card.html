@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>银行卡</title>
+    <meta content="webkit" name="renderer">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+    <link href="/dist/layuiadmin/layui/css/layui.css" media="all" rel="stylesheet">
+    <link href="/static/admin/css/admin.css" rel="stylesheet">
+</head>
+<body>
+
+<div style="padding: 18px; background-color: #F2F2F2;">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span>银行卡</span>
+            <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-add-circle" id="addBtn"
+                  style="margin-top: 4px"> 新增</span>
+        </div>
+        <div class="layui-card-body">
+            <form action="" class="layui-form" id="searchForm">
+                <div class="layui-form-item" style="text-align: center">
+                    <div style="float: right">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">开户行</label>
+                            <div class="layui-input-inline" style="width:150px;">
+                                <select id="s_bank_id" name="s_bank_id">
+                                    <option value="0">全部</option>
+                                    [[foreach name="$sys_bank" item="vo" key="skey"]]
+                                    <option value="[[$vo.id]]">[[$vo.bank_name]]</option>
+                                    [[/foreach]]
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">关键字</label>
+                            <div class="layui-input-inline">
+                                <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字"
+                                       type="text">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search"
+                                      id="searchBtn"> 查询</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+
+            <table class="layui-hide" id="financeCardList" lay-filter="financeCardList"></table>
+        </div>
+    </div>
+</div>
+
+
+<!--item操作工具条-->
+<script id="laytpl-table-item" type="text/html">
+    <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="delete">删除</a>
+    <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
+</script>
+
+
+<!--添加或编辑银行卡的弹层-->
+<script id="laytpl-add-card" type="text/html">
+    <form class="layui-form" lay-filter="form-add-card">
+        <div class="layui-form-item">
+            <label class="layui-form-label">开户银行:</label>
+            <div class="layui-input-block">
+                <select id="add-card-id" name="bank_id">
+                    [[foreach name="$sys_bank" item="vo" key="skey"]]
+                    <option value="[[$vo.id]]">[[$vo.bank_name]]</option>
+                    [[/foreach]]
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">银行卡号:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="add-card-account" placeholder="银行卡号" type="text"
+                       name="bank_account">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">持卡人姓名:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" id="add-card-realname" placeholder="持卡人姓名" type="text"
+                       name="bank_realname">
+            </div>
+        </div>
+    </form>
+</script>
+
+
+<!--引用其他js文件-->
+<script src="/dist/layuiadmin/layui/layui.js"></script>
+<script src="/static/admin/js/func.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/func.js"></script>
+<script src="/js/md5.js"></script>
+
+
+<script>
+    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl'], function () {
+        var $ = layui.jquery;
+        var table = layui.table;
+        var form = layui.form;
+        var layer = layui.layer;
+        var laytpl = layui.laytpl;
+
+        <!--获取用户列表-->
+        function onSearchBtn() {
+            var params = {
+                s_bank_id: $('#s_bank_id').val(),
+                s_keyword: $.trim($('#s_keyword').val())
+            };
+
+            dataPage({
+                elem: '#financeCardList',
+                url: '[[$Think.ADMIN_URL]]/finance/cardlist',
+                where: params,
+                page: true,
+                cols: [[
+                    {field: 'id', title: 'ID', width: 100},
+                    {field: '', title: '账号/昵称', templet: function (d) {
+                            var html = '<div style="text-align: center">';
+                            html += '<div>' + d.user_account + '/' + d.user_nickname + '</div>';
+                            html += '</div>';
+                            return html;
+                        }},
+                    {field: 'bank_name', title: '开户银行'},
+                    {field: 'bank_account', title: '银行卡号'},
+                    {field: 'bank_realname', title: '挂卡人姓名'},
+                    {field: 'create_time', title: '创建时间'},
+                    {field: '', title: '操作', width: 240, toolbar: '#laytpl-table-item'}
+                ]],
+                done: function (res, curr, count) {
+                    if ($('.sumLine').length < 1) {
+                        var html = '<div class="sumLine">';
+                        html += '<span>数量：' + res.count + '</span>';
+                        html += '</div>';
+                        $('.layui-table-header').before(html);
+                    }
+                    if (res.code === '0') {
+                        alertSuccess(res.msg);
+                    }
+                }
+            });
+        }
+
+
+        <!--触发搜索按钮-->
+        $('#searchBtn').on('click', function () {
+            onSearchBtn();
+        });
+
+        onSearchBtn();
+
+        <!--添加或编辑银行卡-->
+        function onAddOrEditBtn(row) {
+            var item = {};
+            var title = '添加银行卡';
+
+            // row 表示更新
+            if (row) {
+                item = row.data;
+                title = '编辑银行卡';
+            }
+
+            layer.open({
+                title: title,
+                area: ['640px', '520px'],
+                type: 1,
+                shadeClose: true,
+                btn: ['确定', '取消'],
+                content: $('#laytpl-add-card').html(),
+                success: function (index, layero) {
+                    form.val('form-add-card', item);
+                    form.render();
+                },
+                yes: function (index, layero) {
+                    var param = {};
+                    param.bank_id = $.trim($('#add-card-id').val());
+                    param.bank_account = $.trim($('#add-card-account').val());
+                    param.bank_realname = $.trim($('#add-card-realname').val());
+
+                    if (param.bank_account === '') {
+                        alertWarning('请输入正确的账号');
+                        return;
+                    }
+                    if (param.bank_realname === '') {
+                        alertWarning('请输入持卡人姓名');
+                        return;
+                    }
+                    if (row &&
+                        item.bank_id === param.bank_id &&
+                        item.bank_account === param.bank_account &&
+                        item.bank_realname === param.bank_realname) {
+                        layer.close(index);
+                        alertWarning('没有任何改变');
+                        return true;
+                    }
+                    if (row) {
+                        param.id = item.id;
+                    }
+
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/finance/cardupdate',
+                        data: param,
+                        success: function (res) {
+                            if (res.code !== '0') {
+                                alertError(res.msg);
+                                return;
+                            }
+                            layer.close(index);
+                            alertSuccess(res.msg);
+
+                            if (row) {
+                                param.bank_name = $('#add-card-id').find('option[value="' + param.bank_id + '"]').text();
+                                row.update(param);
+                                form.render();
+                            } else {
+                                onSearchBtn();
+                            }
+                        }
+                    });
+                },
+                btn2: function (index, layero) {
+                    return true;
+                }
+            });
+        }
+
+        <!--新增用户-->
+        $('#addBtn').on('click', function () {
+            onAddOrEditBtn(null);
+        });
+
+
+        <!--删除银行卡-->
+        function deleteCard(row) {
+            layer.confirm('确定删除该银行卡？',
+                {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
+                function (index) {
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/finance/carddelete',
+                        data: {id: row.data.id},
+                        success: function (res) {
+                            if (res.code !== '0') {
+                                alertError(res.msg);
+                            } else {
+                                row.del();
+                                layer.close(index);
+                                alertSuccess(res.msg);
+                            }
+                        }
+                    });
+                });
+        }
+
+        <!--监听行按钮-->
+        table.on('tool(financeCardList)', function (obj) {
+            var lay_event = obj.event;
+
+            if (lay_event === 'edit') {
+                onAddOrEditBtn(obj);
+            } else if (lay_event === 'delete') {
+                deleteCard(obj);
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>
