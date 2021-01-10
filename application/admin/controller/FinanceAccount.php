@@ -101,6 +101,9 @@ class FinanceAccount extends Base
             $where .= " and (u.account like '%{$s_keyword}%' or u.nickname like '%{$s_keyword}%')";
         }
 
+        $sql_cnt = "select count(1) as cnt from cnf_balance_log log left join sys_user u on log.uid=u.id {$where}";
+        $count_item = $this->mysql->fetchRow($sql_cnt);
+
         $sql = "select log.*,u.nickname,u.account,u.gid from cnf_balance_log log 
 		left join sys_user u on log.uid=u.id {$where} order by log.id desc";
 
@@ -119,7 +122,7 @@ class FinanceAccount extends Base
         }
         $data = [
             'list' => $list,
-            'count' => count($list)
+            'count' => $count_item['cnt']
         ];
 
         $user = getUserinfo($pageuser['id'], true, $this->mysql);
