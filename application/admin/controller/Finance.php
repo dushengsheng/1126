@@ -8,6 +8,7 @@ class Finance extends Base
     protected $finance_user = null;
     protected $finance_card = null;
     protected $finance_account = null;
+    protected $finance_cashlog = null;
 
     public function __construct(Request $request = null)
     {
@@ -19,6 +20,7 @@ class Finance extends Base
         $this->finance_user = new FinanceUser();
         $this->finance_card = new FinanceCard();
         $this->finance_account = new FinanceAccount();
+        $this->finance_cashlog = new FinanceCashlog();
 
         parent::_initialize();
         debugLog('params = ' . var_export($this->params, true));
@@ -93,4 +95,32 @@ class Finance extends Base
         return $this->finance_account->withdrawal();
     }
 
+
+    /**
+     * cashlog
+     */
+    public function cashlog()
+    {
+        return $this->finance_cashlog->cashlog();
+    }
+
+    public function cashlogList()
+    {
+        return $this->finance_cashlog->cashlogList();
+    }
+
+    public function cashlogRollback()
+    {
+        return $this->finance_cashlog->cashlogRollback();
+    }
+
+    public function cashlogPass()
+    {
+        return $this->finance_cashlog->cashlogPass();
+    }
+
+    public function cashlogDeny()
+    {
+        return $this->finance_cashlog->cashlogDeny();
+    }
 }

@@ -73,6 +73,12 @@ Route::rule('admin/finance/cardadd',        'admin/Finance/cardAdd');
 Route::rule('admin/finance/cardupdate',     'admin/Finance/cardUpdate');
 Route::rule('admin/finance/carddelete',     'admin/Finance/cardDelete');
 
+Route::rule('admin/finance/cashlog',        'admin/Finance/cashlog');
+Route::rule('admin/finance/cashloglist',    'admin/Finance/cashlogList');
+Route::rule('admin/finance/cashlogrollback','admin/Finance/cashlogRollback');
+Route::rule('admin/finance/cashlogpass',    'admin/Finance/cashlogPass');
+Route::rule('admin/finance/cashlogdeny',    'admin/Finance/cashlogDeny');
+
 
 //系统配置
 Route::rule('admin/sys/userinfo',           'admin/Sys/userinfo');

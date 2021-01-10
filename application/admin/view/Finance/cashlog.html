@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>提现记录</title>
+    <meta content="webkit" name="renderer">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+    <link href="/dist/layuiadmin/layui/css/layui.css" media="all" rel="stylesheet">
+    <link href="/static/admin/css/admin.css" rel="stylesheet">
+</head>
+<body>
+
+<div style="padding: 18px; background-color: #F2F2F2;">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span>提现记录</span>
+        </div>
+        <div class="layui-card-body">
+            <form action="" class="layui-form" id="searchForm">
+                <div class="layui-form-item" style="text-align: center">
+                    <div style="float: right">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">开始</label>
+                            <div class="layui-input-inline" style="width:140px;">
+                                <input id="s_start_date" class="layui-input" placeholder="请选择" />
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">结束</label>
+                            <div class="layui-input-inline" style="width:140px;">
+                                <input id="s_end_date" class="layui-input" placeholder="请选择" />
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">状态</label>
+                            <div class="layui-input-inline" style="width:100px;">
+                                <select id="s_cash_status">
+                                    <option value="0">全部</option>
+                                    [[foreach name="$cash_status" item="vo" key="skey"]]
+                                    <option value="[[$skey]]">[[$vo]]</option>
+                                    [[/foreach]]
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="width:50px;">关键字</label>
+                            <div class="layui-input-inline" style="width:220px;">
+                                <input autocomplete="off" class="layui-input" id="s_keyword" placeholder="关键字"
+                                       type="text">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <span class="layui-btn layui-btn-radius layui-btn-normal layui-icon layui-icon-search"
+                                      id="searchBtn"> 查询</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+
+            <table class="layui-hide" id="financeCashlog" lay-filter="financeCashlog"></table>
+        </div>
+    </div>
+</div>
+
+
+<!--item操作工具条-->
+<script id="laytpl-table-item" type="text/html">
+    {{#if(d.status == 1 && [[$sys_power.pass]]){}}
+        <a class="layui-btn layui-btn-radius layui-btn-warm" lay-event="deny">驳回</a>
+        <a class="layui-btn layui-btn-radius layui-btn-normal" lay-event="pass">通过</a>
+    {{#}else{}}
+        {{d.status_flag}}
+    {{#}}}
+</script>
+
+
+<!--引用其他js文件-->
+<script src="/dist/layuiadmin/layui/layui.js"></script>
+<script src="/static/admin/js/func.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/func.js"></script>
+<script src="/js/md5.js"></script>
+
+
+<script>
+    layui.use(['table', 'jquery', 'form', 'layer', 'laytpl', 'laydate'], function () {
+        var $ = layui.jquery;
+        var table = layui.table;
+        var form = layui.form;
+        var layer = layui.layer;
+        var laytpl = layui.laytpl;
+        var laydate = layui.laydate;
+
+        laydate.render({elem: '#s_start_date'});
+        laydate.render({elem: '#s_end_date'});
+
+        <!--获取用户列表-->
+        function onSearchBtn() {
+            var params = {
+                s_start_date: $.trim($('#s_start_date').val()),
+                s_end_date: $.trim($('#s_end_date').val()),
+                s_keyword: $.trim($('#s_keyword').val()),
+                s_status: $('#s_cash_status').val()
+            };
+
+            dataPage({
+                elem: '#financeCashlog',
+                url: '[[$Think.ADMIN_URL]]/finance/cashloglist',
+                where: params,
+                page: true,
+                cols: [[
+                    {field: 'id', title: 'ID', width: 70},
+                    {field: '', style: 'text-align: left;', title: '单号/用户', width:180, templet: function (d) {
+                            return d.csn + '<br>' + d.account + '/' + d.nickname;
+                        }},
+                    {field: 'money', title: '提现金额', width:130},
+                    {field: 'fee', title: '手续费', width:130},
+                    {field: 'real_money', title: '实际到账', width:130},
+                    {field: 'create_time', title: '申请时间', width:180},
+                    {field: '', width: 240, style: 'text-align: left;', title: '账户信息', templet: function (d) {
+                            var html='';
+                            html+='<div>银行：' + d.bank_name + '</div>';
+                            html+='<div>卡号：' + d.bank_account + '</div>';
+                            html+='<div>姓名：' + d.bank_realname + '</div>';
+                            return html;
+                        }},
+                    {field: 'check_time', title: '审核时间', width:180},
+                    {field: 'remark', title: '备注'},
+                    {field: '', title: '审核', width: 240, toolbar: '#laytpl-table-item'}
+                ]],
+                done: function (res, curr, count) {
+                    if (res.code === '0') {
+                        $('#overview-balance').text(res.odata.balance);
+                        $('#overview-fz-balance').text(res.odata.fz_balance);
+                        $('#overview-djs-balance').text(res.odata.djs_balance);
+                        alertSuccess(res.msg);
+                    }
+                }
+            });
+        }
+
+
+        <!--触发搜索按钮-->
+        $('#searchBtn').on('click', function () {
+            onSearchBtn();
+        });
+
+        onSearchBtn();
+
+
+        <!--监听行按钮-->
+        table.on('tool(financeCashlog)', function (obj) {
+            var lay_event = obj.event;
+
+            if (lay_event === 'pass') {
+                //TODO
+                alertWarning('pass');
+            } else if (lay_event === 'deny') {
+                //TODO
+                alertWarning('deny');
+            }
+        });
+
+
+    });
+</script>
+
+</body>
+</html>
