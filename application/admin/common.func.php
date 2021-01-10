@@ -57,7 +57,7 @@ function hasPower($user, $nkey)
 
     $mysql->close();
     unset($mysql);
-
+    /*
     $param_dump = [
         'nkey' => $nkey,
         'userId' => $user['id'],
@@ -66,7 +66,7 @@ function hasPower($user, $nkey)
         'parentId' => $user['pid'],
         'result' => $result,
     ];
-    debugLog("hasPower: " . var_export($param_dump, true));
+    debugLog("hasPower: " . var_export($param_dump, true));*/
     return $result;
 }
 
@@ -255,7 +255,7 @@ function balanceLog($user, $balanceType, $subType, $money, $fkey = '', $remark =
         return false;
     }
     $pageuser = checkLogin();
-    $cnf_balance_log = [
+    $balance_log = [
         'uid' => intval($user['id']),
         'type' => $subType,
         'fkey' => $fkey,
@@ -266,17 +266,17 @@ function balanceLog($user, $balanceType, $subType, $money, $fkey = '', $remark =
         'remark' => $remark
     ];
     if ($balanceType == 1) {
-        $cnf_balance_log['ori_balance'] = $user['balance'];
-        $cnf_balance_log['new_balance'] = $user['balance'] + $money;
+        $balance_log['ori_balance'] = $user['balance'];
+        $balance_log['new_balance'] = $user['balance'] + $money;
     } elseif ($balanceType == 2) {
-        $cnf_balance_log['ori_balance'] = $user['fz_balance'];
-        $cnf_balance_log['new_balance'] = $user['fz_balance'] + $money;
+        $balance_log['ori_balance'] = $user['fz_balance'];
+        $balance_log['new_balance'] = $user['fz_balance'] + $money;
     } elseif ($balanceType == 3) {
-        $cnf_balance_log['ori_balance'] = $user['sx_balance'];
-        $cnf_balance_log['new_balance'] = $user['sx_balance'] + $money;
+        $balance_log['ori_balance'] = $user['sx_balance'];
+        $balance_log['new_balance'] = $user['sx_balance'] + $money;
     } elseif ($balanceType == 4) {
-        $cnf_balance_log['ori_balance'] = $user['kb_balance'];
-        $cnf_balance_log['new_balance'] = $user['kb_balance'] + $money;
+        $balance_log['ori_balance'] = $user['kb_balance'];
+        $balance_log['new_balance'] = $user['kb_balance'] + $money;
     } else {
         return false;
     }
@@ -285,7 +285,7 @@ function balanceLog($user, $balanceType, $subType, $money, $fkey = '', $remark =
         $mysql = new Mysql(0);
         $to_free_mysql = true;
     }
-    $res = $mysql->insert($cnf_balance_log, 'cnf_balance_log');
+    $res = $mysql->insert($balance_log, 'cnf_balance_log');
     if ($to_free_mysql) {
         $mysql->close();
         unset($mysql);
@@ -293,7 +293,7 @@ function balanceLog($user, $balanceType, $subType, $money, $fkey = '', $remark =
     if (!$res) {
         return false;
     }
-    $cnf_balance_log['id'] = $res;
-    return $cnf_balance_log;
+    $balance_log['id'] = $res;
+    return $balance_log;
 }
 

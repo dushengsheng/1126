@@ -62,6 +62,11 @@ Route::rule('admin/finance/user',           'admin/Finance/user');
 Route::rule('admin/finance/userlist',       'admin/Finance/userList');
 Route::rule('admin/finance/userrecharge',   'admin/Finance/userRecharge');
 
+Route::rule('admin/finance/account',        'admin/Finance/account');
+Route::rule('admin/finance/overview',       'admin/Finance/overview');
+Route::rule('admin/finance/detail',         'admin/Finance/detail');
+Route::rule('admin/finance/withdrawal',     'admin/Finance/withdrawal');
+
 Route::rule('admin/finance/card',           'admin/Finance/card');
 Route::rule('admin/finance/cardlist',       'admin/Finance/cardList');
 Route::rule('admin/finance/cardadd',        'admin/Finance/cardAdd');

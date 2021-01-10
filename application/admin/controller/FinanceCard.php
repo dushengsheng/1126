@@ -41,7 +41,6 @@ class FinanceCard extends Base
             $where .= " and (log.bank_account like '%{$s_keyword}%' or log.bank_realname like '%{$s_keyword}%')";
         }
 
-        debugLog('cardList: where = ' . $where);
         $count = $this->mysql->fetchResult("select count(1) from cnf_card log {$where}");
         $sql = "select log.*,b.bank_name,b.bank_code,u.nickname as user_nickname,u.account as user_account from cnf_card log 
 		left join cnf_bank b on log.bank_id=b.id 
