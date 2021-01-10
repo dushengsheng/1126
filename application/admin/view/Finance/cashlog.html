@@ -152,16 +152,58 @@
         onSearchBtn();
 
 
+        <!--通过提现申请-->
+        function cashlogPass(row) {
+            layer.confirm('确定通过该申请？',
+                {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
+                function (index) {
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/finance/cashlogpass',
+                        data: {id: row.data.id},
+                        success: function (res) {
+                            if (res.code !== '0') {
+                                alertError(res.msg);
+                            } else {
+                                layer.close(index);
+                                alertSuccess(res.msg);
+                                row.update(res.data);
+                                $(row.tr.selector).find('td').last().find('div').html(res.data.status_flag);
+                            }
+                        }
+                    });
+                });
+        }
+
+        <!--驳回提现申请-->
+        function cashlogDeny(row) {
+            layer.confirm('确定驳回该申请？',
+                {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
+                function (index) {
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/finance/cashlogdeny',
+                        data: {id: row.data.id},
+                        success: function (res) {
+                            if (res.code !== '0') {
+                                alertError(res.msg);
+                            } else {
+                                layer.close(index);
+                                alertSuccess(res.msg);
+                                row.update(res.data);
+                                $(row.tr.selector).find('td').last().find('div').html(res.data.status_flag);
+                            }
+                        }
+                    });
+                });
+        }
+
         <!--监听行按钮-->
         table.on('tool(financeCashlog)', function (obj) {
             var lay_event = obj.event;
 
             if (lay_event === 'pass') {
-                //TODO
-                alertWarning('pass');
+                cashlogPass(obj);
             } else if (lay_event === 'deny') {
-                //TODO
-                alertWarning('deny');
+                cashlogDeny(obj);
             }
         });
 

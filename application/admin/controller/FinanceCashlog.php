@@ -110,11 +110,108 @@ class FinanceCashlog extends Base
 
     public function cashlogPass()
     {
-        jReturn('-1', 'cashlogPass');
+        $pageuser = checkPower();
+        $params = $this->params;
+        $id = intval($params['id']);
+
+        $this->mysql->startTrans();
+        $cashlog = $this->mysql->fetchRow("select * from cnf_cash_log where id={$id} for update");
+        if (!$cashlog || $cashlog['status'] >= 99) {
+            jReturn('-1', '不存在该提现记录');
+        }
+        if ($cashlog['status'] != 1) {
+            jReturn('-1', '该提现申请当前状态不可操作');
+        }
+
+        /*TODO
+        权限检测没做
+        if ($pageuser['gid'] > 41) {
+            $uid_arr = getDownUser($pageuser['id']);
+            if (!in_array($cashlog['uid'], $uid_arr)) {
+                jReturn('-1', '提现用户不是您的下级无法审核');
+            }
+        }
+        */
+
+        $nowtime = NOW_TIME;
+        $cashlog_data = [
+            'status' => 2,
+            'check_time' => $nowtime,
+            'check_id' => $pageuser['id'],
+        ];
+        $res1 = $this->mysql->update($cashlog_data, "id={$id}", 'cnf_cash_log');
+
+        $cnf_cashlog_data = [
+            'pay_status' => 3,
+            'pay_time' => $nowtime
+        ];
+        $res2 = $this->mysql->update($cnf_cashlog_data, "id={$id}", 'cnf_cash_log');
+        if (!$res1 || !$res2) {
+            $this->mysql->rollback();
+            jReturn('-1', '操作失败');
+        }
+        $this->mysql->commit();
+
+        $user_cash_status = getConfig('user_cash_status');
+        $return_data = [
+            'status' => 2,
+            'status_flag' => $user_cash_status[2],
+            'check_time' => date('Y-m-d H:i:s', $nowtime)
+        ];
+        jReturn('0', '操作成功', $return_data);
     }
 
     public function cashlogDeny()
     {
-        jReturn('-1', 'cashlogDeny');
+        $pageuser = checkPower();
+        $params = $this->params;
+        $id = intval($params['id']);
+
+        $this->mysql->startTrans();
+        $cashlog = $this->mysql->fetchRow("select * from cnf_cash_log where id={$id} for update");
+        if (!$cashlog || $cashlog['status'] >= 99) {
+            jReturn('-1', '不存在该提现记录');
+        }
+        if ($cashlog['status'] != 1) {
+            jReturn('-1', '该提现申请当前状态不可操作');
+        }
+
+        /*TODO
+        权限检测没做
+        if ($pageuser['gid'] > 41) {
+            $uid_arr = getDownUser($pageuser['id']);
+            if (!in_array($cashlog['uid'], $uid_arr)) {
+                jReturn('-1', '提现用户不是您的下级无法审核');
+            }
+        }
+        */
+
+        $nowtime = NOW_TIME;
+        $cashlog_data = [
+            'status' => 3,
+            'check_time' => $nowtime,
+            'check_id' => $pageuser['id'],
+        ];
+        $res1 = $this->mysql->update($cashlog_data, "id={$id}", 'cnf_cash_log');
+        $user = $this->mysql->fetchRow("select id,balance from sys_user where id={$cashlog['uid']} for update");
+        $user_data = [
+            'balance' => $user['balance'] + $cashlog['money']
+        ];
+        $res2 = $this->mysql->update($user_data, "id={$user['id']}", 'sys_user');
+        $res3 = balanceLog($user, 1, 12, $cashlog['money'], $cashlog['id'], $cashlog['csn'], $this->mysql);
+
+        if (!$res1 || !$res2 || !$res3) {
+            $this->mysql->rollback();
+            jReturn('-1', '操作失败');
+        }
+        $this->mysql->commit();
+
+        $user_cash_status = getConfig('user_cash_status');
+        $return_data = [
+            'status' => 3,
+            'status_flag' => $user_cash_status[3],
+            'check_time' => date('Y-m-d H:i:s', $nowtime)
+        ];
+        jReturn('0', '操作成功', $return_data);
     }
 }
