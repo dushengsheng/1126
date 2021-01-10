@@ -101,44 +101,63 @@
 </script>
 
 
-<!--充值弹层-->
-<script id="laytpl-user-recharge" type="text/html">
-    <form class="layui-form" lay-filter="form-user-recharge">
+<!--提现弹层-->
+<script id="laytpl-finance-withdrawal" type="text/html">
+    <form class="layui-form" lay-filter="form-finance-withdrawal">
         <div class="layui-form-item">
             <label class="layui-form-label">账号:</label>
             <div class="layui-input-block">
-                <input class="layui-input" id="recharge-user-account" readonly type="text" name="account">
+                <input class="layui-input" readonly type="text" value="{{d.data.user.account}}">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">余额:</label>
             <div class="layui-input-block">
-                <input class="layui-input" id="recharge-user-balance" readonly type="text" name="balance">
+                <input class="layui-input" readonly type="text" value="{{d.data.user.balance}}" id="finance-user-balance">
             </div>
         </div>
-        <div class="layui-form-item">
+        <!--<div class="layui-form-item">
             <label class="layui-form-label">冻结中:</label>
             <div class="layui-input-block">
-                <input class="layui-input" id="recharge-user-fz-balance" readonly type="text" name="fz_balance">
+                <input class="layui-input" readonly type="text" value="{{d.data.user.fz_balance}}">
+            </div>
+        </div>-->
+        <div class="layui-form-item">
+            <label class="layui-form-label">待结算:</label>
+            <div class="layui-input-block">
+                <input class="layui-input" readonly type="text" value="{{d.data.user.djs_balance}}">
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">额度：</label>
+            <label class="layui-form-label">今日额度:</label>
             <div class="layui-input-block">
-                <input type="text" id="recharge-money" placeholder="" autocomplete="off" class="layui-input"/>
+                <input class="layui-input" readonly type="text" value="{{d.data.day_cash_money}}">
             </div>
-            <span style="color:#f60;margin-left: 110px">充值正数为增加，负数为扣除，只是单纯增减对应额度</span>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">备注：</label>
+            <label class="layui-form-label">银行卡:</label>
             <div class="layui-input-block">
-                <textarea id="recharge-remark" class="layui-textarea"></textarea>
+                <select id="finance-card">
+                    <option value="0">请选择银行卡</option>
+                    {{#layui.each(d.data.card_list, function(index,item){}}
+                    <option value="{{item.id}}">【{{item.bank_name}}】 {{item.bank_account}} - {{item.bank_realname}}</option>
+                    {{#});}}
+                </select>
             </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">提现金额：</label>
+            <div class="layui-input-block">
+                <input type="text" id="finance-money" placeholder="" autocomplete="off" class="layui-input"/>
+            </div>
+            <span style="color:#f60;margin-left: 110px">{{d.data.cash_limit_str}}</span><br/>
+            <span style="color:#f60;margin-left: 110px">{{d.data.cash_time_str}}</span><br/>
+            <span style="color:#f60;margin-left: 110px">{{d.data.cash_fee_str}}</span>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">二级密码：</label>
             <div class="layui-input-block">
-                <input type="password" id="recharge-user-pwd2" placeholder="" autocomplete="off" class="layui-input"/>
+                <input type="password" id="finance-pwd2" placeholder="" autocomplete="off" class="layui-input"/>
             </div>
         </div>
     </form>
@@ -199,7 +218,6 @@
                         $('#overview-balance').text(res.odata.balance);
                         $('#overview-fz-balance').text(res.odata.fz_balance);
                         $('#overview-djs-balance').text(res.odata.djs_balance);
-                        console.log(res.odata);
                         alertSuccess(res.msg);
                     }
                 }
@@ -214,67 +232,67 @@
 
         onSearchBtn();
 
-        function userRecharge(obj) {
-            var item = obj.data;
 
-            layer.open({
-                title: '用户充值',
-                area: ['640px', '520px'],
-                type: 1,
-                shadeClose: true,
-                btn: ['确定', '取消'],
-                content: $('#laytpl-user-recharge').html(),
-                success: function (index, layero) {
-                    form.val('form-user-recharge', item);
-                    form.render();
+        function financeWithdrawal() {
+            laytplAfterAjax({
+                    url: '[[$Think.ADMIN_URL]]/finance/overview'
                 },
-                yes: function (index, layero) {
-                    var money = $.trim($('#recharge-money').val());
-                    var remark = $.trim($('#recharge-remark').val());
-                    var passwd2 = md5($.trim($('#recharge-user-pwd2').val()));
-
-                    if (money === '') {
-                        alertWarning('请输入正确的额度');
-                        return;
-                    }
-                    if (passwd2 === md5('')) {
-                        alertWarning('请输入二级密码');
-                        return;
-                    }
-
-                    ajax({
-                        url: '[[$Think.ADMIN_URL]]/finance/userrecharge',
-                        data: {
-                            id: item.id,
-                            money: money,
-                            remark: remark,
-                            password2: passwd2
-                        },
-                        success: function (res) {
-                            if (res.code !== '0') {
-                                alertError(res.msg);
-                                return;
-                            }
-                            layer.close(index);
-                            alertSuccess(res.msg);
-
-                            onSearchBtn();
+                {
+                    title: '提现申请',
+                    area: ['640px', '600px'],
+                    laytplId: '#laytpl-finance-withdrawal',
+                    success: function (index, layero) {
+                        form.render();
+                    },
+                    yes: function (index, layero) {
+                        var card = $('#finance-card').val();
+                        var password2 = md5($.trim($('#finance-pwd2').val()));
+                        var money = parseFloat($.trim($('#finance-money').val()));
+                        var balance = parseFloat($.trim($('#finance-user-balance').val()));
+                        if (card === '0') {
+                            alertWarning('请选择银行卡');
+                            return;
                         }
-                    });
-                },
-                btn2: function (index, layero) {
-                    return true;
-                }
-            });
+                        if (!money || money <= 0) {
+                            alertWarning('提现金额必须为正数');
+                            return;
+                        }
+                        if (money > balance) {
+                            alertWarning('余额不足');
+                            return;
+                        }
+                        if (password2 === md5('')) {
+                            alertWarning('请输入二级密码');
+                            return;
+                        }
+
+                        ajax({
+                            url: '[[$Think.ADMIN_URL]]/finance/withdrawal',
+                            data: {
+                                card_id: card,
+                                money: money,
+                                password2: password2
+                            },
+                            success: function (res) {
+                                if (res.code !== '0') {
+                                    alertError(res.msg);
+                                    return;
+                                }
+                                layer.close(index);
+                                alertSuccess(res.msg);
+                            }
+                        });
+                    },
+                    btn2: function (index, layero) {
+                        return true;
+                    }
+                });
         }
 
-        <!--监听行按钮-->
-        table.on('tool(financeDetail)', function (obj) {
-            var lay_event = obj.event;
 
-            if (lay_event === 'recharge') {
-                userRecharge(obj);
-            }
+        <!--用户提现-->
+        $('#addBtn').on('click', function () {
+            financeWithdrawal();
         });
 
     });

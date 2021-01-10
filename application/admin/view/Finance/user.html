@@ -188,11 +188,11 @@
                     form.render();
                 },
                 yes: function (index, layero) {
-                    var money = $.trim($('#recharge-money').val());
+                    var money = parseFloat($.trim($('#recharge-money').val()));
                     var remark = $.trim($('#recharge-remark').val());
                     var passwd2 = md5($.trim($('#recharge-user-pwd2').val()));
 
-                    if (money === '') {
+                    if (!money || money === 0) {
                         alertWarning('请输入正确的额度');
                         return;
                     }
