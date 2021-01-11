@@ -38,8 +38,6 @@ class UserAgent extends Base
         $sys_power['del'] = hasPower($pageuser, 'User_UserDelete') ? 1 : 0;
         $sys_power['edit'] = hasPower($pageuser, 'User_UserUpdate') ? 1 : 0;
         $sys_power['channel'] = hasPower($pageuser, 'User_ChannelRate') ? 1 : 0;
-        //$sys_power['kick'] = hasPower($pageuser, 'User_OnlineStatus') ? 1 : 0;
-        //$sys_power['recharge'] = hasPower($pageuser, 'Finance_Recharge') ? 1 : 0;
 
         $data = [
             'sys_user' => $pageuser,
@@ -73,14 +71,15 @@ class UserAgent extends Base
             $where .= " and log.is_online={$params['s_is_online']}";
         }
         if (isset($params['s_keyword']) && $params['s_keyword']) {
-            $where .= " and (log.id='{$params['s_keyword']}' or log.account like '%{$params['s_keyword']}%' or log.nickname like '%{$params['s_keyword']}%')";
+            $s_keyword = $params['s_keyword'];
+            $where .= " and (log.id='{$s_keyword}' or log.account like '%{$s_keyword}%' or log.nickname like '%{$s_keyword}%')";
         }
 
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
 		sum(fz_balance) as fz_balance,sum(kb_balance) as kb_balance from sys_user log {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
 
-        $sql = "select log.*,p.account as paccount,p.nickname as pnickname,p.status as pstatus,p.td_switch as ptd_switch,p.td_rate as ptd_rate,p.fy_rate as pfy_rate 
+        $sql = "select log.*,p.account as paccount,p.nickname as pnickname,p.status as pstatus 
                 from sys_user log left join sys_user p on log.pid=p.id {$where} order by log.id";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
         $sys_group = getConfig('sys_group');
@@ -349,19 +348,16 @@ class UserAgent extends Base
                 jReturn('-1', '操作失败! 该用户不是您的下级');
             }
         }
+        $opt_name = '禁止接单';
         if ($status) {
+            $opt_name = '允许接单';
             $user = getUserinfo($uid, true, $this->mysql);
             if (!$user || $user['status'] != 2) {
                 jReturn('-1', '用户已被删除或被禁用');
             }
         }
-
         if (!setUserOnline($uid, $status, $this->mysql)) {
             jReturn('-1', '系统繁忙请稍后再试');
-        }
-        $opt_name = '禁止接单';
-        if ($status) {
-            $opt_name = '允许接单';
         }
         actionLog(['opt_name' => $opt_name, 'sql_str' => $this->mysql->lastSql], $this->mysql);
         jReturn('0', '操作成功');
@@ -375,7 +371,6 @@ class UserAgent extends Base
         $pageuser = checkLogin();
         $sys_agent = getDownAgent($pageuser);
         $sys_group = getConfig('sys_group');
-        $sys_agent_arr = [];
         $sys_group_arr = [];
 
         foreach ($sys_group as $key => $value) {
@@ -387,26 +382,14 @@ class UserAgent extends Base
             }
             $sys_group_arr[$key] = $value;
         }
-
-        foreach ($sys_agent as $user) {
-            if ($pageuser['gid'] > $user['gid']) {
-                continue;
-            }
-            if (!in_array($user['gid'], [1, 61])) {
-                continue;
-            }
-            $sys_agent_arr[] = $user;
-        }
         if ($pageuser['gid'] >= 61) {
-            $sys_agent_arr[] = getUserinfo(1, true, $this->mysql);
-            $sys_agent_arr[] = getUserinfo($pageuser['id'], true, $this->mysql);
+            $sys_agent[] = getUserinfo($pageuser['id']);
         }
 
         $data = [
-            'sys_agent' => $sys_agent_arr,
+            'sys_agent' => $sys_agent,
             'sys_group' => $sys_group_arr,
         ];
-
         jReturn('0', '查询代理信息成功', $data);
     }
 

@@ -197,20 +197,43 @@ function getUpUser($uid, $return_user_array = false, $level = 1, $level_limit = 
 function getDownAgent($user)
 {
     $children = [];
-    if ($user['gid'] < 61) {
-        $mysql = new Mysql(0);
-        $children = $mysql->fetchRows("select * from sys_user where gid in (1, 61, 81) and status < 99");
-        $mysql->close();
-        unset($mysql);
-    } else {
-        $temp_children = getDownUser($user['id'], true);
-        foreach ($temp_children as $child) {
-            if ($child['status'] < 99 && in_array($child['gid'], [61, 81])) {
+    if ($user['gid'] >= 61) {
+        $children_arr = getDownUser($user['id'], true);
+        foreach ($children_arr as $child) {
+            if ($child['gid'] == 61 && $child['status'] < 99) {
                 $children[] = $child;
             }
         }
+    } else {
+        $mysql = new Mysql(0);
+        $children = $mysql->fetchRows("select * from sys_user where gid in (1, 61) and status < 99");
+        $mysql->close();
+        unset($mysql);
     }
 
+    return $children;
+}
+
+
+/**
+ * 获取旗下所有商户
+ * @param $user
+ * @return array|false
+ */
+function getDownMerchant($user)
+{
+    $sql = "select * from sys_user where gid in (81, 91) and status < 99";
+    if ($user['gid'] >= 61) {
+        $children_arr = getDownUser($user['id']);
+        $children_arr[] = $user['id'];
+        $children_str = implode(',', $children_arr);
+        $sql .= " and appoint_agent in ({$children_str})";
+    }
+
+    $mysql = new Mysql(0);
+    $children = $mysql->fetchRows($sql);
+    $mysql->close();
+    unset($mysql);
     return $children;
 }
 

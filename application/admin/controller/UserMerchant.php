@@ -37,8 +37,6 @@ class UserMerchant extends Base
         $sys_power['del'] = hasPower($pageuser, 'User_UserDelete') ? 1 : 0;
         $sys_power['edit'] = hasPower($pageuser, 'User_UserUpdate') ? 1 : 0;
         $sys_power['channel'] = hasPower($pageuser, 'User_ChannelRate') ? 1 : 0;
-        //$sys_power['kick'] = hasPower($pageuser, 'User_OnlineStatus') ? 1 : 0;
-        //$sys_power['recharge'] = hasPower($pageuser, 'Finance_Recharge') ? 1 : 0;
 
         if ($pageuser['pid'] && $pageuser['pid'] > 1) {
             $sys_power['add'] = 0;
@@ -79,7 +77,8 @@ class UserMerchant extends Base
             $where .= " and log.is_online={$params['s_is_online']}";
         }
         if (isset($params['s_keyword']) && $params['s_keyword']) {
-            $where .= " and (log.id='{$params['s_keyword']}' or log.account like '%{$params['s_keyword']}%' or log.nickname like '%{$params['s_keyword']}%')";
+            $s_keyword = $params['s_keyword'];
+            $where .= " and (log.id='{$s_keyword}' or log.account like '%{$s_keyword}%' or log.nickname like '%{$s_keyword}%')";
         }
 
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
@@ -176,7 +175,6 @@ class UserMerchant extends Base
         $pageuser = checkLogin();
         $sys_agent = getDownAgent($pageuser);
         $sys_group = getConfig('sys_group');
-        $sys_agent_arr = [];
         $sys_group_arr = [];
 
         foreach ($sys_group as $key => $value) {
@@ -188,31 +186,14 @@ class UserMerchant extends Base
             }
             $sys_group_arr[$key] = $value;
         }
+        if ($pageuser['gid'] >= 61) {
+            $sys_agent[] = getUserinfo($pageuser['id']);
+        }
 
-        $myself_include = false;
-        foreach ($sys_agent as $user) {
-            if ($pageuser['gid'] > $user['gid']) {
-                continue;
-            }
-            if (!in_array($user['gid'], [1, 61])) {
-                continue;
-            }
-            if ($user['id'] == $pageuser['id']) {
-                $myself_include = true;
-            }
-            if ($user['id'] == 1) {
-                $myself_include = true;
-            }
-            $sys_agent_arr[] = $user;
-        }
-        if (!$myself_include) {
-            $sys_agent_arr[] = $pageuser;
-        }
         $data = [
-            'sys_agent' => $sys_agent_arr,
+            'sys_agent' => $sys_agent,
             'sys_group' => $sys_group_arr,
         ];
-
         jReturn('0', '查询代理信息成功', $data);
     }
 
