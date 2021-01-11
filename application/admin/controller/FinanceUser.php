@@ -43,21 +43,15 @@ class FinanceUser extends Base
         if ($pageuser['gid'] >= 61) {
             $agent_arr = getDownUser($pageuser['id']);
             $agent_str = implode(',', $agent_arr);
-            $agent_arr[] = $pageuser['id'];
-            $appoint_str = implode(',', $agent_arr);
-
-            if (strlen($agent_str)) {
-                $where .= " and (log.appoint_agent in ({$appoint_str}) or log.id in ({$agent_str}))";
-            } else {
-                $where .= " and log.appoint_agent in ({$appoint_str})";
-            }
+            $where .= " and log.id in ({$agent_str})";
         }
 
         if (isset($params['s_gid']) && $params['s_gid']) {
             $where .= " and log.gid={$params['s_gid']}";
         }
         if (isset($params['s_keyword']) && $params['s_keyword']) {
-            $where .= " and (log.id='{$params['s_keyword']}' or log.account like '%{$params['s_keyword']}%' or log.nickname like '%{$params['s_keyword']}%')";
+            $s_keyword = $params['s_keyword'];
+            $where .= " and (log.id='{$s_keyword}' or log.account like '%{$s_keyword}%' or log.nickname like '%{$s_keyword}%')";
         }
 
         $sql_cnt = "select count(1) as cnt,sum(balance) as balance,sum(sx_balance) as sx_balance,
@@ -181,6 +175,6 @@ class FinanceUser extends Base
         }
 
         $this->mysql->commit();
-        jReturn('0', '操作成功');
+        jReturn('0', '操作成功', $user_passive);
     }
 }

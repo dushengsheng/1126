@@ -153,8 +153,8 @@
                     if ($('.sumLine').length < 1) {
                         var html = '<div class="sumLine">';
                         html += '<span>用户数：' + res.count + '</span>';
-                        html += '<span>可提余额：' + res.odata.balance + '</span>';
-                        html += '<span>冻结中：' + res.odata.fz_balance + '</span>';
+                        //html += '<span>可提余额：' + res.odata.balance + '</span>';
+                        //html += '<span>冻结中：' + res.odata.fz_balance + '</span>';
                         html += '</div>';
                         $('.layui-table-header').before(html);
                     }
@@ -217,7 +217,7 @@
                             layer.close(index);
                             alertSuccess(res.msg);
 
-                            onSearchBtn();
+                            obj.update({balance: res.data.balance});
                         }
                     });
                 },
