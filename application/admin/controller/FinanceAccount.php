@@ -15,6 +15,16 @@ class FinanceAccount extends Base
     {
         $pageuser = checkPower();
 
+        if ($pageuser['pid']) {
+            $puser = getUserinfo($pageuser['pid']);
+            if ($puser) {
+                $pageuser['paccount'] = $puser['account'];
+            }
+        }
+        if (!isset($pageuser['paccount'])) {
+            $pageuser['paccount'] = '/';
+        }
+
         // 检查权限
         $sys_power = [];
         $sys_power['withdrawal'] = hasPower($pageuser, 'Finance_Withdrawal') ? 1 : 0;
