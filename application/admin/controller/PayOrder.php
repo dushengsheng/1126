@@ -13,7 +13,7 @@ class PayOrder extends Base
     public function order()
     {
         $pageuser = checkPower();
-        $channel_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1 and id = 204");
+        $channel_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1");
         $pay_status_arr = getConfig('cnf_pay_status');
 
         // 检查权限
@@ -53,11 +53,7 @@ class PayOrder extends Base
         $s_channel = intval($params['s_channel']);
         $s_pay_status = intval($params['s_pay_status']);
         if ($s_channel) {
-            if (in_array($s_channel, [204, 205])) {
-                $where .= " and log.ptype in (204,205)";
-            } else {
-                $where .= " and log.ptype={$s_channel}";
-            }
+            $where .= " and log.ptype={$s_channel}";
         }
         if ($s_pay_status) {
             $where .= " and log.pay_status={$s_pay_status}";

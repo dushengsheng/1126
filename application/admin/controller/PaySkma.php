@@ -13,7 +13,7 @@ class PaySkma extends Base
     public function skma()
     {
         $pageuser = checkPower();
-        $mtype_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1 and id = 204");
+        $mtype_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1");
         $mstatus_arr = getConfig('cnf_skma_status');
 
         // 检查权限
@@ -46,11 +46,7 @@ class PaySkma extends Base
         }
         if (isset($params['s_ma_type']) && $params['s_ma_type']) {
             $params['s_ma_type'] = intval($params['s_ma_type']);
-            if (in_array($params['s_ma_type'], [204,205])) {
-                $where .= " and log.mtype_id in (204,205)";
-            } else {
-                $where .= " and log.mtype_id={$params['s_ma_type']}";
-            }
+            $where .= " and log.mtype_id={$params['s_ma_type']}";
         }
         if (isset($params['s_ma_status']) && $params['s_ma_status'] != 'all') {
             $params['s_ma_status'] = intval($params['s_ma_status']);
