@@ -40,7 +40,7 @@ class FinanceCashlog extends Base
             $uid_arr = getDownUser($pageuser['id']);
             $uid_arr[] = $pageuser['id'];
             $uid_str = implode(',', $uid_arr);
-            $where .= " and (u.id in({$uid_str}) or u.appoint_agent in ({$uid_str}))";
+            $where .= " and u.id in({$uid_str})";
         }
 
         if ($params['s_start_date'] && $params['s_end_date'] && $params['s_start_date'] <= $params['s_end_date']) {
@@ -69,8 +69,6 @@ class FinanceCashlog extends Base
 		left join cnf_bank bk on card.bank_id=bk.id 
 		left join sys_user u on log.uid=u.id {$where} order by log.id desc";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
-
-        debugLog('cashlogList: list = ' . var_export($list, true));
 
         $sys_group = getConfig('sys_group');
         $cnf_pay_status = getConfig('cnf_pay_status');

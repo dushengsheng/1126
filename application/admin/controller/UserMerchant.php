@@ -61,11 +61,7 @@ class UserMerchant extends Base
             $uid_arr[] = $pageuser['id'];
             if ($uid_arr) {
                 $uid_str = implode(',', $uid_arr);
-                if (in_array($pageuser['gid'], [61,71])) {
-                    $where .= " and log.appoint_agent in ({$uid_str})";
-                } else if (in_array($pageuser['gid'], [81,91])) {
-                    $where .= " and log.id in ({$uid_str})";
-                }
+                $where .= " and log.id in ({$uid_str})";
             }
         }
 
@@ -210,35 +206,15 @@ class UserMerchant extends Base
         if ($pageuser['gid'] >= 61) {
             $down_user_arr = getDownUser($pageuser['id']);
             $down_user_arr[] = $pageuser['id'];
-
-            if ($pageuser['gid'] >= 81) {
-                if (!in_array($uid, $down_user_arr)) {
-                    jReturn('-1', '操作失败! 该用户不是您的下级');
-                }
-            } else if ($user['appoint_agent']) {
-                if (!in_array($user['appoint_agent'], $down_user_arr)) {
-                    jReturn('-1', '操作失败! 您不是该商户的指定代理');
-                }
+            if (!in_array($uid, $down_user_arr)) {
+                jReturn('-1', '操作失败! 该用户不是您的下级');
             }
-        }
-
-        $puser = getUserinfo($user['pid'], true, $this->mysql);
-        $prate_arr = null;
-        if ($puser['gid'] >= 61) {
-            $prate_json = $puser['td_rate'];
-            $prate_arr = json_decode($prate_json, JSON_UNESCAPED_UNICODE);
         }
 
         $channel_rate = $params['channel_rate'];
         $channel_switch = $params['channel_switch'];
         foreach ($channel_rate as $key => $val) {
             $rate = floatval($val);
-            if ($prate_arr && isset($prate_arr[$key])) {
-                $prate = floatval($prate_arr[$key]);
-                if ($prate > $rate) {
-                    jReturn('-1', '下级商户通道费率不能低于上级');
-                }
-            }
             $channel_rate[$key] = $rate;
         }
         foreach ($channel_switch as $key => $val) {
@@ -272,15 +248,8 @@ class UserMerchant extends Base
         if ($pageuser['gid'] >= 61) {
             $down_user_arr = getDownUser($pageuser['id']);
             $down_user_arr[] = $pageuser['id'];
-
-            if ($pageuser['gid'] >= 81) {
-                if (!in_array($uid, $down_user_arr)) {
-                    jReturn('-1', '操作失败! 该用户不是您的下级');
-                }
-            } else if ($user['appoint_agent']) {
-                if (!in_array($user['appoint_agent'], $down_user_arr)) {
-                    jReturn('-1', '操作失败! 您不是该商户的指定代理');
-                }
+            if (!in_array($uid, $down_user_arr)) {
+                jReturn('-1', '操作失败! 该用户不是您的下级');
             }
         }
 

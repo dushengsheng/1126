@@ -323,12 +323,12 @@
             var item = {};
             var jq_gid = $('#add-user-gid');
             var jq_agent = $('#add-user-msagent');
-            item.pid = 1;
             item.gid = $.trim(jq_gid.val());
             item.appoint_agent = $.trim(jq_agent.val());
             item.nickname = $.trim($('#add-user-nickname').val());
             item.password = md5($.trim($('#add-user-passwd').val()));
             item.account = $.trim($('#add-user-account').val());
+            item.pid = item.appoint_agent;
 
             if (row) {
                 item.id = row.data.id;

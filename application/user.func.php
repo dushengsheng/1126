@@ -219,7 +219,7 @@ function getDownAgent($user)
  * 获取旗下所有商户
  * @param $user
  * @return array|false
- */
+
 function getDownMerchant($user)
 {
     $sql = "select * from sys_user where gid in (81, 91) and status < 99";
@@ -236,6 +236,7 @@ function getDownMerchant($user)
     unset($mysql);
     return $children;
 }
+ */
 
 /**
  * 删除用户以其名下所有收款码

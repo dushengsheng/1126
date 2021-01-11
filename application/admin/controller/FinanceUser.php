@@ -113,18 +113,8 @@ class FinanceUser extends Base
         }
         if ($myself['gid'] >= 61) {
             $agent_arr = getDownUser($myself['id']);
-            $appoint_arr = $agent_arr;
-            $appoint_arr[] = $myself['id'];
-
-            // 不是你的下级
             if (!in_array($uid, $agent_arr)) {
-                if (isset($user['appoint_agent']) && $user['appoint_agent']) {
-                    if (!in_array($user['appoint_agent'], $appoint_arr)) {
-                        jReturn('-1', '操作失败, 您无权为该用户充值');
-                    }
-                } else {
-                    jReturn('-1', '操作失败, 您无权为该用户充值');
-                }
+                jReturn('-1', '操作失败, 您无权为该用户充值');
             }
 
             // 二级以下代理, 充值会扣除自身额度
