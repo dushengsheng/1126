@@ -13,7 +13,7 @@ class FinanceCard extends Base
     public function card()
     {
         $pageuser = checkPower();
-        $bank_arr = $this->mysql->fetchRows("select * from cnf_bank");
+        $bank_arr = $this->mysql->fetchRows("select * from cnf_bank where status = 1");
         $data = [
             'sys_user' => $pageuser,
             'sys_bank' => $bank_arr
