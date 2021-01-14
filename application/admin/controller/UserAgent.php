@@ -209,7 +209,7 @@ class UserAgent extends Base
             $data['apikey'] = getPassword($params['account'] . '_' . getSerialNumber() . SYS_KEY, true);
 
             // 初始化通道费率
-            $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
+            $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_channel"));
             $td_switch_arr = [];
             $td_rate_arr = [];
             $fy_rate_arr = [];
@@ -485,7 +485,7 @@ class UserAgent extends Base
             $paccount = $puser['account'];
         }
 
-        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
+        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_channel"));
         $data = [
             'id' => $user['id'],
             'gid' => $user['gid'],

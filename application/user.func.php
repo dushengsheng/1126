@@ -355,7 +355,7 @@ function setUserOnline($uid, $is_online = true, $mysql = null)
  * @param $user
  * @return array
  */
-function getUserMtype($user, $mysql = null)
+function getUserChannel($user, $mysql = null)
 {
     $td_switch = json_decode($user['td_switch'], true);
     $td_switch_arr = [];
@@ -375,7 +375,7 @@ function getUserMtype($user, $mysql = null)
         $mysql = new Mysql(0);
         $to_free_mysql = true;
     }
-    $result =  rows2arr($mysql->fetchRows("select * from sk_mtype {$where}"));
+    $result =  rows2arr($mysql->fetchRows("select * from sk_channel {$where}"));
     if ($to_free_mysql) {
         $mysql->close();
         unset($mysql);

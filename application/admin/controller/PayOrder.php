@@ -13,7 +13,7 @@ class PayOrder extends Base
     public function order()
     {
         $pageuser = checkPower();
-        $channel_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1");
+        $channel_arr = $this->mysql->fetchRows("select * from sk_channel where is_open=1");
         $pay_status_arr = getConfig('cnf_pay_status');
 
         // 检查权限
@@ -65,7 +65,7 @@ class PayOrder extends Base
         $sql_cnt = "select count(1) as cnt,sum(log.money) as sum_money,sum(log.fee) as sum_fee,sum(real_money) as sum_real_money  
 		from sk_order log 
 		left join sys_user su on log.suid=su.id 
-		left join sk_mtype mt on log.ptype=mt.id
+		left join sk_channel mt on log.ptype=mt.id
 		left join sys_user mu on log.muid=mu.id {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
 
@@ -80,7 +80,7 @@ class PayOrder extends Base
 		mu.account as mu_account,mu.nickname as mu_nickname,mt.name as mtype_name
 		from sk_order log 
 		left join sys_user su on log.suid=su.id 
-		left join sk_mtype mt on log.ptype=mt.id 
+		left join sk_channel mt on log.ptype=mt.id 
 		left join sys_user mu on log.muid=mu.id 
 		{$where} order by log.id desc";
 

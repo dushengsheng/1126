@@ -13,7 +13,7 @@ class PaySkma extends Base
     public function skma()
     {
         $pageuser = checkPower();
-        $mtype_arr = $this->mysql->fetchRows("select * from sk_mtype where is_open=1");
+        $mtype_arr = $this->mysql->fetchRows("select * from sk_channel where is_open=1");
         $mstatus_arr = getConfig('cnf_skma_status');
 
         // 检查权限
@@ -58,7 +58,7 @@ class PaySkma extends Base
 
         $sql_cnt = "select count(1) as cnt 
 		from sk_ma log 
-		left join sk_mtype mt on log.mtype_id=mt.id 
+		left join sk_channel mt on log.mtype_id=mt.id 
 		left join sys_user u on log.uid=u.id {$where}";
         $count_item = $this->mysql->fetchRow($sql_cnt);
 
@@ -66,7 +66,7 @@ class PaySkma extends Base
 		mt.name as mtype_name,mt.type as mtype_type,
 		u.account,u.nickname 
 		from sk_ma log 
-		left join sk_mtype mt on log.mtype_id=mt.id 
+		left join sk_channel mt on log.mtype_id=mt.id 
 		left join sys_user u on log.uid=u.id 
 		{$where} order by log.id desc";
         $list = $this->mysql->fetchRows($sql, $params['page'], $params['limit']);
@@ -187,7 +187,7 @@ class PaySkma extends Base
         if (!$channel) {
             jReturn('-1', '请选择支付类型');
         } else {
-            $mtype = $this->mysql->fetchRow("select * from sk_mtype where id={$channel}");
+            $mtype = $this->mysql->fetchRow("select * from sk_channel where id={$channel}");
             if (!$mtype) {
                 jReturn('-1', '支付类型不正确');
             } elseif (!$mtype['is_open']) {

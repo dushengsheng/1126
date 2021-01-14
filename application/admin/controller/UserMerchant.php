@@ -269,7 +269,7 @@ class UserMerchant extends Base
             $paccount = $puser['account'];
         }
 
-        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_mtype"));
+        $channel_arr = rows2arr($this->mysql->fetchRows("select id,is_open,name from sk_channel"));
         $data = [
             'id' => $user['id'],
             'gid' => $user['gid'],
