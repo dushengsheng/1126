@@ -5,11 +5,6 @@ use think\Request;
 
 class Finance extends Base
 {
-    protected $finance_user = null;
-    protected $finance_card = null;
-    protected $finance_account = null;
-    protected $finance_cashlog = null;
-
     public function __construct(Request $request = null)
     {
         parent::__construct($request);
@@ -17,11 +12,6 @@ class Finance extends Base
 
     public function _initialize()
     {
-        $this->finance_user = new FinanceUser();
-        $this->finance_card = new FinanceCard();
-        $this->finance_account = new FinanceAccount();
-        $this->finance_cashlog = new FinanceCashlog();
-
         parent::_initialize();
         debugLog('params = ' . var_export($this->params, true));
     }
@@ -31,17 +21,20 @@ class Finance extends Base
      */
     public function user()
     {
-        return $this->finance_user->user();
+        $finance_user = new FinanceUser();
+        return $finance_user->user();
     }
 
     public function userList()
     {
-        return $this->finance_user->userList();
+        $finance_user = new FinanceUser();
+        return $finance_user->userList();
     }
 
     public function userRecharge()
     {
-        return $this->finance_user->userRecharge();
+        $finance_user = new FinanceUser();
+        return $finance_user->userRecharge();
     }
 
     /**
@@ -49,27 +42,32 @@ class Finance extends Base
      */
     public function card()
     {
-        return $this->finance_card->card();
+        $finance_card = new FinanceCard();
+        return $finance_card->card();
     }
 
     public function cardList()
     {
-        return $this->finance_card->cardList();
+        $finance_card = new FinanceCard();
+        return $finance_card->cardList();
     }
 
     public function cardAdd()
     {
-        return $this->finance_card->cardAdd();
+        $finance_card = new FinanceCard();
+        return $finance_card->cardAdd();
     }
 
     public function cardUpdate()
     {
-        return $this->finance_card->cardUpdate();
+        $finance_card = new FinanceCard();
+        return $finance_card->cardUpdate();
     }
 
     public function cardDelete()
     {
-        return $this->finance_card->cardDelete();
+        $finance_card = new FinanceCard();
+        return $finance_card->cardDelete();
     }
 
     /**
@@ -77,22 +75,26 @@ class Finance extends Base
      */
     public function account()
     {
-        return $this->finance_account->account();
+        $finance_account = new FinanceAccount();
+        return $finance_account->account();
     }
 
     public function overview()
     {
-        return $this->finance_account->overview();
+        $finance_account = new FinanceAccount();
+        return $finance_account->overview();
     }
 
     public function detail()
     {
-        return $this->finance_account->detail();
+        $finance_account = new FinanceAccount();
+        return $finance_account->detail();
     }
 
     public function withdrawal()
     {
-        return $this->finance_account->withdrawal();
+        $finance_account = new FinanceAccount();
+        return $finance_account->withdrawal();
     }
 
 
@@ -101,26 +103,31 @@ class Finance extends Base
      */
     public function cashlog()
     {
-        return $this->finance_cashlog->cashlog();
+        $finance_cashlog = new FinanceCashlog();
+        return $finance_cashlog->cashlog();
     }
 
     public function cashlogList()
     {
-        return $this->finance_cashlog->cashlogList();
+        $finance_cashlog = new FinanceCashlog();
+        return $finance_cashlog->cashlogList();
     }
 
     public function cashlogRollback()
     {
-        return $this->finance_cashlog->cashlogRollback();
+        $finance_cashlog = new FinanceCashlog();
+        return $finance_cashlog->cashlogRollback();
     }
 
     public function cashlogPass()
     {
-        return $this->finance_cashlog->cashlogPass();
+        $finance_cashlog = new FinanceCashlog();
+        return $finance_cashlog->cashlogPass();
     }
 
     public function cashlogDeny()
     {
-        return $this->finance_cashlog->cashlogDeny();
+        $finance_cashlog = new FinanceCashlog();
+        return $finance_cashlog->cashlogDeny();
     }
 }

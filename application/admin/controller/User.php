@@ -8,9 +8,6 @@ use think\Request;
 
 class User extends Base
 {
-    protected $user_agent = null;
-    protected $user_merchant = null;
-
     public function __construct(Request $request = null)
     {
         parent::__construct($request);
@@ -18,9 +15,6 @@ class User extends Base
 
     public function _initialize()
     {
-        $this->user_agent = new UserAgent();
-        $this->user_merchant = new UserMerchant();
-
         parent::_initialize();
         debugLog('params = ' . var_export($this->params, true));
     }
@@ -30,7 +24,8 @@ class User extends Base
      */
     public function agent()
     {
-        return $this->user_agent->agent();
+        $user_agent = new UserAgent();
+        return $user_agent->agent();
     }
 
     /**
@@ -38,7 +33,8 @@ class User extends Base
      */
     public function agentList()
     {
-        return $this->user_agent->agentList();
+        $user_agent = new UserAgent();
+        return $user_agent->agentList();
     }
 
 
@@ -49,12 +45,14 @@ class User extends Base
 
     public function merchant()
     {
-        return $this->user_merchant->merchant();
+        $user_merchant = new UserMerchant();
+        return $user_merchant->merchant();
     }
 
     public function merchantList()
     {
-        return $this->user_merchant->merchantList();
+        $user_merchant = new UserMerchant();
+        return $user_merchant->merchantList();
     }
 
 
@@ -68,7 +66,8 @@ class User extends Base
      */
     public function userUpdate()
     {
-        return $this->user_agent->userUpdate();
+        $user_agent = new UserAgent();
+        return $user_agent->userUpdate();
     }
 
     /**
@@ -76,7 +75,8 @@ class User extends Base
      */
     public function userDelete()
     {
-        return $this->user_agent->userDelete();
+        $user_agent = new UserAgent();
+        return $user_agent->userDelete();
     }
 
     /**
@@ -84,7 +84,8 @@ class User extends Base
      */
     public function forbiddenStatus()
     {
-        return $this->user_agent->forbiddenStatus();
+        $user_agent = new UserAgent();
+        return $user_agent->forbiddenStatus();
     }
 
     /**
@@ -92,7 +93,8 @@ class User extends Base
      */
     public function onlineStatus()
     {
-        return $this->user_agent->onlineStatus();
+        $user_agent = new UserAgent();
+        return $user_agent->onlineStatus();
     }
 
 
@@ -101,12 +103,14 @@ class User extends Base
      */
     public function agentQuery()
     {
-        return $this->user_agent->queryGroupAndAgent();
+        $user_agent = new UserAgent();
+        return $user_agent->queryGroupAndAgent();
     }
 
     public function merchantQuery()
     {
-        return $this->user_merchant->queryGroupAndAgent();
+        $user_merchant = new UserMerchant();
+        return $user_merchant->queryGroupAndAgent();
     }
 
     /**
@@ -121,9 +125,11 @@ class User extends Base
         }
         $gid = $user['gid'];
         if (in_array($gid, [61, 71])) {
-            return $this->user_agent->channelQuery();
+            $user_agent = new UserAgent();
+            return $user_agent->channelQuery();
         } else if (in_array($gid, [81, 91])) {
-            return $this->user_merchant->channelQuery();
+            $user_merchant = new UserMerchant();
+            return $user_merchant->channelQuery();
         }
 
         jReturn('-1', '请不要花样作死');
@@ -141,9 +147,11 @@ class User extends Base
         }
         $gid = $user['gid'];
         if (in_array($gid, [61, 71])) {
-            return $this->user_agent->channelRateUpdate();
+            $user_agent = new UserAgent();
+            return $user_agent->channelRateUpdate();
         } else if (in_array($gid, [81, 91])) {
-            return $this->user_merchant->channelRateUpdate();
+            $user_merchant = new UserMerchant();
+            return $user_merchant->channelRateUpdate();
         }
 
         jReturn('-1', '请不要花样作死');
