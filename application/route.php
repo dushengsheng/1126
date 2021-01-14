@@ -43,6 +43,10 @@ Route::rule('admin/user/merchantlist',      'admin/User/merchantList');
 
 
 // 订单管理
+Route::rule('admin/pay',                    'admin/Pay/index');
+Route::rule('admin/pay/query',              'admin/Pay/query');
+Route::rule('admin/pay/notify',             'admin/Pay/notify');
+
 Route::rule('admin/pay/skma',               'admin/Pay/skma');
 Route::rule('admin/pay/skmalist',           'admin/Pay/skmaList');
 Route::rule('admin/pay/skmaupdate',         'admin/pay/skmaUpdate');
