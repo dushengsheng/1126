@@ -2,6 +2,7 @@
 namespace app\admin\controller;
 
 use think\Request;
+use app\admin\channel\BankToAlipay;
 
 class Pay extends Base
 {
@@ -72,9 +73,21 @@ class Pay extends Base
     /**
      *******************************
      */
+    protected function getChannel($title)
+    {
+        $channel = null;
+        if ($title == 'bank_to_alipay') {
+            $channel = new BankToAlipay();
+        }
+        // TODO
+        // more channels
+        return $channel;
+    }
+
     public function index()
     {
-        //TODO
+        $channel = $this->getChannel('bank_to_alipay');
+        return $channel->index();
     }
 
     public function query()
