@@ -89,3 +89,6 @@ Route::rule('admin/sys/userinfo',           'admin/Sys/userinfo');
 Route::rule('admin/sys/password',           'admin/Sys/password');
 Route::rule('admin/sys/userupdate',         'admin/Sys/userUpdate');
 
+
+// 接口文档
+Route::rule('admin/api',                    'admin/Api/index');

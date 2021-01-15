@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Api文档</title>
+    <meta content="webkit" name="renderer">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+    <link href="/dist/layuiadmin/layui/css/layui.css" media="all" rel="stylesheet">
+    <link href="/static/admin/css/admin.css" rel="stylesheet">
+</head>
+<body>
+
+<div style="padding: 18px; background-color: #F2F2F2;">
+
+    <!--下单-->
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span>1. 下单</span>
+        </div>
+        <div class="layui-card-body layui-text">
+
+            <h3>url: [[$server]]/pay/index</h3>
+            <h3>method：post, get</h3>
+            <table class="layui-table">
+                <colgroup>
+                    <col width="150"/>
+                    <col />
+                </colgroup>
+                <thead>
+                <tr>
+                    <td>参数</td>
+                    <td>类型</td>
+                    <td>说明</td>
+                    <td>可否为空</td>
+                    <td>参与签名</td>
+                    <td>备注</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>account</td>
+                    <td>string</td>
+                    <td>商户账号</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>商户登录用的账号</td>
+                </tr>
+                <tr>
+                    <td>channel</td>
+                    <td>int</td>
+                    <td>支付类型</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>204 YB支付宝支付<br/>205 YB微信支付<br/>303 网银转支付宝</td>
+                </tr>
+                <tr>
+                    <td>client_ip</td>
+                    <td>string</td>
+                    <td>ip</td>
+                    <td>YES</td>
+                    <td style="color: red">YES</td>
+                    <td>下单用户的ip</td>
+                </tr>
+                <tr>
+                    <td>format</td>
+                    <td>string</td>
+                    <td>接口返回格式</td>
+                    <td>YES</td>
+                    <td style="color: red">YES</td>
+                    <td>json或page, 默认返回json</td>
+                </tr>
+                <tr>
+                    <td>money</td>
+                    <td>float</td>
+                    <td>订单金额</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>单位: 元, 精确到小数点后2位</td>
+                </tr>
+                <tr>
+                    <td>notify_url</td>
+                    <td>string</td>
+                    <td>异步回调地址</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>用户支付成功后回调</td>
+                </tr>
+                <tr>
+                    <td>order_sn</td>
+                    <td>string</td>
+                    <td>订单号</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>商户系统订单号</td>
+                </tr>
+                <tr>
+                    <td>timestamp</td>
+                    <td>int</td>
+                    <td>时间戳</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>系统当前时间戳 UTC 秒</td>
+                </tr>
+                <tr>
+                    <td>sign</td>
+                    <td>string</td>
+                    <td>验证签名</td>
+                    <td style="color: red">NO</td>
+                    <td>NO</td>
+                    <td>见签名算法</td>
+                </tr>
+                </tbody>
+            </table>
+            <span>
+                <b style="color: red">
+                    注意: 可否为空, 表示该参数的值可以为空, 但必须传入.
+                </b>
+            </span>
+            <div><br/></div>
+
+            <h3>response</h3>
+            <table class="layui-table">
+                <colgroup>
+                    <col width="150"/>
+                    <col />
+                </colgroup>
+                <thead>
+                <tr>
+                    <td>参数</td>
+                    <td>类型</td>
+                    <td>说明</td>
+                    <td>备注</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>code</td>
+                    <td>string</td>
+                    <td>返回码</td>
+                    <td>"0"表示成功, "-1"表示失败</td>
+                </tr>
+                <tr>
+                    <td>msg</td>
+                    <td>string</td>
+                    <td>返回值描述</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>data</td>
+                    <td>string</td>
+                    <td>返回值的数据</td>
+                    <td>json格式</td>
+                </tr>
+                </tbody>
+            </table>
+            <div><br/></div>
+
+            <h3>返回值示例</h3>
+            <pre style="padding: 20px; display: block; background-color: #f5f5f5">
+{
+    "code": 0,
+    "msg": "ok",
+    "data": {
+        "account": "acc",                          //商户账号
+        "order_sn": "2012xxx",                     //商户订单号, 与下单时传入的单号一致
+        "system_sn": "aabbcc",                     //系统内部单号
+        "pay_url": "http://domain/pay/aaaa",       //支付url, 需要展示该地址给付款用户
+        "qrcode": "http://domain/aaaa.png",        //付款码
+    }
+}
+            </pre>
+        </div>
+    </div>
+
+    <hr/>
+
+    <!--查询订单状态-->
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span>2. 查询订单状态</span>
+        </div>
+        <div class="layui-card-body layui-text">
+
+            <h3>url: [[$server]]/pay/query</h3>
+            <h3>method：post, get</h3>
+            <table class="layui-table">
+                <colgroup>
+                    <col width="150"/>
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <thead>
+                <tr>
+                    <td>参数</td>
+                    <td>类型</td>
+                    <td>说明</td>
+                    <td>可否为空</td>
+                    <td>参与签名</td>
+                    <td>备注</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>account</td>
+                    <td>string</td>
+                    <td>商户账号</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>商户登录用的账号</td>
+                </tr>
+                <tr>
+                    <td>order_sn</td>
+                    <td>string</td>
+                    <td>订单号</td>
+                    <td style="color: red">NO</td>
+                    <td style="color: red">YES</td>
+                    <td>商户系统订单号</td>
+                </tr>
+                <tr>
+                    <td>sign</td>
+                    <td>string</td>
+                    <td>验证签名</td>
+                    <td style="color: red">NO</td>
+                    <td>NO</td>
+                    <td>见签名算法</td>
+                </tr>
+                </tbody>
+            </table>
+            <div><br/></div>
+
+            <h3>response</h3>
+            <table class="layui-table">
+                <colgroup>
+                    <col width="150"/>
+                    <col />
+                </colgroup>
+                <thead>
+                <tr>
+                    <td>参数</td>
+                    <td>类型</td>
+                    <td>说明</td>
+                    <td>备注</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>code</td>
+                    <td>string</td>
+                    <td>返回码</td>
+                    <td>"0"表示成功, "-1"表示失败</td>
+                </tr>
+                <tr>
+                    <td>msg</td>
+                    <td>string</td>
+                    <td>返回值描述</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>data</td>
+                    <td>string</td>
+                    <td>返回值的数据</td>
+                    <td>json格式</td>
+                </tr>
+                </tbody>
+            </table>
+            <div><br/></div>
+
+            <h3>返回值示例</h3>
+            <pre style="padding: 20px; display: block; background-color: #f5f5f5">
+{
+    "code": 0,
+    "msg": "ok",
+    "data": {
+        "account": "acc",          //商户账号
+        "order_sn": "2012xxx",     //商户订单号, 与下单时传入的单号一致
+        "system_sn": "aabbcc",     //系统内部单号
+        "money": 123.45,           //订单金额
+        "create_time": 1566454463, //下单时间
+        "pay_time": 1566454463,    //支付时间
+        "status": 9,               //订单支付状态,1=待支付,2=已提交,3=已超时,4=已取消,9=已支付
+        "status_flag": "支付成功",   //
+        "notice_status": 4,         //回调状态,1=待通知,2=未回复,3=回复失败,4=回复成功
+        "notice_msg": "success"    //
+    }
+}
+            </pre>
+        </div>
+    </div>
+
+    <hr/>
+
+    <!--回调通知-->
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span>3. 回调通知</span>
+        </div>
+        <div class="layui-card-body layui-text">
+
+            <h3>method：post</h3>
+            <table class="layui-table">
+                <colgroup>
+                    <col width="150"/>
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <thead>
+                <tr>
+                    <td>参数</td>
+                    <td>类型</td>
+                    <td>说明</td>
+                    <td>参与签名</td>
+                    <td>备注</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>money</td>
+                    <td>float</td>
+                    <td>订单金额</td>
+                    <td style="color: red">YES</td>
+                    <td>单位: 元, 最多保留2位小数</td>
+                </tr>
+                <tr>
+                    <td>order_sn</td>
+                    <td>string</td>
+                    <td>订单号</td>
+                    <td style="color: red">YES</td>
+                    <td>商户系统订单号</td>
+                </tr>
+                <tr>
+                    <td>pay_status</td>
+                    <td>int</td>
+                    <td>支付状态</td>
+                    <td style="color: red">YES</td>
+                    <td>1=待支付,2=已提交,3=已超时,4=已取消,9=已支付</td>
+                </tr>
+                <tr>
+                    <td>pay_time</td>
+                    <td>int</td>
+                    <td>支付时间</td>
+                    <td style="color: red">YES</td>
+                    <td>时间戳 UTC 秒</td>
+                </tr>
+                <tr>
+                    <td>sign</td>
+                    <td>string</td>
+                    <td>验证签名</td>
+                    <td>NO</td>
+                    <td>见签名算法</td>
+                </tr>
+                </tbody>
+            </table>
+            <span>
+                <b style="color: red">
+                注意: 收到回调, 处理完业务之后请返回固定的{"code":0, "msg":"success"}
+                </b>
+            </span>
+        </div>
+    </div>
+
+    <hr/>
+
+    <!--签名算法-->
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <span>4. 签名算法</span>
+        </div>
+        <div class="layui-card-body layui-text">
+           <span>
+                <b style="color: red">
+                Md5签名算法<br/>
+                </b>
+                1、按字典序排序所有传入的参数（包括空值的字段）（sign除外）<br/>
+                2、组装待签名字符串：p1=v1&p2=v2&p3=v3….&key=签名密钥<br/>
+                3、得到小写的sign=md5(上一步组装待签名字的符串)<br/>
+                4、签名密钥请联系平台申请。<br/>
+            </span>
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+</html>
