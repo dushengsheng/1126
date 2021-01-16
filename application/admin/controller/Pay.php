@@ -248,12 +248,12 @@ class Pay extends Base
             'ma_qrcode' => $sk_ma['ma_qrcode'],
             //'ma_bank_id' => $sk_ma['bank_id'],
             'ma_bank_id' => $bank['id'],
-            'ma_branch_name' => $sk_ma['branch_name'],
             'order_ip' => $p_data['client_ip'],
             'notify_url' => $p_data['notify_url'],
             'create_time' => NOW_TIME,
             'create_day' => date('Ymd', NOW_TIME),
             'over_time' => NOW_TIME + $over_time,
+            'device' => Request::instance()->isMobile() ? 'mobile' : 'pc',
             'reffer_url' => $_SERVER['HTTP_REFERER']
         ];
 
@@ -290,19 +290,21 @@ class Pay extends Base
         ];
         $mysql->insert($cnf_notice, 'cnf_notice');
 
-        $payurl = ADMIN_URL . "/pay/info?osn={$sk_order['order_sn']}";
-        if ($p_data['format'] != 'json') {
-            header('Location:' . $payurl);
-            exit();
-        }
-
         $return_data = [
             'account' => $p_data['account'],
             'order_sn' => $p_data['order_sn'],
             'system_sn' => $sk_order['order_sn'],
-            'pay_url' => $payurl,
-            'qrcode' => ''
+            'notify_url' => $p_data['notify_url']
         ];
+
+        if (empty($bank)) {
+            $pay_url = GATEWAY_URL . "/api.php?c=cashier&order_no=" . $sk_order['order_sn'];
+            $return_data['pay_url'] = $pay_url;
+        } else {
+            $pay_url = GATEWAY_URL . "/qrcode.php?order_no=" . $sk_order['order_sn'] . "&step=1";
+            $return_data['pay_url'] = $pay_url;
+        }
+
         jReturn('0', '下单成功', $return_data);
     }
 
@@ -404,13 +406,7 @@ class Pay extends Base
             $http_response = curl_post(ADMIN_URL . '/pay/index', $sign_data);
             $response_json = $http_response['output'];
             $response_arr = json_decode($response_json, true);
-            debugLog($response_arr);
             jReturn($response_arr);
-            if ($response_arr['code'] != '0') {
-                jReturn($response_arr['code'], $response_arr['msg']);
-            } else {
-                jReturn($response_arr['code'], $response_arr['msg'], $response_arr['data']);
-            }
         } else {
             $pageuser = checkLogin();
             $children = getDownUser($pageuser['id'], true);

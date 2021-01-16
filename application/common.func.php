@@ -430,7 +430,6 @@ function rows2arr($src_arr, $key = 'id')
  */
 function curl_post($url, $field = '', $timeout = 30)
 {
-    $result = [];
     $http_req = curl_init();
     curl_setopt($http_req, CURLOPT_SSL_VERIFYPEER, true);
     curl_setopt($http_req, CURLOPT_URL, $url);
@@ -440,12 +439,19 @@ function curl_post($url, $field = '', $timeout = 30)
     curl_setopt($http_req, CURLOPT_HEADER, false);
     curl_setopt($http_req, CURLOPT_TIMEOUT, $timeout);
     curl_setopt($http_req, CURLOPT_REFERER, "");
+    curl_setopt($http_req, CURLOPT_FOLLOWLOCATION, true);
+
+    ob_start();
     $http_res = curl_exec($http_req);
     $http_code = curl_getinfo($http_req, CURLINFO_HTTP_CODE);
-    $result['output'] = $http_res;
-    $result['response_code'] = $http_code;
+    ob_end_clean();
     curl_close($http_req);
     unset($http_req);
+
+    $result = [
+        'output' => $http_res,
+        'response_code' => $http_code
+    ];
     return $result;
 }
 

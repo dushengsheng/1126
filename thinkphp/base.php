@@ -40,7 +40,7 @@ defined('NOW_DATE') or define('NOW_DATE', date('Y-m-d H:i:s',NOW_TIME));
 define('SERVER_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}");
 define('ADMIN_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}/admin");
 define('HOME_URL', "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["HTTP_HOST"]}/home");
-//defined('APP_URL') or define('APP_URL', trim($_SERVER['SCRIPT_NAME'],'/'));
+define('GATEWAY_URL', "http://bank.wepay.fun/pay");
 
 //socket相关配置
 $_ENV['SOCKET']=['PORT'=>19502, 'HTTP_PORT'=>29582];
