@@ -203,11 +203,14 @@ class Pay extends Base
         if ($merchant['appoint_agent']) {
             $appoint_agent_arr = explode(',', $merchant['appoint_agent']);
             foreach ($appoint_agent_arr as $aid) {
-                $down_ms = getDownUser($aid);
-                if (!$down_ms) {
-                    $down_ms = [];
+                $children = getDownUser($aid, true);
+                foreach ($children as $child) {
+                    if (!in_array($child['gid'], [61,71])) {
+                        continue;
+                    }
+                    $appoint_ms_arr[] = $child['id'];
                 }
-                $appoint_ms_arr = array_merge($down_ms, [$aid]);
+                $appoint_ms_arr[] = $aid;
             }
         }
         if ($merchant['appoint_ms']) {
@@ -228,6 +231,7 @@ class Pay extends Base
         $ma_user = $mysql->fetchRow("select id,balance,fz_balance from sys_user where id={$sk_ma['uid']} for update");
         $rate = $merchant['td_rate'][$ptype];
         $fee = $p_data['money'] * $rate;
+        $over_time = getConfig('skorder_over_time');
         $sk_order = [
             'muid' => $sk_ma['uid'],//码商id
             'suid' => $merchant['id'],//商户id
@@ -249,6 +253,7 @@ class Pay extends Base
             'notify_url' => $p_data['notify_url'],
             'create_time' => NOW_TIME,
             'create_day' => date('Ymd', NOW_TIME),
+            'over_time' => NOW_TIME + $over_time,
             'reffer_url' => $_SERVER['HTTP_REFERER']
         ];
 
@@ -340,10 +345,10 @@ class Pay extends Base
         }
 
         // 10分钟之内有3单相同金额
-        $limit_time = NOW_TIME - 10 * 60;
+        $now_time = NOW_TIME;
         //检测该码商是否有相同金额订单
         if ($sk_ma) {
-            $check_order = $mysql->fetchRow("select id from sk_order where ma_id={$sk_ma['id']} and pay_status<=2 and money={$p_data['money']} and create_time>{$limit_time}");
+            $check_order = $mysql->fetchRow("select id from sk_order where ma_id={$sk_ma['id']} and pay_status<=2 and money={$p_data['money']} and over_time>{$now_time}");
             if ($check_order['id']) {
                 $this->checkMaArr[] = $sk_ma['id'];
                 $this->getMaNum++;
