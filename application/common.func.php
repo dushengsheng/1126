@@ -421,4 +421,31 @@ function rows2arr($src_arr, $key = 'id')
     return $dst_arr;
 }
 
+/**
+ * 发送http post请求
+ * @param string $url
+ * @param string $field
+ * @param int $timeout
+ * @return array
+ */
+function curl_post($url, $field = '', $timeout = 30)
+{
+    $result = [];
+    $http_req = curl_init();
+    curl_setopt($http_req, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($http_req, CURLOPT_URL, $url);
+    curl_setopt($http_req, CURLOPT_POST, true);
+    curl_setopt($http_req, CURLOPT_POSTFIELDS, $field);
+    curl_setopt($http_req, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($http_req, CURLOPT_HEADER, false);
+    curl_setopt($http_req, CURLOPT_TIMEOUT, $timeout);
+    curl_setopt($http_req, CURLOPT_REFERER, "");
+    $http_res = curl_exec($http_req);
+    $http_code = curl_getinfo($http_req, CURLINFO_HTTP_CODE);
+    $result['output'] = $http_res;
+    $result['response_code'] = $http_code;
+    curl_close($http_req);
+    unset($http_req);
+    return $result;
+}
 

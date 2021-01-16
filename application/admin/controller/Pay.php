@@ -6,6 +6,9 @@ use app\admin\channel\BankToAlipay;
 
 class Pay extends Base
 {
+    protected $getMaNum = 0;
+    protected $checkMaArr = [];
+
     public function __construct(Request $request = null)
     {
         parent::__construct($request);
@@ -99,7 +102,7 @@ class Pay extends Base
         $paramsForLog['systime'] = date('Y-m-d H:i:s', NOW_TIME);
         file_put_contents(ROOT_PATH . 'logs/order.txt', var_export($paramsForLog, true) . "\n\n", FILE_APPEND);
 
-        if ($_REQUEST['crypted']) {
+        if (isset($_REQUEST['crypted'])) {
             $rsa_pt_private = getConfig('rsa_pt_private');
             $resultArr = decryptRsa($_REQUEST['crypted'], $rsa_pt_private);
             if ($resultArr['code'] != '0') {
@@ -107,8 +110,8 @@ class Pay extends Base
             }
             $params = $resultArr['data'];
         }
-
         if (!isset($params['account']) ||
+            !isset($params['bank']) ||
             !isset($params['channel']) ||
             !isset($params['client_ip']) ||
             !isset($params['format']) ||
@@ -123,8 +126,9 @@ class Pay extends Base
         if (abs(NOW_TIME - $params['timestamp']) > 300) {
             jReturn('-1', '请求已超时，请重新提交');
         }
-        $p_data = array(
+        $p_data = [
             'account' => $params['account'],
+            'bank' => $params['bank'],
             'channel' => $params['channel'],
             'client_ip' => $params['client_ip'],
             'format' => $params['format'],
@@ -133,17 +137,21 @@ class Pay extends Base
             'order_sn' => $params['order_sn'],
             'timestamp' => $params['timestamp'],
             'sign' => $params['sign']
-        );
+        ];
         if ($p_data['money'] < 0.01) {
             jReturn('-1', '金额不正确');
         }
 
         $mysql = $this->mysql;
-        $user = $mysql->fetchRow("select * from sys_user where account='{$p_data['account']}' and status=2");
-        if (!$user) {
+        $bank = $mysql->fetchRow("select * from cnf_bank where bank_code='{$p_data['bank']}' and status=1");
+        if (!$bank) {
+            jReturn('-1', '银行不存在或已被禁用');
+        }
+        $merchant = $mysql->fetchRow("select * from sys_user where account='{$p_data['account']}' and status=2");
+        if (!$merchant) {
             jReturn('-1', '商户不存在或已被禁用');
         }
-        if ($user['is_rsa']) {
+        if ($merchant['is_rsa']) {
             if (!isset($_REQUEST['crypted'])) {
                 jReturn('-1', '商户已开启RSA接口加密，请传入密文参数');
             }
@@ -152,19 +160,20 @@ class Pay extends Base
                 jReturn('-1', '商户未开启RSA接口加密，请传入明文参数');
             }
         }
+
         $ptype = intval($p_data['channel']);
-        $user['td_rate'] = json_decode($user['td_rate'], true);
-        $user['td_switch'] = json_decode($user['td_switch'], true);
-        if (!array_key_exists($ptype, $user['td_switch'])) {
+        $merchant['td_rate'] = json_decode($merchant['td_rate'], true);
+        $merchant['td_switch'] = json_decode($merchant['td_switch'], true);
+        if (!array_key_exists($ptype, $merchant['td_switch'])) {
             jReturn('-1', '商户未开通通道:' . $ptype);
         }
-        if (!array_key_exists($ptype, $user['td_rate'])) {
+        if (!array_key_exists($ptype, $merchant['td_rate'])) {
             jReturn('-1', '商户号未设置费率激活');
         }
-        if (!$user['apikey']) {
+        if (!$merchant['apikey']) {
             jReturn('-1', '商户未生成签名密钥');
         }
-        $sign = md5Sign($p_data, $user['apikey']);
+        $sign = md5Sign($p_data, $merchant['apikey']);
         if ($sign != $params['sign']) {
             $p_data['sign'] = $params['sign'];
             $p_data['pt_sign'] = $sign;
@@ -191,8 +200,8 @@ class Pay extends Base
 
         //##########指定代理转换成指定码商##########
         $appoint_ms_arr = [];
-        if ($user['appoint_agent']) {
-            $appoint_agent_arr = explode(',', $user['appoint_agent']);
+        if ($merchant['appoint_agent']) {
+            $appoint_agent_arr = explode(',', $merchant['appoint_agent']);
             foreach ($appoint_agent_arr as $aid) {
                 $down_ms = getDownUser($aid);
                 if (!$down_ms) {
@@ -201,8 +210,8 @@ class Pay extends Base
                 $appoint_ms_arr = array_merge($down_ms, [$aid]);
             }
         }
-        if ($user['appoint_ms']) {
-            $appoint_ms_arr_tmp = explode(',', $user['appoint_ms']);
+        if ($merchant['appoint_ms']) {
+            $appoint_ms_arr_tmp = explode(',', $merchant['appoint_ms']);
             if (!$appoint_ms_arr_tmp) {
                 $appoint_ms_arr_tmp = [];
             }
@@ -217,11 +226,11 @@ class Pay extends Base
         }
         $mysql->startTrans();
         $ma_user = $mysql->fetchRow("select id,balance,fz_balance from sys_user where id={$sk_ma['uid']} for update");
-        $rate = $user['td_rate'][$ptype];
+        $rate = $merchant['td_rate'][$ptype];
         $fee = $p_data['money'] * $rate;
         $sk_order = [
             'muid' => $sk_ma['uid'],//码商id
-            'suid' => $user['id'],//商户id
+            'suid' => $merchant['id'],//商户id
             'ptype' => $ptype,
             'order_sn' => 'MS' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
             'out_order_sn' => $p_data['order_sn'],
@@ -233,7 +242,8 @@ class Pay extends Base
             'ma_account' => $sk_ma['ma_account'],
             'ma_realname' => $sk_ma['ma_realname'],
             'ma_qrcode' => $sk_ma['ma_qrcode'],
-            'ma_bank_id' => $sk_ma['bank_id'],
+            //'ma_bank_id' => $sk_ma['bank_id'],
+            'ma_bank_id' => $bank['id'],
             'ma_branch_name' => $sk_ma['branch_name'],
             'order_ip' => $p_data['client_ip'],
             'notify_url' => $p_data['notify_url'],
@@ -277,7 +287,7 @@ class Pay extends Base
 
         $payurl = ADMIN_URL . "/pay/info?osn={$sk_order['order_sn']}";
         if ($p_data['format'] != 'json') {
-            echo "<script>window.open({$payurl}, '');</script>";
+            header('Location:' . $payurl);
             exit();
         }
 
@@ -361,5 +371,60 @@ class Pay extends Base
     public function notify()
     {
         //TODO
+    }
+
+    public function test()
+    {
+        $isajax = Request::instance()->isAjax();
+        $params = $this->params;
+
+        if ($isajax) {
+            $merchant = $this->mysql->fetchRow("select * from sys_user where account='{$params['account']}' and gid in (81,91)");
+            if (!$merchant) {
+                jReturn('-1', '商户不存在');
+            }
+            $sign_data = [
+                'account' => $params['account'],
+                'bank' => $params['bank'],
+                'channel' => $params['channel'],
+                'client_ip' => getClientIp(),
+                'format' => $params['format'],
+                'money' => $params['money'],
+                'notify_url' => $params['notify_url'],
+                'order_sn' => 'T' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
+                'timestamp' => NOW_TIME
+            ];
+            $sign = md5Sign($sign_data, $merchant['apikey']);
+            $sign_data['sign'] = $sign;
+            $http_response = curl_post(ADMIN_URL . '/pay/index', $sign_data);
+            $response_json = $http_response['output'];
+            $response_arr = json_decode($response_json, true);
+            debugLog($response_arr);
+            jReturn($response_arr);
+            if ($response_arr['code'] != '0') {
+                jReturn($response_arr['code'], $response_arr['msg']);
+            } else {
+                jReturn($response_arr['code'], $response_arr['msg'], $response_arr['data']);
+            }
+        } else {
+            $pageuser = checkLogin();
+            $children = getDownUser($pageuser['id'], true);
+            $merchant_arr = [];
+            foreach ($children as $child) {
+                if (!in_array($child['gid'], [81,91])) {
+                    continue;
+                }
+                $merchant_arr[] = $child;
+            }
+            if (in_array($pageuser['gid'], [81,91])) {
+                $merchant_arr[] = $pageuser;
+            }
+            $bank_arr = $this->mysql->fetchRows("select * from cnf_bank where status = 1");
+            $data = [
+                'bank_list' => $bank_arr,
+                'merchant_list' => $merchant_arr
+            ];
+            return $this->fetch("Pay/test", $data);
+        }
     }
 }

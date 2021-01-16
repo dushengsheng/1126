@@ -46,6 +46,7 @@ Route::rule('admin/user/merchantlist',      'admin/User/merchantList');
 Route::rule('admin/pay',                    'admin/Pay/index');
 Route::rule('admin/pay/query',              'admin/Pay/query');
 Route::rule('admin/pay/notify',             'admin/Pay/notify');
+Route::rule('admin/pay/test',               'admin/Pay/test');
 
 Route::rule('admin/pay/skma',               'admin/Pay/skma');
 Route::rule('admin/pay/skmalist',           'admin/Pay/skmaList');
