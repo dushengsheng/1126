@@ -239,6 +239,7 @@ function memcacheDelete($key, $memcache = null)
 
 /**
  * @param array $user 充值用户
+ * @param int $operator 操作者 id
  * @param int $balanceType 1=可提余额,2=冻结中,3=接单余额,4=可拨款额度
  * @param int $subType 详见 cnf_balance_type
  * @param float $money 充值额度
@@ -247,14 +248,13 @@ function memcacheDelete($key, $memcache = null)
  * @param null $mysql
  * @return array|false
  */
-function balanceLog($user, $balanceType, $subType, $money, $fkey = '', $remark = '', $mysql = null)
+function balanceLog($user, $operator, $balanceType, $subType, $money, $fkey = '', $remark = '', $mysql = null)
 {
     $cnf_balance_type = getConfig('cnf_balance_type');
     $subType = intval($subType);
     if (!array_key_exists($subType, $cnf_balance_type)) {
         return false;
     }
-    $pageuser = checkLogin();
     $balance_log = [
         'uid' => intval($user['id']),
         'type' => $subType,
@@ -262,7 +262,7 @@ function balanceLog($user, $balanceType, $subType, $money, $fkey = '', $remark =
         'money' => $money,
         'create_time' => time(),
         'create_day' => date('Ymd'),
-        'create_id' => intval($pageuser['id']),
+        'create_id' => $operator,
         'remark' => $remark
     ];
     if ($balanceType == 1) {

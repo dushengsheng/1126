@@ -196,7 +196,7 @@ class FinanceCashlog extends Base
             'balance' => $user['balance'] + $cashlog['money']
         ];
         $res2 = $this->mysql->update($user_data, "id={$user['id']}", 'sys_user');
-        $res3 = balanceLog($user, 1, 12, $cashlog['money'], $cashlog['id'], $cashlog['csn'], $this->mysql);
+        $res3 = balanceLog($user, $pageuser['id'], 1, 12, $cashlog['money'], $cashlog['id'], $cashlog['csn'], $this->mysql);
 
         if (!$res1 || !$res2 || !$res3) {
             $this->mysql->rollback();

@@ -232,7 +232,7 @@ class FinanceAccount extends Base
         }
         $res1 = $this->mysql->update($user_data, "id={$user['id']}", 'sys_user');
         $res2 = $this->mysql->insert($cash_log, 'cnf_cash_log');
-        $res3 = balanceLog($user, 1, 11, -$money, $res2, $cash_log['csn'], $this->mysql);
+        $res3 = balanceLog($user, $pageuser['id'], 1, 11, -$money, $res2, $cash_log['csn'], $this->mysql);
         if (!$res1 || !$res2 || !$res3) {
             $this->mysql->rollback();
             jReturn('-1', '系统繁忙请稍后再试');

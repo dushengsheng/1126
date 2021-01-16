@@ -258,7 +258,7 @@ class Pay extends Base
 
         $res1 = $mysql->insert($sk_order, 'sk_order');
         $res2 = $mysql->update($ma_sys_user, "id={$ma_user['id']}", 'sys_user');
-        $res3 = balanceLog($ma_user, 1, 13, -$p_data['money'], $res1, $sk_order['order_sn'], $mysql);
+        $res3 = balanceLog($ma_user, $merchant['id'], 1, 13, -$p_data['money'], $res1, $sk_order['order_sn'], $mysql);
         $res4 = $mysql->update($sk_ma_data, "id={$sk_ma['id']}", 'sk_ma');
         if (!$res1 || !$res2 || !$res3 || !$res4) {
             $mysql->rollback();
