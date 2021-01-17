@@ -236,7 +236,7 @@ class Pay extends Base
             'muid' => $sk_ma['uid'],//码商id
             'suid' => $merchant['id'],//商户id
             'ptype' => $ptype,
-            'order_sn' => 'MS' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
+            'order_sn' => 'SYS' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
             'out_order_sn' => $p_data['order_sn'],
             'money' => $p_data['money'],
             'real_money' => $p_data['money'] - $fee,
@@ -244,7 +244,6 @@ class Pay extends Base
             'fee' => $fee,
             'ma_id' => $sk_ma['id'],//码id
             'ma_account' => $sk_ma['ma_account'],
-            'ma_realname' => $sk_ma['ma_realname'],
             'ma_qrcode' => $sk_ma['ma_qrcode'],
             //'ma_bank_id' => $sk_ma['bank_id'],
             'ma_bank_id' => $bank['id'],
@@ -293,8 +292,7 @@ class Pay extends Base
         $return_data = [
             'account' => $p_data['account'],
             'order_sn' => $p_data['order_sn'],
-            'system_sn' => $sk_order['order_sn'],
-            'notify_url' => $p_data['notify_url']
+            'system_sn' => $sk_order['order_sn']
         ];
 
         if (empty($bank)) {
@@ -346,6 +344,7 @@ class Pay extends Base
             file_put_contents(ROOT_PATH . 'logs/ma_sql.txt', $sql . "\n\n", FILE_APPEND);
         }
 
+        /*
         // 10分钟之内有3单相同金额
         $now_time = NOW_TIME;
         //检测该码商是否有相同金额订单
@@ -367,6 +366,7 @@ class Pay extends Base
                 $sk_ma = $this->getSkma($p_data, $mysql);
             }
         }
+        */
         return $sk_ma;
     }
 
@@ -377,7 +377,109 @@ class Pay extends Base
 
     public function notify()
     {
-        //TODO
+        $params = $this->params;
+        $money = floatval($params['money']);
+        $ma_id = intval($params['landid']);
+        $trade_time = intval($params['tradeTime']) / 1000;
+        $remark = $params['tradeNo'];
+
+        $sql = "select * from sk_order where 
+            ma_id={$ma_id} and money={$money} and pay_status<9 and over_time>{$trade_time} and (isnull(remark) or remark!='{$remark}')";
+
+        $order_list = $this->mysql->fetchRows($sql);
+        if (!$order_list) {
+            jReturn('-1', '订单不存在');
+        }
+        if (count($order_list) > 1) {
+            jReturn('-1', '订单重复');
+        }
+
+        $order = $order_list[0];
+        $user = $this->mysql->fetchRow("select * from sys_user where id={$order['muid']}");
+        if (!$user) {
+            jReturn('-1', '码商不存在');
+        }
+        debugLog('notify: user = ' . var_export($user, true));
+
+        $res1 = true;
+        $res2 = true;
+        $res3 = true;
+        $this->mysql->startTrans();
+        if ($order['pay_status'] == 3) {
+            if ($user['balance'] < $money) {
+                jReturn('-1', '您的接单余额不足，无法补单');
+            }
+            $sys_user = [
+                'balance' => $user['balance'] - $money
+            ];
+            $res1 = $this->mysql->update($sys_user, "id={$user['id']}", 'sys_user');
+            $res2 = balanceLog($user, 0, 3, 16, -$money, $order['id'], $order['order_sn'], $this->mysql);
+        } elseif (in_array($order['pay_status'], [1, 2])) {
+            if ($user['fz_balance'] < $money) {
+                jReturn('-1', '您的冻结余额不足，无法确认');
+            }
+            $sys_user = [
+                'fz_balance' => $user['fz_balance'] - $money
+            ];
+            $res1 = $this->mysql->update($sys_user, "id={$user['id']}", 'sys_user');
+            $res2 = balanceLog($user, 0, 2, 14, $money, $order['id'], $order['order_sn'], $this->mysql);
+        } else {
+            jReturn('-1', '该订单当前状态不可操作');
+        }
+        $sk_order = [
+            'remark' => $remark,
+            'pay_status' => 9,
+            'pay_time' => NOW_TIME,
+            'pay_day' => date('Ymd', NOW_TIME)
+        ];
+        debugLog('notify: sk_order = ' . var_export($sk_order, true));
+
+        $res4 = $this->mysql->update($sk_order, "id={$order['id']}", 'sk_order');
+        if (!$res1 || !$res2 || !$res3 || !$res4) {
+            $this->mysql->rollback();
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+        $this->mysql->commit();
+
+        //发起回调给商户
+        orderNotify($order['id'], $this->mysql);
+
+        //写入异步通知记录
+        $cnf_notice = [
+            'type' => 2,
+            'fkey' => $order['order_sn'],
+            'create_time' => NOW_TIME,
+            'remark' => '确认成功通知支付用户'
+        ];
+        $this->mysql->insert($cnf_notice, 'cnf_notice');
+
+        /*
+        //如果是超时补单下线该码
+        if ($order['pay_status'] == 3) {
+            if (!$order['is_test']) {
+                $sk_ma = [
+                    'status' => 1,
+                    'fz_time' => NOW_TIME + 86400 * 90
+                ];
+                $this->mysql->update($sk_ma, "id={$order['ma_id']}", 'sk_ma');
+            }
+        } elseif (in_array($order['pay_status'], [1, 2])) {
+            if ($order['is_test']) {
+                $sk_ma = [
+                    'fz_time' => 0
+                ];
+                $this->mysql->update($sk_ma, "id={$order['ma_id']}", 'sk_ma');
+            }
+        }
+
+        $cnf_pay_status = getConfig('cnf_pay_status');
+        $return_data = [
+            'pay_time' => date('Y-m-d H:i', $sk_order['pay_time']),
+            'pay_status' => $sk_order['pay_status'],
+            'pay_status_flag' => $cnf_pay_status[$sk_order['pay_status']]
+
+        ];*/
+        jReturn('200', '回调成功');
     }
 
     public function test()
@@ -398,7 +500,7 @@ class Pay extends Base
                 'format' => $params['format'],
                 'money' => $params['money'],
                 'notify_url' => $params['notify_url'],
-                'order_sn' => 'T' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
+                'order_sn' => 'TEST' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
                 'timestamp' => NOW_TIME
             ];
             $sign = md5Sign($sign_data, $merchant['apikey']);
@@ -427,5 +529,10 @@ class Pay extends Base
             ];
             return $this->fetch("Pay/test", $data);
         }
+    }
+
+    public function notifyTest()
+    {
+        jReturn(0, 'success');
     }
 }

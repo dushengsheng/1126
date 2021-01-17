@@ -455,3 +455,73 @@ function curl_post($url, $field = '', $timeout = 30)
     return $result;
 }
 
+//订单异步回调，返回最新订单数据
+function orderNotify($order_id, $mysql)
+{
+    $order = $mysql->fetchRow("select * from sk_order where id={$order_id}");
+    if (!$order || $order['pay_status'] != 9) {
+        return false;
+    }
+    $merchant = $mysql->fetchRow("select * from sys_user where id={$order['suid']}");
+    if (!$merchant) {
+        return false;
+    }
+    $url = urldecode($order['notify_url']);
+    $p_data = [
+        'pay_status' => 9,
+        'money' => $order['money'],
+        'order_sn' => $order['out_order_sn'],
+        'pay_time' => $order['pay_time']
+    ];
+
+    ksort($p_data);
+    $sign_str = '';
+    foreach ($p_data as $pk => $pv) {
+        $sign_str .= "{$pk}={$pv}&";
+    }
+    $sign_str .= "key={$merchant['apikey']}";
+    $p_data['sign'] = md5($sign_str);
+
+    //判断是否需要加密传输
+    if ($merchant['is_rsa']) {
+        if (!$merchant['rsa_public']) {
+            return false;
+        }
+        $p_json = base64_encode(json_encode($p_data, 256));
+        $resultArr = encryptRsa($p_json, $merchant['rsa_public']);
+
+        if ($resultArr['code'] != '0') {
+            return false;
+        }
+        $p_data = [
+            'crypted' => $resultArr['data']
+        ];
+    }
+
+    $result = curl_post($url, $p_data, 30);
+    $resultMsg = $result['output'];
+    $sk_order = [
+        'notice_msg' => htmlspecialchars(addslashes($resultMsg))
+    ];
+    if (!$resultMsg) {
+        $sk_order['notice_status'] = 2;
+    } else {
+        if ($resultMsg['code'] == 0) {
+            $sk_order['notice_status'] = 4;
+        } else {
+            $sk_order['notice_status'] = 3;
+        }
+    }
+    $res = $mysql->update($sk_order, "id={$order['id']}", 'sk_order');
+    if (!$res) {
+        return false;
+    }
+    return true;
+    /*
+    $order = array_merge($order, $sk_order);
+    $cnf_notice_status = getConfig('cnf_notice_status');
+    $cnf_pay_status = getConfig('cnf_pay_status');
+    $order['pay_status_flag'] = $cnf_pay_status[$order['pay_status']];
+    $order['notice_status_flag'] = $cnf_notice_status[$order['notice_status']];
+    return $order;*/
+}
