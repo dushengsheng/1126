@@ -344,7 +344,6 @@ class Pay extends Base
             file_put_contents(ROOT_PATH . 'logs/ma_sql.txt', $sql . "\n\n", FILE_APPEND);
         }
 
-        /*
         // 10分钟之内有3单相同金额
         $now_time = NOW_TIME;
         //检测该码商是否有相同金额订单
@@ -353,7 +352,7 @@ class Pay extends Base
             if ($check_order['id']) {
                 $this->checkMaArr[] = $sk_ma['id'];
                 $this->getMaNum++;
-                if ($this->getMaNum <= 3) {
+                if ($this->getMaNum <= 5) {
                     $sk_ma = $this->getSkma($p_data, $mysql);
                 } else {
                     $sk_ma = null;
@@ -366,7 +365,6 @@ class Pay extends Base
                 $sk_ma = $this->getSkma($p_data, $mysql);
             }
         }
-        */
         return $sk_ma;
     }
 
