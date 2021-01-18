@@ -273,8 +273,9 @@ class Pay extends Base
         $res1 = $mysql->insert($sk_order, 'sk_order');
         $res2 = $mysql->update($ma_sys_user, "id={$ma_user['id']}", 'sys_user');
         $res3 = balanceLog($ma_user, $merchant['id'], 1, 13, -$p_data['money'], $res1, $sk_order['order_sn'], $mysql);
-        $res4 = $mysql->update($sk_ma_data, "id={$sk_ma['id']}", 'sk_ma');
-        if (!$res1 || !$res2 || !$res3 || !$res4) {
+        $res4 = balanceLog($ma_user, $merchant['id'], 2, 13, $p_data['money'], $res1, $sk_order['order_sn'], $mysql);
+        $res5 = $mysql->update($sk_ma_data, "id={$sk_ma['id']}", 'sk_ma');
+        if (!$res1 || !$res2 || !$res3 || !$res4 || !$res5) {
             $mysql->rollback();
             jReturn('-1', '系统繁忙请稍后再试');
         }
@@ -411,7 +412,7 @@ class Pay extends Base
                 'balance' => $user['balance'] - $money
             ];
             $res1 = $this->mysql->update($sys_user, "id={$user['id']}", 'sys_user');
-            $res2 = balanceLog($user, 0, 3, 16, -$money, $order['id'], $order['order_sn'], $this->mysql);
+            $res2 = balanceLog($user, 0, 1, 16, -$money, $order['id'], $order['order_sn'], $this->mysql);
         } elseif (in_array($order['pay_status'], [1, 2])) {
             if ($user['fz_balance'] < $money) {
                 jReturn('-1', '您的冻结余额不足，无法确认');

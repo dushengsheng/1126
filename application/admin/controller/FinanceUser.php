@@ -156,7 +156,7 @@ class FinanceUser extends Base
 
         $res3 = balanceLog($user, $pageuser['id'], 1, 50, $money, $user['id'], $remark, $this->mysql);
         if ($exchange) {
-            $res4 = balanceLog($myself, $pageuser['id'], 1, 50, 0-$money, $myself['id'], $remark, $this->mysql);
+            $res4 = balanceLog($myself, $pageuser['id'], 1, 50, -$money, $myself['id'], $remark, $this->mysql);
         }
 
         if (!$res1 || !$res2 || !$res3 || !$res4) {

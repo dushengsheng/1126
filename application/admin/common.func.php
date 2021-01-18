@@ -257,6 +257,7 @@ function balanceLog($user, $operator, $balanceType, $subType, $money, $fkey = ''
     }
     $balance_log = [
         'uid' => intval($user['id']),
+        'balance_type' => $balanceType,
         'type' => $subType,
         'fkey' => $fkey,
         'money' => $money,

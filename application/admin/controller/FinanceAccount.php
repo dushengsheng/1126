@@ -97,7 +97,7 @@ class FinanceAccount extends Base
     {
         $pageuser = checkPower();
         $params = $this->params;
-        $where = "where 1";
+        $where = "where balance_type=1";
         if ($pageuser['gid'] >= 61) {
             $where .= " and log.uid={$pageuser['id']}";
         }
