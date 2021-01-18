@@ -72,6 +72,12 @@ class Pay extends Base
         return $pay_order->orderList();
     }
 
+    public function orderCheck()
+    {
+        $pay_order = new PayOrder();
+        return $pay_order->orderCheck();
+    }
+
 
     /**
      *******************************
@@ -541,6 +547,13 @@ class Pay extends Base
 
     public function notifyTest()
     {
-        jReturn(0, 'success');
+        /*
+        $data = [
+            'pay_status' => '9',
+            'money' => '400.00',
+            'order_sn' => 'TEST2021011814464973745',
+            'pay_time' => '1610952431',
+        ];*/
+        jReturn('0', 'success');
     }
 }

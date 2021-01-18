@@ -61,6 +61,7 @@ Route::rule('admin/pay/xianyulist',         'admin/Pay/xianyuList');
 
 Route::rule('admin/pay/order',              'admin/Pay/order');
 Route::rule('admin/pay/orderlist',          'admin/Pay/orderList');
+Route::rule('admin/pay/ordercheck',         'admin/Pay/orderCheck');
 
 
 // 资金管理

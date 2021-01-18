@@ -439,12 +439,12 @@ function curl_post($url, $field = '', $timeout = 30)
     curl_setopt($http_req, CURLOPT_HEADER, false);
     curl_setopt($http_req, CURLOPT_TIMEOUT, $timeout);
     curl_setopt($http_req, CURLOPT_REFERER, "");
-    curl_setopt($http_req, CURLOPT_FOLLOWLOCATION, true);
+    //curl_setopt($http_req, CURLOPT_FOLLOWLOCATION, true);
 
-    ob_start();
+    //ob_start();
     $http_res = curl_exec($http_req);
     $http_code = curl_getinfo($http_req, CURLINFO_HTTP_CODE);
-    ob_end_clean();
+    //ob_end_clean();
     curl_close($http_req);
     unset($http_req);
 
@@ -491,15 +491,18 @@ function orderNotify($order_id, $mysql)
         ];
     }
 
-    $result = curl_post($url, $p_data, 30);
-    $resultMsg = $result['output'];
+    $result_arr = curl_post($url, $p_data, 30);
+    if (empty($result_arr['output'])) {
+        return false;
+    }
+    $result_output = json_decode($result_arr['output'], true);
     $sk_order = [
-        'notice_msg' => htmlspecialchars(addslashes($resultMsg))
+        'notice_msg' => htmlspecialchars(addslashes($result_arr['output']))
     ];
-    if (!$resultMsg) {
+    if (empty($result_output)) {
         $sk_order['notice_status'] = 2;
     } else {
-        if ($resultMsg['code'] == 0) {
+        if ($result_output['code'] == 0) {
             $sk_order['notice_status'] = 4;
         } else {
             $sk_order['notice_status'] = 3;

@@ -111,112 +111,41 @@
         {{#if(d.pay_status == 9){}}
             {{d.real_money}}
         {{#}else if(d.pay_status == 3 && [[$sys_power.patch == 1]]){}}
-            <div class="layui-btn layui-btn-radius layui-btn-normal layui-btn-warm" id="order-patch">超时补单</div>
+            <div class="layui-btn layui-btn-radius layui-btn-normal layui-btn-warm" lay-event="order-patch">超时补单</div>
         {{#}else if(d.pay_status < 3 && [[$sys_power.callback == 1]]){}}
-            <div class="layui-btn layui-btn-radius layui-btn-normal" id="order-callback">确认订单</div>
+            <div class="layui-btn layui-btn-radius layui-btn-normal" lay-event="order-callback">确认订单</div>
         {{#}else{}}
             '/'
         {{#}}}
     </div>
 </script>
 
-<!--用户上下线工具条-->
-<script id="laytpl-online-switch" type="text/html">
-    <div>
-        <input type="checkbox" lay-skin="switch" value="{{d.id}}" uid="{{d.uid}}" lay-text="在线|下线" lay-filter="ma-online-switch"
-               name="ma-online-switch"
-               {{#if (d.status== '2') {}}
-        checked=""
-        {{#}}}
-        />
-    </div>
-</script>
 
-
-<!--添加或编辑用户信息的弹层-->
-<script id="laytpl-add-skma" type="text/html">
-    <form lay-filter="form-add-skma" class="layui-form model-form no-padding">
-        <input name="id" type="hidden"/>
-        <input name="uid" id="skma-user-id" type="hidden"/>
-        <input name="account" id="skma-user-account" type="hidden"/>
+<!--确认订单的弹层-->
+<script id="laytpl-order-check" type="text/html">
+    <form lay-filter="form-order-check" class="layui-form model-form no-padding">
         <div class="layui-form-item">
-            <label class="layui-form-label layui-form-required">通道选择:</label>
+            <label class="layui-form-label layui-form-required">订单号:</label>
             <div class="layui-input-block">
-                <select name="mtype_id" id="skma-channel">
-                    <option value="0">全部</option>
-                    [[foreach name="sys_channel" item="vo"]]
-                    <option value="[[$vo.id]]">[[$vo.name]]</option>
-                    [[/foreach]]
-                </select>
+                <input name="order_sn" id="order-sn" readonly class="layui-input"/>
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label layui-form-required">通道账号:</label>
+            <label class="layui-form-label layui-form-required">订单金额:</label>
             <div class="layui-input-block">
-                <input name="ma_account" id="skma-channel-account" placeholder="请输入通道账号" class="layui-input"/>
+                <input name="money" id="order-money" class="layui-input"/>
             </div>
         </div>
+        {{#if(d.pay_status==3){}}
         <div class="layui-form-item">
-            <label class="layui-form-label layui-form-required">所属码商:</label>
+            <label class="layui-form-label layui-form-required">二级密码:</label>
             <div class="layui-input-block">
-                <input name="nickname" id="skma-user-nickname" class="layui-input"/>
+                <input id="user-password2" placeholder="请输入二级密码" class="layui-input"/>
             </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label layui-form-required">每日限额:</label>
-            <div class="layui-input-block">
-                <input name="mt_money" id="skma-mt-money" placeholder="请输入日限额" class="layui-input"/>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label layui-form-required">COOKIE:</label>
-            <div class="layui-input-block">
-                <textarea name="ma_cookie" id="skma-cookie" placeholder="请输入COOKIE" class="layui-textarea" ></textarea>
-            </div>
-        </div>
-    </form>
-</script>
-
-<!--设置用户通道费率的弹层-->
-<script id="laytpl-user-channel" type="text/html">
-    <form class="layui-form" onsubmit="return false;">
-        <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
-            <label class="layui-form-label">用户账号:</label>
-            <div class="layui-form-label" style="text-align:left;padding-left:0;">
-                {{d.data.account}}
-            </div>
-        </div>
-        <div class="layui-form-item layui-form-text" style="margin-bottom:0;">
-            <label class="layui-form-label">上级账号:</label>
-            <div class="layui-form-label" style="text-align:left;padding-left:0;">
-                {{d.data.paccount||'—'}}
-            </div>
-            <input type="hidden" id="laytpl-user-channel-pgroup" value="{{d.data.pgid||1}}"/>
-        </div>
-        {{# layui.each(d.data.sys_channel, function(index,item){}}
-        {{# if(item.is_open==1){}}
-        <div class="layui-form-item">
-            <div class="layui-input-inline" style="width:100px; text-align: right; margin-top: -2px">
-                <input type="checkbox" lay-skin="switch" channel-index="{{index}}" channel-name="{{item.name}}"
-                       lay-text="开|关" class="user-channel-switch"
-                       {{#if (d.data.td_switch[index]) {}} checked="true" {{#}}}/>
-            </div>
-            <div class="layui-inline">
-                <input type="text" placeholder="填写小数" autocomplete="off" class="layui-input user-channel-rate"
-                       style="width:120px;"
-                       channel-index="{{index}}" channel-name="{{item.name}}" data-paccount="{{d.data.paccount||''}}"
-                       channel-prate="{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"
-                       value="{{#if(d.data.fy_rate[index]){}}{{(d.data.fy_rate[index]*100).toFixed(2)}}{{#}else{}}0{{#}}}"/>
-                <span style="position:absolute;left:100px;top:10px;">%</span>
-            </div>
-            <span style="color:#f60;">【{{item.name}}】上级分成：{{#if(d.data.pfy_rate[index]){}}{{(d.data.pfy_rate[index]*100).toFixed(2)}}%{{#}else{}}未设置{{#}}}</span>
         </div>
         {{#}}}
-        {{#});}}
-        <div style="color:#f00; text-align: center">设置下级的分成比例-小数，不得超过上级分成比例</div>
     </form>
 </script>
-
 
 <!--引用其他js文件-->
 <script src="/dist/layuiadmin/layui/layui.js"></script>
@@ -270,6 +199,7 @@
                             return html;
                         } },
                     {field: 'money', title: '订单金额', width: 130},
+                    {field: 'fee', title: '佣金', width: 130},
                     {field: 'real_money', title: '结算金额', width: 130, templet: "#laytpl-order-status"},
                     {field: 'pay_status_flag', title: '支付状态'},
                     {field: 'create_time', title: '下单时间', width: 130},
@@ -299,265 +229,70 @@
 
         onSearchBtn();
 
-
-        <!--新增或者更新用户-->
-        function addOrUpdateSkma(row, index) {
-            var item = {};
-            item.mtype_id = $('#skma-channel').val();
-            item.ma_cookie = $.trim($('#skma-cookie').val());
-            item.mt_money = $.trim($('#skma-mt-money').val());
-            item.ma_account = $.trim($('#skma-channel-account').val());
-            item.nickname = $.trim($('#skma-user-nickname').val());
-            item.account = $.trim($('#skma-user-account').val());
-            item.uid = $.trim($('#skma-user-id').val());
-
-            if (row) {
-                item.id = row.data.id;
-            }
-
-            ajax({
-                url: '[[$Think.ADMIN_URL]]/pay/skmaupdate',
-                data: item,
-                success: function (res) {
-                    if (res.code !== '0') {
-                        alertError(res.msg);
-                        return;
-                    }
-                    layer.close(index);
-                    alertSuccess(res.msg);
-
-                    if (row) {
-                        row.update(item);
-                        form.render();
-                    } else {
-                        onSearchBtn();
-                    }
-                }
-            });
-        }
-
-
-        <!--添加或编辑用户-->
-        function onAddOrEditBtn(row) {
-            var item = {};
-            var title = '添加收款码';
-
-            // row 表示更新
-            if (row) {
-                item = row.data;
-                title = '编辑收款码';
-            }
+        <!--触发补单按钮-->
+        function checkOrder (obj) {
+            var item = obj.data;
 
             layer.open({
-                title: title,
-                area: ['640px', '480px'],
+                title: '订单确认',
+                area: ['640px', '520px'],
                 type: 1,
                 shadeClose: true,
                 btn: ['确定', '取消'],
-                content: $('#laytpl-add-skma').html(),
+                content: layui.laytpl($('#laytpl-order-check').html()).render(item),
                 success: function (index, layero) {
-                    if (row) {
-                        form.val('form-add-skma', item);
-                    } else {
-                        $('#skma-user-id').val("[[$sys_user.id]]");
-                        $('#skma-user-account').val("[[$sys_user.account]]");
-                        $('#skma-user-nickname').val("[[$sys_user.nickname]]");
-                    }
-                    $('#skma-user-nickname').prop('disabled', true);
+                    form.val('form-order-check', item);
                     form.render();
                 },
                 yes: function (index, layero) {
-                    var channel = $('#skma-channel').val();
-                    var cookie = $.trim($('#skma-cookie').val());
-                    var mt_money = $.trim($('#skma-mt-money').val());
-                    var ma_account = $.trim($('#skma-channel-account').val());
+                    var money = parseFloat($.trim($('#order-money').val()));
+                    var passwd2 = md5($.trim($('#user-password2').val()));
 
-                    if (channel === '0') {
-                        alertWarning('请选择通道');
-                        return;
-                    }
-                    if (ma_account === '') {
-                        alertWarning('请输入通道账号');
-                        return;
-                    }
-                    if (cookie === '') {
-                        alertWarning('cookie不能为空');
-                        return;
-                    }
-                    if (mt_money < 0) {
+                    if (money !== item.money) {
                         alertWarning('请输入正确的额度');
                         return;
                     }
-                    if (mt_money === '') {
-                        mt_money = 0;
-                    }
-                    if (row &&
-                        item.mtype_id === channel &&
-                        item.ma_account === ma_account &&
-                        item.ma_cookie === cookie &&
-                        item.mt_money === mt_money) {
-                        layer.close(index);
-                        alertWarning('没有任何改变');
-                        return true;
+                    if (item.pay_status == 3 && passwd2 === md5('')) {
+                        alertWarning('请输入二级密码');
+                        return;
                     }
 
-                    addOrUpdateSkma(row, index);
+                    ajax({
+                        url: '[[$Think.ADMIN_URL]]/pay/ordercheck',
+                        data: {
+                            id: item.id,
+                            osn: item.order_sn,
+                            money: money,
+                            password2: passwd2
+                        },
+                        success: function (res) {
+                            if (res.code !== '0') {
+                                alertError(res.msg);
+                                return;
+                            }
+                            layer.close(index);
+                            alertSuccess(res.msg);
+
+                            obj.update({pay_status: res.data.pay_status});
+                        }
+                    });
                 },
                 btn2: function (index, layero) {
                     return true;
                 }
             });
-        }
-
-        <!--新增用户-->
-        $('#addBtn').on('click', function () {
-            onAddOrEditBtn(null);
-        });
-
-
-        <!--用户通道费率-->
-        function skmaTest(row) {
-            laytplAfterAjax({
-                    url: '[[$Think.ADMIN_URL]]/pay/skmatest',
-                    data: {id: row.data.id}
-                },
-                {
-                    title: '码商分成比例',
-                    area: global.screenType < 2 ? ['80%', '300px'] : ['540px', '755px'],
-                    laytplId: '#laytpl-user-channel',
-                    success: function () {
-                        form.render();
-                    },
-                    yes: function (index, layero) {
-                        var channel_rate = {};
-                        var channel_switch = {};
-                        var msg = null;
-                        var pgroup = $.trim($('#laytpl-user-channel-pgroup').val());
-
-                        $('.user-channel-switch').each(function (key, obj) {
-                            var othis = $(obj);
-                            var obj_index = othis.attr('channel-index');
-                            channel_switch[obj_index] = othis.prop('checked') ? 1 : 0;
-                        });
-                        $('.user-channel-rate').each(function (key, obj) {
-                            var othis = $(obj);
-                            var obj_index = othis.attr('channel-index');
-                            var obj_rate = (($.trim(othis.val()) * 1) / 100).toFixed(4);
-                            var obj_prate = (($.trim(othis.attr('channel-prate')) * 1) / 100).toFixed(4);
-                            if (pgroup != 1 && obj_rate > obj_prate) {
-                                msg = '用户的分成比例超过了上级';
-                                return false;
-                            }
-                            channel_rate[obj_index] = obj_rate;
-                        });
-
-                        if (msg) {
-                            alertError(msg);
-                            return false;
-                        }
-
-                        ajax({
-                            url: '[[$Think.ADMIN_URL]]/pay/channelrate',
-                            data: {id: row.data.id, channel_switch: channel_switch, channel_rate: channel_rate},
-                            success: function (res) {
-                                if (res.code !== '0') {
-                                    alertError(res.msg);
-                                    return;
-                                }
-                                layer.close(index);
-                                alertSuccess(res.msg);
-                            }
-                        });
-                    },
-                    btn2: function (index, layero) {
-                        return true;
-                    }
-                });
-        }
-
-
-        <!--删除用户-->
-        function skmaDelete(row) {
-            layer.confirm('确定删除该收款码？',
-                {title: '系统提示', icon: 3, shadeClose: true, btn: ['朕意已决', '容朕三思']},
-                function (index) {
-                    ajax({
-                        url: '[[$Think.ADMIN_URL]]/pay/skmadelete',
-                        data: {id: row.data.id, uid: row.data.uid},
-                        success: function (res) {
-                            if (res.code !== '0') {
-                                alertError(res.msg);
-                            } else {
-                                row.del();
-                                layer.close(index);
-                                alertSuccess(res.msg);
-                            }
-                        }
-                    });
-                });
-        }
+        };
 
 
         <!--监听行按钮-->
         table.on('tool(payOrderList)', function (obj) {
             var lay_event = obj.event;
 
-            if (lay_event === 'edit') {
-                onAddOrEditBtn(obj);
-            } else if (lay_event === 'del') {
-                skmaDelete(obj);
-            } else if (lay_event === 'test') {
-                skmaTest(obj);
+            if (lay_event === 'order-patch') {
+                checkOrder(obj);
+            } else if (lay_event === 'order-callback') {
+                checkOrder(obj);
             }
-        });
-
-
-        <!--监听禁用用户按钮-->
-        form.on('switch(ma-forbidden-switch)', function (obj) {
-            var available = obj.elem.checked ? 1 : 0;
-            var back = obj.elem.checked !== true;
-
-            ajax({
-                url: '[[$Think.ADMIN_URL]]/pay/forbiddenstatus',
-                data: {id: obj.value, status: available},
-                success: function (res) {
-                    if (res.code !== '0') {
-                        alertError(res.msg);
-                        $(obj.elem).attr('checked', back);
-                    } else {
-                        alertSuccess(res.msg);
-                        var onlineSwitch = $('input[name="ma-online-switch"][value="' + obj.value + '"]');
-                        var isOnlie = onlineSwitch.attr('checked');
-                        if (available === 0 && isOnlie) {
-                            onlineSwitch.attr('checked', false);
-                        }
-                    }
-                    form.render();
-                }
-            });
-        });
-
-        <!--监听上下线按钮-->
-        form.on('switch(ma-online-switch)', function (obj) {
-            var online = obj.elem.checked ? 1 : 0;
-            ajax({
-                url: '[[$Think.ADMIN_URL]]/pay/skmaonline',
-                data: {id: obj.value, uid: $(obj.elem).attr('uid'), status: online},
-                success: function (res) {
-                    if (res.code !== '0') {
-                        alertError(res.msg);
-                        if (online) {
-                            $(obj.elem).removeAttr('checked');
-                        } else {
-                            $(obj.elem).attr('checked', '');
-                        }
-                        form.render();
-                    } else {
-                        alertSuccess(res.msg);
-                    }
-                }
-            });
-
         });
 
     });

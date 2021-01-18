@@ -138,5 +138,101 @@ class PayOrder extends Base
         jReturn('0', 'ok', $data);
     }
 
+    // 确认收款/超时补单
+    public function orderCheck()
+    {
+        /*
+        $cnf_pay_status=getConfig('cnf_pay_status');
+        $return_data=[
+            'pay_time'=>date('Y-m-d H:i'),
+            'pay_status'=>3,
+            'pay_status_flag'=>$cnf_pay_status[3]
 
+        ];
+        jReturn('1','Ceshi',$return_data);*/
+
+        $pageuser = checkLogin();
+        $order_sn = $this->params['osn'];
+        $money = $this->params['money'];
+        $sql = "select * from sk_order where order_sn='{$order_sn}' and money={$money} and pay_status<9";
+        $order = $this->mysql->fetchRow($sql);
+        if (!$order) {
+            jReturn('-1', '不存在相应的订单');
+        }
+        if ($order['muid'] != $pageuser['id']) {
+            jReturn('-1', '您没有权限操作该订单');
+        }
+        if ($order['pay_status'] == 9) {
+            jReturn('-1', '该订单已确认，请不要重复确认');
+        }
+        if ($order['money'] != $money) {
+            jReturn('-1', '订单金额不正确');
+        }
+        $user = getUserinfo($pageuser['id'], true, $this->mysql);
+        if ($order['pay_status'] == 3) {
+            $password2 = getPassword($this->params['password2']);
+            if ($password2 != $user['password2']) {
+                jReturn('-1', '二级密码不正确');
+            }
+        }
+
+        $res1 = true;
+        $res2 = true;
+        $res3 = true;
+        $this->mysql->startTrans();
+        if ($order['pay_status'] == 3) {
+            if ($user['balance'] < $money) {
+                jReturn('-1', '您的接单余额不足，无法补单');
+            }
+            $sys_user = [
+                'balance' => $user['balance'] - $money
+            ];
+            $res1 = $this->mysql->update($sys_user, "id={$user['id']}", 'sys_user');
+            $res2 = balanceLog($user, 0, 1, 16, -$money, $order['id'], $order['order_sn'], $this->mysql);
+        } elseif (in_array($order['pay_status'], [1, 2])) {
+            if ($user['fz_balance'] < $money) {
+                jReturn('-1', '您的冻结余额不足，无法确认');
+            }
+            $sys_user = [
+                'fz_balance' => $user['fz_balance'] - $money
+            ];
+            $res1 = $this->mysql->update($sys_user, "id={$user['id']}", 'sys_user');
+            $res2 = balanceLog($user, 0, 2, 14, -$money, $order['id'], $order['order_sn'], $this->mysql);
+        } else {
+            jReturn('-1', '该订单当前状态不可操作');
+        }
+        $sk_order = [
+            'remark' => $order_sn,
+            'pay_status' => 9,
+            'pay_time' => NOW_TIME,
+            'pay_day' => date('Ymd', NOW_TIME)
+        ];
+
+        $res4 = $this->mysql->update($sk_order, "id={$order['id']}", 'sk_order');
+        if (!$res1 || !$res2 || !$res3 || !$res4) {
+            $this->mysql->rollback();
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+        $this->mysql->commit();
+
+        //写入异步通知记录
+        $cnf_notice = [
+            'type' => 2,
+            'fkey' => $order['order_sn'],
+            'create_time' => NOW_TIME,
+            'remark' => '确认成功通知支付用户'
+        ];
+        $this->mysql->insert($cnf_notice, 'cnf_notice');
+
+        /*
+        echo json_encode([
+            'code' => '0',
+            'msg' => '操作成功',
+            ['pay_status' => 9]
+        ], JSON_UNESCAPED_UNICODE);
+        */
+        //发起回调给商户
+        orderNotify($order['id'], $this->mysql);
+        jReturn('0', '操作成功', ['pay_status' => 9]);
+    }
 }
