@@ -388,7 +388,7 @@ class Pay extends Base
 
     public function query()
     {
-        //TODO
+        jReturn('-1', '暂时没有实现查询接口');
     }
 
     public function notify()
