@@ -18,7 +18,7 @@ while (true) {
     $mysql = new Mysql(0);
     $list = $mysql->fetchRows("select * from sk_order where pay_status=9 and js_status=1", 1, 5);
     if (!$list) {
-        echo "没有数据暂停5秒\n";
+        //echo "没有数据暂停5秒\n";
         $mysql->close();
         unset($mysql);
         sleep(5);
@@ -48,7 +48,7 @@ while (true) {
 
     $mysql->close();
     unset($mysql);
-    echo "处理完一批，暂停5秒\n";
-    sleep(5);
+    echo "处理完一批，暂停1秒\n";
+    sleep(1);
 }
 ?>

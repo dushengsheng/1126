@@ -14,7 +14,7 @@ while (true) {
     $now_time = time();
     $list = $mysql->fetchRows("select * from sk_order where pay_status<3 and over_time<{$now_time}", 1, 5);
     if (!$list) {
-        echo "没有数据暂停5秒\n";
+        //echo "没有数据暂停5秒\n";
         $mysql->close();
         unset($mysql);
         sleep(5);
@@ -45,7 +45,7 @@ while (true) {
 
     $mysql->close();
     unset($mysql);
-    echo "处理完一批，暂停5秒\n";
-    sleep(5);
+    echo "处理完一批，暂停1秒\n";
+    sleep(1);
 }
 ?>

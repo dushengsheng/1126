@@ -75,11 +75,11 @@
     [[if ($sys_power.del == 1)]]
     <a class="layui-btn layui-btn-sm layui-btn-warm" lay-event="del">删除</a>
     [[/if]]
-    [[if ($sys_power.edit == 1)]]
-    <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
-    [[/if]]
     [[if ($sys_power.channel == 1)]]
     <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="channel">通道</a>
+    [[/if]]
+    [[if ($sys_power.edit == 1)]]
+    <a class="layui-btn layui-btn-sm layui-btn-primary" lay-event="edit">编辑</a>
     [[/if]]
     <!--
     {{#if(d.kick==1){}}
