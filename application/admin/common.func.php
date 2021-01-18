@@ -252,6 +252,7 @@ function balanceLog($user, $operator, $balanceType, $subType, $money, $fkey = ''
 {
     $cnf_balance_type = getConfig('cnf_balance_type');
     $subType = intval($subType);
+    $balanceType = intval($balanceType);
     if (!array_key_exists($subType, $cnf_balance_type)) {
         return false;
     }

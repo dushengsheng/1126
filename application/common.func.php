@@ -473,14 +473,7 @@ function orderNotify($order_id, $mysql)
         'order_sn' => $order['out_order_sn'],
         'pay_time' => $order['pay_time']
     ];
-
-    ksort($p_data);
-    $sign_str = '';
-    foreach ($p_data as $pk => $pv) {
-        $sign_str .= "{$pk}={$pv}&";
-    }
-    $sign_str .= "key={$merchant['apikey']}";
-    $p_data['sign'] = md5($sign_str);
+    $p_data['sign'] = md5Sign($p_data, $merchant['apikey']);
 
     //判断是否需要加密传输
     if ($merchant['is_rsa']) {

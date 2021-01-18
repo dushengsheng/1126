@@ -375,11 +375,64 @@ function getUserChannel($user, $mysql = null)
         $mysql = new Mysql(0);
         $to_free_mysql = true;
     }
-    $result =  rows2arr($mysql->fetchRows("select * from sk_channel {$where}"));
+    $result = rows2arr($mysql->fetchRows("select * from sk_channel {$where}"));
     if ($to_free_mysql) {
         $mysql->close();
         unset($mysql);
     }
     return $result;
+}
+
+/**
+ * 判断用户通道是否打开
+ * @param array $user 用户
+ * @param int $channel 通道编号
+ * @return bool
+ */
+function isUserChannelOpen($user, $channel)
+{
+    if (empty($user['td_switch'])) {
+        return false;
+    }
+    $td_switch = json_decode($user['td_switch'], true);
+    if (empty($td_switch) || !is_array($td_switch)) {
+        return false;
+    }
+    if (empty($td_switch[$channel]))
+    {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * 获取用户通道费率
+ * @param array $user 码商或者商户
+ * @param int $channel
+ * @param sttring $key td_rate=商户, fy_rate=码商
+ * @return float
+ */
+function getUserChannelRate($user, $channel)
+{
+    $key = '';
+    if (in_array($user['gid'], [61,71])) {
+        $key = 'fy_rate';
+    } else if (in_array($user['gid'], [81,91])) {
+        $key = 'td_rate';
+    } else {
+        return 0.0;
+    }
+    if (empty($user[$key])) {
+        return 0.0;
+    }
+    $td_rate = json_decode($user[$key], true);
+    if (empty($td_rate) || !is_array($td_rate)) {
+        return 0.0;
+    }
+    if (empty($td_rate[$channel]))
+    {
+        return 0.0;
+    }
+    return floatval($td_rate[$channel]);
 }
 
