@@ -17,7 +17,7 @@ class Pay extends Base
     public function _initialize()
     {
         parent::_initialize();
-        debugLog('params = ' . var_export($this->params, true));
+        //debugLog('params = ' . var_export($this->params, true));
     }
 
     public function skma()
@@ -162,12 +162,11 @@ class Pay extends Base
         }
 
         $ptype = intval($p_data['channel']);
-        $merchant['td_rate'] = json_decode($merchant['td_rate'], true);
-        $merchant['td_switch'] = json_decode($merchant['td_switch'], true);
-        if (!array_key_exists($ptype, $merchant['td_switch'])) {
+        $merchant_rate = getUserChannelRate($merchant, $ptype);
+        if (!isUserChannelOpen($merchant, $ptype)) {
             jReturn('-1', '商户未开通通道:' . $ptype);
         }
-        if (!array_key_exists($ptype, $merchant['td_rate'])) {
+        if ($merchant_rate <= 0.0) {
             jReturn('-1', '商户号未设置费率激活');
         }
         if (!$merchant['apikey']) {
@@ -228,9 +227,10 @@ class Pay extends Base
             jReturn('-1', '未匹配到在线的收款码，请更换金额再次尝试');
         }
         $mysql->startTrans();
-        $ma_user = $mysql->fetchRow("select id,balance,fz_balance from sys_user where id={$sk_ma['uid']} for update");
-        $rate = $merchant['td_rate'][$ptype];
-        $fee = $p_data['money'] * $rate;
+        $ma_user = $mysql->fetchRow("select id,gid,balance,fz_balance,fy_rate from sys_user where id={$sk_ma['uid']} for update");
+        $ma_rate = getUserChannelRate($ma_user, $ptype);
+        $merchant_fee = $p_data['money'] * $merchant_rate;
+        $ma_fee = $p_data['money'] * $ma_rate;
         $over_time = getConfig('skorder_over_time');
         $sk_order = [
             'muid' => $sk_ma['uid'],//码商id
@@ -239,9 +239,9 @@ class Pay extends Base
             'order_sn' => 'SYS' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
             'out_order_sn' => $p_data['order_sn'],
             'money' => $p_data['money'],
-            'real_money' => $p_data['money'] - $fee,
-            'rate' => $rate,
-            'fee' => $fee,
+            'real_money' => $p_data['money'] - $merchant_fee,
+            'rate' => $merchant_rate,
+            'fee' => $ma_fee,
             'ma_id' => $sk_ma['id'],//码id
             'ma_account' => $sk_ma['ma_account'],
             'ma_qrcode' => $sk_ma['ma_qrcode'],
@@ -337,12 +337,23 @@ class Pay extends Base
             $sql .= " and log.id not in ({$exp_skmids})";
         }
 
-        $sk_ma = [];
-        //根据ip匹配一个合适的
-        if (!$sk_ma) {
-            $sql .= " order by u.queue_time asc,log.queue_time asc";
-            $sk_ma = $mysql->fetchRow($sql);
-            file_put_contents(ROOT_PATH . 'logs/ma_sql.txt', $sql . "\n\n", FILE_APPEND);
+        $sql .= " order by u.queue_time asc,log.queue_time asc";
+        $sk_ma = $mysql->fetchRow($sql);
+        file_put_contents(ROOT_PATH . 'logs/ma_sql.txt', $sql . "\n\n", FILE_APPEND);
+
+        while ($sk_ma) {
+            $ma_user = getUserinfo($sk_ma['uid'], true, $this->mysql);
+            if (!$ma_user) {
+                $this->checkMaArr[] = $sk_ma['id'];
+                $sk_ma = $this->getSkma($p_data, $mysql);
+                break;
+            }
+            if (!isUserChannelOpen($ma_user, $ptype)) {
+                $this->checkMaArr[] = $sk_ma['id'];
+                $sk_ma = $this->getSkma($p_data, $mysql);
+                break;
+            }
+            break;
         }
 
         // 10分钟之内有3单相同金额
@@ -398,7 +409,6 @@ class Pay extends Base
         if (!$user) {
             jReturn('-1', '码商不存在');
         }
-        debugLog('notify: user = ' . var_export($user, true));
 
         $res1 = true;
         $res2 = true;
@@ -421,7 +431,7 @@ class Pay extends Base
                 'fz_balance' => $user['fz_balance'] - $money
             ];
             $res1 = $this->mysql->update($sys_user, "id={$user['id']}", 'sys_user');
-            $res2 = balanceLog($user, 0, 2, 14, $money, $order['id'], $order['order_sn'], $this->mysql);
+            $res2 = balanceLog($user, 0, 2, 14, -$money, $order['id'], $order['order_sn'], $this->mysql);
         } else {
             jReturn('-1', '该订单当前状态不可操作');
         }
@@ -431,7 +441,6 @@ class Pay extends Base
             'pay_time' => NOW_TIME,
             'pay_day' => date('Ymd', NOW_TIME)
         ];
-        debugLog('notify: sk_order = ' . var_export($sk_order, true));
 
         $res4 = $this->mysql->update($sk_order, "id={$order['id']}", 'sk_order');
         if (!$res1 || !$res2 || !$res3 || !$res4) {
