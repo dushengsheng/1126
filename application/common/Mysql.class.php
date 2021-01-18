@@ -7,6 +7,9 @@ use think\Config;
 use think\Exception;
 use think\Log;
 
+require_once APP_PATH . 'db_config.php';
+
+
 class Mysql
 {
     public $db = null;
@@ -18,23 +21,17 @@ class Mysql
     //构造函数
     public function __construct($dataSourceIndex = 0)
     {
-        $database = Config::get('database');
-
-        $hostname = $database['hostname'];
-        $username = $database['username'];
-        $password = $database['password'];
-        $dbname = $database['database'];
-        $hostport = $database['hostport'];
-
-        $this->db = new Mysqli($hostname, $username, $password, $dbname, $hostport);
+        $this->db = new Mysqli(DB_HOST, DB_USER, DB_PWD, DB_NAME, DB_PORT);
+        $this->db->set_charset("utf8");
+        /*
         if ($this->db->errno) {
-            Log::write("mysql connect failed, host = $hostname, database = $dbname");
+            file_put_contents(__DIR__ . '/../daemon/log.txt', date('Y-m-d H:i:s'). '--mysql connect failed:--' . DB_NAME . PHP_EOL, FILE_APPEND);
             exit('error');
         }
         else {
-            Log::write("mysql connected, host = $hostname, database = $dbname");
+            file_put_contents(__DIR__ . '/../daemon/log.txt', date('Y-m-d H:i:s'). '--mysql connected:--' . DB_NAME . PHP_EOL, FILE_APPEND);
         }
-        $this->db->set_charset("utf8");
+        */
     }
 
     //析构函数
