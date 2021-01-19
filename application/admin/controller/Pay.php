@@ -17,7 +17,7 @@ class Pay extends Base
     public function _initialize()
     {
         parent::_initialize();
-        //debugLog('params = ' . var_export($this->params, true));
+        debugLog('params = ' . var_export($this->params, true));
     }
 
     public function skma()
@@ -93,12 +93,6 @@ class Pay extends Base
         return $channel;
     }
 
-    /*
-    public function index()
-    {
-        $channel = $this->getChannel('bank_to_alipay');
-        return $channel->index();
-    }*/
 
     //订单提交接口
     public function index()
@@ -106,7 +100,7 @@ class Pay extends Base
         $params = $this->params;
         $paramsForLog = $params;
         $paramsForLog['systime'] = date('Y-m-d H:i:s', NOW_TIME);
-        file_put_contents(ROOT_PATH . 'logs/order.txt', var_export($paramsForLog, true) . "\n\n", FILE_APPEND);
+        file_put_contents(ROOT_PATH . 'logs/order_prev.txt', var_export($paramsForLog, true) . "\n\n", FILE_APPEND);
 
         if (isset($_REQUEST['crypted'])) {
             $rsa_pt_private = getConfig('rsa_pt_private');
@@ -117,7 +111,6 @@ class Pay extends Base
             $params = $resultArr['data'];
         }
         if (!isset($params['account']) ||
-            !isset($params['bank']) ||
             !isset($params['channel']) ||
             !isset($params['client_ip']) ||
             !isset($params['format']) ||
@@ -132,28 +125,22 @@ class Pay extends Base
         if (abs(NOW_TIME - $params['timestamp']) > 300) {
             jReturn('-1', '请求已超时，请重新提交');
         }
-        $p_data = [
+        $sign_data = [
             'account' => $params['account'],
-            'bank' => $params['bank'],
             'channel' => $params['channel'],
             'client_ip' => $params['client_ip'],
             'format' => $params['format'],
             'money' => $params['money'],
             'notify_url' => urldecode(htmlspecialchars_decode($params['notify_url'])),
             'order_sn' => $params['order_sn'],
-            'timestamp' => $params['timestamp'],
-            'sign' => $params['sign']
+            'timestamp' => $params['timestamp']
         ];
-        if ($p_data['money'] < 0.01) {
+        if ($params['money'] < 0.01) {
             jReturn('-1', '金额不正确');
         }
 
         $mysql = $this->mysql;
-        $bank = $mysql->fetchRow("select * from cnf_bank where bank_code='{$p_data['bank']}' and status=1");
-        if (!$bank) {
-            jReturn('-1', '银行不存在或已被禁用');
-        }
-        $merchant = $mysql->fetchRow("select * from sys_user where account='{$p_data['account']}' and status=2");
+        $merchant = $mysql->fetchRow("select * from sys_user where account='{$params['account']}' and status=2");
         if (!$merchant) {
             jReturn('-1', '商户不存在或已被禁用');
         }
@@ -167,7 +154,7 @@ class Pay extends Base
             }
         }
 
-        $ptype = intval($p_data['channel']);
+        $ptype = intval($params['channel']);
         $merchant_rate = getUserChannelRate($merchant, $ptype);
         if (!isUserChannelOpen($merchant, $ptype)) {
             jReturn('-1', '商户未开通通道:' . $ptype);
@@ -178,30 +165,117 @@ class Pay extends Base
         if (!$merchant['apikey']) {
             jReturn('-1', '商户未生成签名密钥');
         }
-        $sign = md5Sign($p_data, $merchant['apikey']);
+        $sign = md5Sign($sign_data, $merchant['apikey']);
         if ($sign != $params['sign']) {
-            $p_data['sign'] = $params['sign'];
-            $p_data['pt_sign'] = $sign;
-            file_put_contents(ROOT_PATH . 'logs/pay_sign.txt', var_export($p_data, true) . "\n\n", FILE_APPEND);
+            $sign_data['sign'] = $params['sign'];
+            $sign_data['pt_sign'] = $sign;
+            file_put_contents(ROOT_PATH . 'logs/pay_sign.txt', var_export($sign_data, true) . "\n\n", FILE_APPEND);
             jReturn('-1', '签名错误');
         }
 
-        $check_mc_order = $mysql->fetchRow("select id from sk_order where out_order_sn='{$p_data['order_sn']}'");
+        $check_mc_order = $mysql->fetchRow("select id from sk_order where out_order_sn='{$params['order_sn']}'");
         if ($check_mc_order['id']) {
-            jReturn('-1', "商户单号已存在，请勿重复提交 {$p_data['order_sn']}");
+            jReturn('-1', "商户单号已存在，请勿重复提交 {$params['order_sn']}");
+        }
+        $check_mc_order = $mysql->fetchRow("select id from sk_order_prev where order_sn='{$params['order_sn']}'");
+        if ($check_mc_order['id']) {
+            jReturn('-1', "商户单号已存在，请勿重复提交 {$params['order_sn']}");
         }
 
         $channel = $mysql->fetchRow("select * from sk_channel where id={$ptype} and is_open=1");
         if (!$channel) {
             jReturn('-1', '不存在该支付类型或未开放');
         } else {
-            if ($p_data['money'] < $channel['min_money']) {
+            if ($params['money'] < $channel['min_money']) {
                 jReturn('-1', "该通道最小订单金额为{$channel['min_money']}");
             }
-            if ($p_data['money'] > $channel['max_money']) {
+            if ($params['money'] > $channel['max_money']) {
                 jReturn('-1', "该通道最大订单金额为{$channel['max_money']}");
             }
         }
+
+        $over_time = getConfig('skorder_over_time');
+        $insert_data = [
+            'account' => $params['account'],
+            'channel' => $params['channel'],
+            'client_ip' => $params['client_ip'],
+            'format' => $params['format'],
+            'money' => $params['money'],
+            'notify_url' => urldecode(htmlspecialchars_decode($params['notify_url'])),
+            'order_sn' => $params['order_sn'],
+            'create_time' => $params['timestamp'],
+            'create_day' => date('Ymd'),
+            'over_time' => $params['timestamp'] + $over_time
+        ];
+        $res = $this->mysql->insert($insert_data, 'sk_order_prev');
+        if (!$res) {
+            jReturn('-1', '系统繁忙请稍后再试');
+        }
+
+        $return_data = [
+            'money' => $params['money'],
+            'account' => $params['account'],
+            'order_sn' => $params['order_sn'],
+            'pay_url' => ADMIN_URL . "/pay/cashier?order_sn=" . $params['order_sn']
+        ];
+
+        jReturn('0', '下单成功', $return_data);
+    }
+
+    public function cashier()
+    {
+        $order_sn = $this->params['order_sn'];
+        $order = $this->mysql->fetchRow("select * from sk_order_prev where order_sn='{$order_sn}'");
+        if (!$order) {
+            jReturn('-1', '订单不存在');
+        }
+        $banks = $this->mysql->fetchRows("select id,bank_code,bank_logo from cnf_bank where bank_type!=1 and status=1");
+        $return_data['money'] = $order['money'];
+        $return_data['banks'] = $banks;
+        $return_data['order_sn'] = $order_sn;
+
+        return $this->fetch('Pay/cashier', $return_data);
+    }
+
+    //创建订单
+    public function create()
+    {
+        $params = $this->params;
+        $paramsForLog = $params;
+        $paramsForLog['systime'] = date('Y-m-d H:i:s', NOW_TIME);
+        file_put_contents(ROOT_PATH . 'logs/order.txt', var_export($paramsForLog, true) . "\n\n", FILE_APPEND);
+
+
+        if (!isset($params['bank']) ||
+            !isset($params['money']) ||
+            !isset($params['order_sn'])) {
+            jReturn('-1', '缺少参数');
+        }
+
+        $order_sn = $params['order_sn'];
+        $money = $params['money'];
+        $prev_order = $this->mysql->fetchRow("select * from sk_order_prev where order_sn='{$order_sn}'");
+        if (!$prev_order) {
+            jReturn('-1', '订单不存在');
+        }
+        if ($money != $prev_order['money']) {
+            jReturn('-1', '订单金额有误');
+        }
+        $bank = $this->mysql->fetchRow("select * from cnf_bank where bank_code='{$params['bank']}' and status=1");
+        if (!$bank) {
+            jReturn('-1', '不支持该银行');
+        }
+        if (NOW_TIME > $prev_order['over_time']) {
+            jReturn('-1', '请求已超时，请重新提交');
+        }
+
+        $mysql = $this->mysql;
+        $merchant = $mysql->fetchRow("select * from sys_user where account='{$prev_order['account']}' and status=2");
+        if (!$merchant) {
+            jReturn('-1', '商户不存在或已被禁用');
+        }
+        $ptype = intval($prev_order['channel']);
+        $merchant_rate = getUserChannelRate($merchant, $ptype);
 
         //##########指定代理转换成指定码商##########
         $appoint_ms_arr = [];
@@ -225,46 +299,45 @@ class Pay extends Base
             }
             $appoint_ms_arr = array_merge($appoint_ms_arr, $appoint_ms_arr_tmp);
         }
-        $p_data['appoint_ms'] = $appoint_ms_arr;
-        //##########指定代理转换成指定码商##########
+        $prev_order['appoint_ms'] = $appoint_ms_arr;
 
-        $sk_ma = $this->getSkma($p_data, $mysql);
+        //##########指定代理转换成指定码商##########
+        $sk_ma = $this->getSkma($prev_order, $mysql);
         if (!$sk_ma) {
             jReturn('-1', '未匹配到在线的收款码，请更换金额再次尝试');
         }
         $mysql->startTrans();
         $ma_user = $mysql->fetchRow("select id,gid,balance,fz_balance,fy_rate from sys_user where id={$sk_ma['uid']} for update");
         $ma_rate = getUserChannelRate($ma_user, $ptype);
-        $merchant_fee = $p_data['money'] * $merchant_rate;
-        $ma_fee = $p_data['money'] * $ma_rate;
+        $merchant_fee = $prev_order['money'] * $merchant_rate;
+        $ma_fee = $prev_order['money'] * $ma_rate;
         $over_time = getConfig('skorder_over_time');
         $sk_order = [
             'muid' => $sk_ma['uid'],//码商id
             'suid' => $merchant['id'],//商户id
             'ptype' => $ptype,
             'order_sn' => 'SYS' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
-            'out_order_sn' => $p_data['order_sn'],
-            'money' => $p_data['money'],
-            'real_money' => $p_data['money'] - $merchant_fee,
+            'out_order_sn' => $prev_order['order_sn'],
+            'money' => $prev_order['money'],
+            'real_money' => $prev_order['money'] - $merchant_fee,
             'rate' => $merchant_rate,
             'fee' => $ma_fee,
             'ma_id' => $sk_ma['id'],//码id
             'ma_account' => $sk_ma['ma_account'],
-            'ma_qrcode' => $sk_ma['ma_qrcode'],
-            //'ma_bank_id' => $sk_ma['bank_id'],
+            //'ma_qrcode' => $sk_ma['ma_qrcode'],
             'ma_bank_id' => $bank['id'],
-            'order_ip' => $p_data['client_ip'],
-            'notify_url' => $p_data['notify_url'],
-            'create_time' => NOW_TIME,
+            'order_ip' => $prev_order['client_ip'],
+            'notify_url' => $prev_order['notify_url'],
+            'create_time' => $prev_order['create_time'],
             'create_day' => date('Ymd', NOW_TIME),
-            'over_time' => NOW_TIME + $over_time,
+            'over_time' => $prev_order['over_time'],
             'device' => Request::instance()->isMobile() ? 'mobile' : 'pc',
             'reffer_url' => $_SERVER['HTTP_REFERER']
         ];
 
         $ma_sys_user = [
-            'balance' => $ma_user['balance'] - $p_data['money'],
-            'fz_balance' => $ma_user['fz_balance'] + $p_data['money'],
+            'balance' => $ma_user['balance'] - $prev_order['money'],
+            'fz_balance' => $ma_user['fz_balance'] + $prev_order['money'],
             'queue_time' => NOW_TIME
         ];
         if ($ma_sys_user['balance'] < 1000) {
@@ -278,10 +351,11 @@ class Pay extends Base
 
         $res1 = $mysql->insert($sk_order, 'sk_order');
         $res2 = $mysql->update($ma_sys_user, "id={$ma_user['id']}", 'sys_user');
-        $res3 = balanceLog($ma_user, $merchant['id'], 1, 13, -$p_data['money'], $res1, $sk_order['order_sn'], $mysql);
-        $res4 = balanceLog($ma_user, $merchant['id'], 2, 13, $p_data['money'], $res1, $sk_order['order_sn'], $mysql);
+        $res3 = balanceLog($ma_user, $merchant['id'], 1, 13, -$prev_order['money'], $res1, $sk_order['order_sn'], $mysql);
+        $res4 = balanceLog($ma_user, $merchant['id'], 2, 13, $prev_order['money'], $res1, $sk_order['order_sn'], $mysql);
         $res5 = $mysql->update($sk_ma_data, "id={$sk_ma['id']}", 'sk_ma');
-        if (!$res1 || !$res2 || !$res3 || !$res4 || !$res5) {
+        $res6 = $mysql->delete("order_sn='{$order_sn}'", "sk_order_prev");
+        if (!$res1 || !$res2 || !$res3 || !$res4 || !$res5 || !$res6) {
             $mysql->rollback();
             jReturn('-1', '系统繁忙请稍后再试');
         }
@@ -297,18 +371,20 @@ class Pay extends Base
         $mysql->insert($cnf_notice, 'cnf_notice');
 
         $return_data = [
-            'account' => $p_data['account'],
-            'order_sn' => $p_data['order_sn'],
-            'system_sn' => $sk_order['order_sn']
+            'money' => $prev_order['money'],
+            'account' => $prev_order['account'],
+            'order_sn' => $prev_order['order_sn'],
+            'url' => GATEWAY_URL . "/qrcode.php?order_no=" . $sk_order['order_sn'] . "&step=1"
         ];
 
+        /*
         if (empty($bank)) {
             $pay_url = GATEWAY_URL . "/api.php?c=cashier&order_no=" . $sk_order['order_sn'];
             $return_data['pay_url'] = $pay_url;
         } else {
             $pay_url = GATEWAY_URL . "/qrcode.php?order_no=" . $sk_order['order_sn'] . "&step=1";
             $return_data['pay_url'] = $pay_url;
-        }
+        }*/
 
         jReturn('0', '下单成功', $return_data);
     }
@@ -508,7 +584,7 @@ class Pay extends Base
             }
             $sign_data = [
                 'account' => $params['account'],
-                'bank' => $params['bank'],
+                //'bank' => $params['bank'],
                 'channel' => $params['channel'],
                 'client_ip' => getClientIp(),
                 'format' => $params['format'],
@@ -522,6 +598,7 @@ class Pay extends Base
             $http_response = curl_post(ADMIN_URL . '/pay/index', $sign_data);
             $response_json = $http_response['output'];
             $response_arr = json_decode($response_json, true);
+            debugLog('test pay/index returned: ' . $response_json);
             jReturn($response_arr);
         } else {
             $pageuser = checkLogin();
@@ -529,6 +606,9 @@ class Pay extends Base
             $merchant_arr = [];
             foreach ($children as $child) {
                 if (!in_array($child['gid'], [81,91])) {
+                    continue;
+                }
+                if ($child['status'] >= 99) {
                     continue;
                 }
                 $merchant_arr[] = $child;

@@ -44,6 +44,8 @@ Route::rule('admin/user/merchantlist',      'admin/User/merchantList');
 
 // 订单管理
 Route::rule('admin/pay',                    'admin/Pay/index');
+Route::rule('admin/pay/create',             'admin/Pay/create');
+Route::rule('admin/pay/cashier',            'admin/Pay/cashier');
 Route::rule('admin/pay/query',              'admin/Pay/query');
 Route::rule('admin/pay/notify',             'admin/Pay/notify');
 Route::rule('admin/pay/test',               'admin/Pay/test');
