@@ -17,7 +17,7 @@ class Pay extends Base
     public function _initialize()
     {
         parent::_initialize();
-        debugLog('params = ' . var_export($this->params, true));
+        //debugLog('params = ' . var_export($this->params, true));
     }
 
     public function skma()

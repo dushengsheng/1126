@@ -11,7 +11,7 @@ use app\common\Mysql;
 
 //将$data数组中的key/val对，按key升序排列(sign除外)
 //并返回md5编码
-function md5Sign($data, $key = null)
+function md5Sign($data, $salt = null)
 {
     $result = '';
     if ($data) {
@@ -23,10 +23,10 @@ function md5Sign($data, $key = null)
             $result .= "{$key}={$val}&";
         }
     }
-    if (!$key) {
-        $key = SYS_KEY;
+    if (!$salt) {
+        $salt = SYS_KEY;
     }
-    $result .= 'key=' . $key;
+    $result .= 'key=' . $salt;
     return md5($result);
 }
 
