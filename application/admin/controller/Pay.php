@@ -173,7 +173,7 @@ class Pay extends Base
             jReturn('-1', '签名错误');
         }
 
-        $check_mc_order = $mysql->fetchRow("select id from sk_order where out_order_sn='{$params['order_sn']}'");
+        $check_mc_order = $mysql->fetchRow("select id from sk_order where order_sn='{$params['order_sn']}'");
         if ($check_mc_order['id']) {
             jReturn('-1', "商户单号已存在，请勿重复提交 {$params['order_sn']}");
         }
@@ -196,6 +196,7 @@ class Pay extends Base
 
         $over_time = getConfig('skorder_over_time');
         $insert_data = [
+            'state' => 0,
             'account' => $params['account'],
             'channel' => $params['channel'],
             'client_ip' => $params['client_ip'],
@@ -229,7 +230,14 @@ class Pay extends Base
         if (!$order) {
             jReturn('-1', '订单不存在');
         }
-        $banks = $this->mysql->fetchRows("select id,bank_code,bank_logo from cnf_bank where bank_type!=1 and status=1");
+        $bank_type = 2;
+        if (Request::instance()->isMobile()) {
+            $bank_type = 1;
+        } else {
+            $bank_type = 2;
+        }
+
+        $banks = $this->mysql->fetchRows("select id,bank_code,bank_logo from cnf_bank where bank_type!={$bank_type} and status=1");
         $return_data['money'] = $order['money'];
         $return_data['banks'] = $banks;
         $return_data['order_sn'] = $order_sn;
@@ -311,13 +319,12 @@ class Pay extends Base
         $ma_rate = getUserChannelRate($ma_user, $ptype);
         $merchant_fee = $prev_order['money'] * $merchant_rate;
         $ma_fee = $prev_order['money'] * $ma_rate;
-        $over_time = getConfig('skorder_over_time');
         $sk_order = [
             'muid' => $sk_ma['uid'],//码商id
             'suid' => $merchant['id'],//商户id
             'ptype' => $ptype,
-            'order_sn' => 'SYS' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
-            'out_order_sn' => $prev_order['order_sn'],
+            'order_sn' => $prev_order['order_sn'],
+            'out_order_sn' => 'SYS' . date('YmdHis', NOW_TIME) . mt_rand(10000, 99999),
             'money' => $prev_order['money'],
             'real_money' => $prev_order['money'] - $merchant_fee,
             'rate' => $merchant_rate,
@@ -354,8 +361,8 @@ class Pay extends Base
         $res3 = balanceLog($ma_user, $merchant['id'], 1, 13, -$prev_order['money'], $res1, $sk_order['order_sn'], $mysql);
         $res4 = balanceLog($ma_user, $merchant['id'], 2, 13, $prev_order['money'], $res1, $sk_order['order_sn'], $mysql);
         $res5 = $mysql->update($sk_ma_data, "id={$sk_ma['id']}", 'sk_ma');
-        $res6 = $mysql->delete("order_sn='{$order_sn}'", "sk_order_prev");
-        if (!$res1 || !$res2 || !$res3 || !$res4 || !$res5 || !$res6) {
+        //$res6 = $mysql->delete("order_sn='{$order_sn}'", "sk_order_prev");
+        if (!$res1 || !$res2 || !$res3 || !$res4 || !$res5) {
             $mysql->rollback();
             jReturn('-1', '系统繁忙请稍后再试');
         }
@@ -371,10 +378,7 @@ class Pay extends Base
         $mysql->insert($cnf_notice, 'cnf_notice');
 
         $return_data = [
-            'money' => $prev_order['money'],
-            'account' => $prev_order['account'],
-            'order_sn' => $prev_order['order_sn'],
-            'url' => GATEWAY_URL . "/qrcode.php?order_no=" . $sk_order['order_sn'] . "&step=1"
+            'url' => GATEWAY_URL . "/qrcode.php?order_sn=" . $prev_order['order_sn'] . "&step=1"
         ];
 
         /*
@@ -584,7 +588,6 @@ class Pay extends Base
             }
             $sign_data = [
                 'account' => $params['account'],
-                //'bank' => $params['bank'],
                 'channel' => $params['channel'],
                 'client_ip' => getClientIp(),
                 'format' => $params['format'],
@@ -598,7 +601,7 @@ class Pay extends Base
             $http_response = curl_post(ADMIN_URL . '/pay/index', $sign_data);
             $response_json = $http_response['output'];
             $response_arr = json_decode($response_json, true);
-            debugLog('test pay/index returned: ' . $response_json);
+            //debugLog('test pay/index returned: ' . $response_json);
             jReturn($response_arr);
         } else {
             $pageuser = checkLogin();

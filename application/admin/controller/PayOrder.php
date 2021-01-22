@@ -59,7 +59,7 @@ class PayOrder extends Base
             $where .= " and log.pay_status={$s_pay_status}";
         }
         if ($s_keyword) {
-            $where .= " and (log.order_sn like '%{$s_keyword}%' or log.out_order_sn like '%{$s_keyword}%' or su.account like '%{$s_keyword}%' or su.nickname like '%{$s_keyword}%' or mu.account like '%{$s_keyword}%' or mu.nickname like '%{$s_keyword}%')";
+            $where .= " and (log.order_sn like '%{$s_keyword}%' or su.account like '%{$s_keyword}%' or su.nickname like '%{$s_keyword}%' or mu.account like '%{$s_keyword}%' or mu.nickname like '%{$s_keyword}%')";
         }
 
         $sql_cnt = "select count(1) as cnt,sum(log.money) as sum_money,sum(log.fee) as sum_fee,sum(real_money) as sum_real_money  

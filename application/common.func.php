@@ -470,7 +470,7 @@ function orderNotify($order_id, $mysql)
     $p_data = [
         'pay_status' => 9,
         'money' => $order['money'],
-        'order_sn' => $order['out_order_sn'],
+        'order_sn' => $order['order_sn'],
         'pay_time' => $order['pay_time']
     ];
     $p_data['sign'] = md5Sign($p_data, $merchant['apikey']);

@@ -113,7 +113,7 @@
         {{#}else if(d.pay_status == 3 && [[$sys_power.patch == 1]]){}}
             <div class="layui-btn layui-btn-radius layui-btn-normal layui-btn-warm" lay-event="order-patch">超时补单</div>
         {{#}else if(d.pay_status < 3 && [[$sys_power.callback == 1]]){}}
-            <div class="layui-btn layui-btn-radius layui-btn-normal" lay-event="order-callback">确认订单</div>
+            <div class="layui-btn layui-btn-radius layui-btn-normal" lay-event="order-callback">确认补单</div>
         {{#}else{}}
             '/'
         {{#}}}
@@ -131,9 +131,15 @@
             </div>
         </div>
         <div class="layui-form-item">
+            <label class="layui-form-label layui-form-required">支付宝账号:</label>
+            <div class="layui-input-block">
+                <input id="order-account" placeholder="请输入支付宝账号" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
             <label class="layui-form-label layui-form-required">订单金额:</label>
             <div class="layui-input-block">
-                <input name="money" id="order-money" class="layui-input"/>
+                <input id="order-money" placeholder="请输入订单金额" class="layui-input"/>
             </div>
         </div>
         {{#if(d.pay_status==3){}}
@@ -183,7 +189,7 @@
                 page: true,
                 cols: [[
                     {field: 'id', title: 'ID', width: 100},
-                    {field: 'mtype_name', title: '支付类型', width: 120},
+                    //{field: 'mtype_name', title: '支付类型', width: 120},
                     {field: '', title: '码商/平台单号', templet: function (d) {
                             var html = '<div style="text-align: center">';
                             html += '<div>' + d.mu_nickname + '</div>';
@@ -191,15 +197,14 @@
                             html += '</div>';
                             return html;
                         } },
-                    {field: '', title: '商户/商户单号', templet: function (d) {
+                    {field: '', title: '商户', templet: function (d) {
                             var html = '<div style="text-align: center">';
                             html += '<div>' + d.su_nickname + '</div>';
-                            html += '<div>' + d.out_order_sn + '</div>';
                             html += '</div>';
                             return html;
                         } },
+                    {field: 'ma_account', title: '支付宝账号', width: 240},
                     {field: 'money', title: '订单金额', width: 130},
-                    {field: 'fee', title: '佣金', width: 130},
                     {field: 'real_money', title: '结算金额', width: 130, templet: "#laytpl-order-status"},
                     {field: 'pay_status_flag', title: '支付状态'},
                     {field: 'create_time', title: '下单时间', width: 130},
@@ -234,7 +239,7 @@
             var item = obj.data;
 
             layer.open({
-                title: '订单确认',
+                title: '补单',
                 area: ['640px', '520px'],
                 type: 1,
                 shadeClose: true,
@@ -247,9 +252,14 @@
                 yes: function (index, layero) {
                     var money = parseFloat($.trim($('#order-money').val()));
                     var passwd2 = md5($.trim($('#user-password2').val()));
+                    var account = $.trim($('#order-account').val());
 
                     if (money !== item.money) {
-                        alertWarning('请输入正确的额度');
+                        alertWarning('请输入正确的金额');
+                        return;
+                    }
+                    if (account !== item.ma_account) {
+                        alertWarning('请输入正确的支付宝账号');
                         return;
                     }
                     if (item.pay_status == 3 && passwd2 === md5('')) {
