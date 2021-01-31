@@ -16,7 +16,7 @@ include_once APP_PATH . 'common.php';
 include_once APP_PATH . 'admin/common.php';
 
 include_once COMMON_PATH . 'Mysql.class.php';
-include_once COMMON_PATH . 'MyMemcache.class.php';
+include_once COMMON_PATH . 'MyMemcached.class.php';
 
 
 /*

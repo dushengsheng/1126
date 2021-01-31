@@ -2,14 +2,14 @@
 
 namespace app\admin\controller;
 
-require_once COMMON_PATH. 'MyMemcache.class.php';
+require_once COMMON_PATH. 'MyMemcached.class.php';
 require_once COMMON_PATH. 'Mysql.class.php';
 
 
 use think\Controller;
 use think\Exception;
 use think\Request;
-use app\common\MyMemcache;
+use app\common\MyMemcached;
 use app\common\Mysql;
 
 

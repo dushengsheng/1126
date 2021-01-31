@@ -2,7 +2,7 @@
 include_once __DIR__ . '/daemon.ini.php';
 
 use \app\common\Mysql;
-use \app\common\MyMemcache;
+use \app\common\MyMemcached;
 
 // nohup php ./queue_balance.php>queue_balance.log 2>&1 &
 

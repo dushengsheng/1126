@@ -2,7 +2,7 @@
 
 use think\Request;
 use app\common\Mysql;
-use app\common\MyMemcache;
+use app\common\MyMemcached;
 
 
 //检查权限
@@ -197,7 +197,7 @@ function memcacheSet($key, $val, $memcache = null)
     }
 
     if (!$memcache) {
-        $memcache = MyMemcache::instance();
+        $memcache = MyMemcached::instance();
     }
 
     $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . $key;
@@ -213,7 +213,7 @@ function memcacheSet($key, $val, $memcache = null)
 function memcacheGet($key, $memcache = null)
 {
     if (!$memcache) {
-        $memcache = MyMemcache::instance();
+        $memcache = MyMemcached::instance();
     }
 
     $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . $key;
@@ -230,7 +230,7 @@ function memcacheGet($key, $memcache = null)
 function memcacheDelete($key, $memcache = null)
 {
     if (!$memcache) {
-        $memcache = MyMemcache::instance();
+        $memcache = MyMemcached::instance();
     }
 
     $mem_key = $_ENV['CONFIG']['MEMCACHE']['PREFIX'] . $key;
